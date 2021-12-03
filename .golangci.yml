@@ -1,0 +1,18 @@
+run:
+  skip-dirs:
+    - (^|/).git($|/)
+
+linters:
+  enable:
+    - govet
+    - errcheck
+    - staticcheck
+    - unused
+    - gosimple
+    - structcheck
+    - varcheck
+    - ineffassign
+    - deadcode
+    - typecheck
+    - gofmt
+    - revive
