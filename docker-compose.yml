@@ -16,7 +16,7 @@ services:
       - app:app
     environment:
       DOMAINS: 'api.nascalay.trasta.dev -> http://app:3000'
-      STAGE: 'dev'
+      STAGE: 'local'
       FORCE_RENEW: 'false'
       WEBSOCKET: 'true'
       CLIENT_MAX_BODY_SIZE: 0
