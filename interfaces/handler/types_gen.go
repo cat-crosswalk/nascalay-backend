@@ -37,9 +37,7 @@ const (
 )
 
 // 回答の入力の完了を解除する (ルームの各員 -> サーバー)
-type AnswerCancelEvent struct {
-	Id string `json:"id"`
-}
+type AnswerCancelEvent map[string]interface{}
 
 // 回答の入力が完了していることを通知する (ルームの各員 -> サーバー)
 type AnswerReadyEvent struct {
@@ -56,9 +54,7 @@ type DrawCancelEvent map[string]interface{}
 
 // 全員が絵を完了したことor制限時間が来たことを通知する (サーバー -> ルーム全員)
 // クライアントは絵を送信する
-type DrawFinishEvent struct {
-	Id string `json:"id"`
-}
+type DrawFinishEvent map[string]interface{}
 
 // 絵が書き終わっていることを通知する (ルームの各員 -> サーバー)
 type DrawReadyEvent map[string]interface{}
@@ -115,9 +111,7 @@ type OdaiCancelEvent map[string]interface{}
 type OdaiFinishEvent map[string]interface{}
 
 // お題の入力が完了していることを通知する (ルームの各員 -> サーバー)
-type OdaiReadyEvent struct {
-	Id *string `json:"id,omitempty"`
-}
+type OdaiReadyEvent map[string]interface{}
 
 // お題を送信する (ルームの各員 -> サーバー)
 type OdaiSendEvent struct {
