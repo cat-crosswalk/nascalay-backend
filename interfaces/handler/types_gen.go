@@ -5,8 +5,33 @@ package handler
 
 import "github.com/gofrs/uuid"
 
+// Defines values for NextShowStatus.
+const (
+	NextShowStatusAnswer NextShowStatus = "answer"
+
+	NextShowStatusCanvas NextShowStatus = "canvas"
+
+	NextShowStatusEnd NextShowStatus = "end"
+
+	NextShowStatusOdai NextShowStatus = "odai"
+)
+
 // Defines values for WsEvent.
 const (
+	WsEventANSWERCANCEL WsEvent = "ANSWER_CANCEL"
+
+	WsEventANSWERFINISH WsEvent = "ANSWER_FINISH"
+
+	WsEventANSWERREADY WsEvent = "ANSWER_READY"
+
+	WsEventANSWERSEND WsEvent = "ANSWER_SEND"
+
+	WsEventANSWERSTART WsEvent = "ANSWER_START"
+
+	WsEventBREAKROOM WsEvent = "BREAK_ROOM"
+
+	WsEventCHANGEHOST WsEvent = "CHANGE_HOST"
+
 	WsEventDRAWCANCEL WsEvent = "DRAW_CANCEL"
 
 	WsEventDRAWFINISH WsEvent = "DRAW_FINISH"
@@ -19,6 +44,8 @@ const (
 
 	WsEventGAMESTART WsEvent = "GAME_START"
 
+	WsEventNEXTROOM WsEvent = "NEXT_ROOM"
+
 	WsEventODAICANCEL WsEvent = "ODAI_CANCEL"
 
 	WsEventODAIFINISH WsEvent = "ODAI_FINISH"
@@ -29,20 +56,32 @@ const (
 
 	WsEventREQUESTGAMESTART WsEvent = "REQUEST_GAME_START"
 
+	WsEventRETURNROOM WsEvent = "RETURN_ROOM"
+
 	WsEventROOMNEWMEMBER WsEvent = "ROOM_NEW_MEMBER"
 
 	WsEventROOMSETOPTION WsEvent = "ROOM_SET_OPTION"
 
 	WsEventROOMUPDATEOPTION WsEvent = "ROOM_UPDATE_OPTION"
-)
 
-// 回答の入力の完了を解除する (ルームの各員 -> サーバー)
-type AnswerCancelEvent struct {
-	Id string `json:"id"`
-}
+	WsEventSHOWANSWER WsEvent = "SHOW_ANSWER"
+
+	WsEventSHOWCANVAS WsEvent = "SHOW_CANVAS"
+
+	WsEventSHOWNEXT WsEvent = "SHOW_NEXT"
+
+	WsEventSHOWODAI WsEvent = "SHOW_ODAI"
+
+	WsEventSHOWSTART WsEvent = "SHOW_START"
+)
 
 // 回答の入力が完了していることを通知する (ルームの各員 -> サーバー)
 type AnswerReadyEvent struct {
+	Answer string `json:"answer"`
+}
+
+// 回答を送信する (ルームの各員 -> サーバー)
+type AnswerSendEvent struct {
 	Answer string `json:"answer"`
 }
 
@@ -51,17 +90,10 @@ type AnswerStartEvent struct {
 	Img string `json:"img"`
 }
 
-// 絵が書き終わっている通知を解除する (ルームの各員 -> サーバー)
-type DrawCancelEvent map[string]interface{}
-
-// 全員が絵を完了したことor制限時間が来たことを通知する (サーバー -> ルーム全員)
-// クライアントは絵を送信する
-type DrawFinishEvent struct {
-	Id string `json:"id"`
+// 最後の回答を受信する (サーバー -> ルーム全員)
+type ChangeHostEvent struct {
+	HostId string `json:"hostId"`
 }
-
-// 絵が書き終わっていることを通知する (ルームの各員 -> サーバー)
-type DrawReadyEvent map[string]interface{}
 
 // 絵を送信する (ルームの各員 -> サーバー)
 //
@@ -107,17 +139,8 @@ type NewRoomRequest struct {
 	Name     string `json:"name"`
 }
 
-// お題の入力の完了を解除する (ルームの各員 -> サーバー)
-type OdaiCancelEvent map[string]interface{}
-
-// 全員がお題の入力を完了したことor制限時間が来たことを通知する (サーバー -> ルーム全員)
-// クライアントはお題を送信する
-type OdaiFinishEvent map[string]interface{}
-
-// お題の入力が完了していることを通知する (ルームの各員 -> サーバー)
-type OdaiReadyEvent struct {
-	Id *string `json:"id,omitempty"`
-}
+// 次のWebsocketイベントのリスト
+type NextShowStatus string
 
 // お題を送信する (ルームの各員 -> サーバー)
 type OdaiSendEvent struct {
@@ -141,6 +164,13 @@ type RoomSetOptionEvent map[string]interface{}
 
 // RoomUpdateOptionEvent defines model for RoomUpdateOptionEvent.
 type RoomUpdateOptionEvent map[string]interface{}
+
+// 最初のお題を受信する (サーバー -> ルーム全員)
+type ShowOdaiEvent struct {
+	// 次のWebsocketイベントのリスト
+	Next NextShowStatus `json:"next"`
+	Odai string         `json:"odai"`
+}
 
 // User defines model for User.
 type User struct {
