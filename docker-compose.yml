@@ -6,7 +6,7 @@ services:
       - "3000:3000"
     tty: true
     restart: unless-stopped
-    
+
   https-portal:
     image: steveltn/https-portal:1
     ports:

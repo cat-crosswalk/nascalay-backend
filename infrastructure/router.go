@@ -11,5 +11,5 @@ func Setup(e *echo.Echo) {
 	e.Use(middleware.Recover())
 
 	s := injectServer()
-	handler.RegisterHandlersWithBaseURL(e, s, "/api")
+	handler.RegisterHandlers(e, s)
 }
