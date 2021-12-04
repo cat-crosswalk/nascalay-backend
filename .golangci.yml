@@ -15,4 +15,3 @@ linters:
     - deadcode
     - typecheck
     - gofmt
-    - revive

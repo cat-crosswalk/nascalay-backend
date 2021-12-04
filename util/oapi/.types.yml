@@ -1,0 +1,4 @@
+output: ../../interfaces/handler/types_gen.go
+generate:
+  - types
+package: handler
