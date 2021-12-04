@@ -1,4 +1,4 @@
-module github.com/21hack02win/backend
+module github.com/21hack02win/nascalay-backend
 
 go 1.17
 

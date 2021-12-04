@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/21hack02win/backend/infrastructure"
+	"github.com/21hack02win/nascalay-backend/infrastructure"
 	"github.com/labstack/echo/v4"
 )
 

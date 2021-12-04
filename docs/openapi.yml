@@ -1,13 +1,13 @@
 openapi: 3.1.0
 info:
-  title: サービス名
+  title: nascalay
   version: '1.0'
-  description: サービス名 v1 API
+  description: nascalay v1 API
   contact:
     name: 21hack02win
     url: 'https://github.com/21hack02win'
 servers:
-  - url: 'http://localhost:3000/api'
+  - url: 'http://nascalay.trasta.dev/api'
 paths:
   /rooms/new:
     post:

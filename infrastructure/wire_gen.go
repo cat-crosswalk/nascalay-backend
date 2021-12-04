@@ -7,7 +7,7 @@
 package infrastructure
 
 import (
-	"github.com/21hack02win/backend/interfaces/handler"
+	"github.com/21hack02win/nascalay-backend/interfaces/handler"
 )
 
 // Injectors from wire.go:
