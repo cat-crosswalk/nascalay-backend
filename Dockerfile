@@ -8,9 +8,6 @@ COPY . .
 RUN apk upgrade --update && \
     apk --no-cache add git
 
-RUN go install github.com/cosmtrek/air@v1.27.3
-
-# usermodなどで手元のUIDが変わっている場合は.envに記述する
-RUN chown -R ${UID:-1000}:${GID:-1000} ./
+RUN go install github.com/cosmtrek/air@latest
 
 CMD ["air", "-c", ".air.toml"]
