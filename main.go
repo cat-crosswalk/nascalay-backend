@@ -17,7 +17,7 @@ func main() {
 }
 
 func port() string {
-	p := 8080
+	p := 3000
 	if env := os.Getenv("APP_PORT"); len(env) > 0 {
 		if port, err := strconv.Atoi(env); err == nil {
 			p = port
