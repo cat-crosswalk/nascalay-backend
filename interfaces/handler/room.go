@@ -17,7 +17,7 @@ func (h *handler) JoinRoom(c echo.Context) error {
 	room, uid, err := h.r.JoinRoom(&repository.JoinRoomArgs{
 		Avatar:   req.Avatar,
 		RoomId:   model.RoomId(req.RoomId),
-		Username: req.Username,
+		Username: model.Username(req.Username),
 	})
 	if err != nil {
 		return newEchoHTTPError(err)
@@ -35,7 +35,7 @@ func (h *handler) CreateRoom(c echo.Context) error {
 	room, err := h.r.CreateRoom(&repository.CreateRoomArgs{
 		Avatar:   req.Avatar,
 		Capacity: req.Capacity,
-		Username: req.Username,
+		Username: model.Username(req.Username),
 	})
 	if err != nil {
 		return newEchoHTTPError(err)

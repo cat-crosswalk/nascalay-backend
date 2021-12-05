@@ -23,7 +23,7 @@ func refillUser(mu *model.User) User {
 	var u User
 	u.Avatar = mu.Avatar
 	u.UserId = mu.Id.UUID()
-	u.Username = mu.Name
+	u.Username = mu.Name.String()
 
 	return u
 }

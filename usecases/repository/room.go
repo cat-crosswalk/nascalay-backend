@@ -12,11 +12,11 @@ type RoomRepository interface {
 type CreateRoomArgs struct {
 	Avatar   int
 	Capacity int
-	Username string
+	Username model.Username
 }
 
 type JoinRoomArgs struct {
 	Avatar   int
 	RoomId   model.RoomId
-	Username string
+	Username model.Username
 }
