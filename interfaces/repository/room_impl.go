@@ -47,7 +47,7 @@ func (r *storeRepository) CreateRoom(cr *repository.CreateRoomArgs) (*model.Room
 }
 
 func (r *storeRepository) GetRoom(rid string) (*model.Room, error) {
-	room, ok := r.Room[rid]
+	room, ok := r.Room[model.RoomId(rid)]
 	if !ok {
 		return nil, repository.ErrNotFound
 	}
