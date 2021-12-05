@@ -26,19 +26,7 @@ func (h *handler) CreateRoom(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	return echo.NewHTTPError(http.StatusCreated, Room{
-		Capacity: room.Capacity,
-		HostId:   room.User.Id,
-		Members: []User{
-			{
-				Avatar:   room.User.Avatar,
-				UserId:   room.User.Id,
-				Username: room.User.Name,
-			},
-		},
-		RoomId: room.Id,
-		UserId: room.User.Id,
-	})
+	return echo.NewHTTPError(http.StatusCreated, refillRoom(room, room.HostId))
 }
 
 func (h *handler) GetRoom(c echo.Context, roomId RoomId) error {

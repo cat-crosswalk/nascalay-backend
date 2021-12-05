@@ -1,7 +1,10 @@
 package model
 
+import "github.com/gofrs/uuid"
+
 type Room struct {
 	Id       string
 	Capacity int
-	User     User
+	HostId   uuid.UUID
+	Members  []User
 }

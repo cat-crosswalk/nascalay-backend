@@ -12,13 +12,17 @@ func (r *storeRepository) CreateRoom(cr *repository.CreateRoomArgs) (*model.Room
 		return nil, errAlreadyExists
 	}
 
+	uid := random.UserId()
 	room := model.Room{
 		Id:       rid,
 		Capacity: cr.Capacity,
-		User: model.User{
-			Id:     random.UserId(),
-			Name:   cr.Username,
-			Avatar: cr.Avatar,
+		HostId:   uid,
+		Members: []model.User{
+			{
+				Id:     uid,
+				Name:   cr.Username,
+				Avatar: cr.Avatar,
+			},
 		},
 	}
 	r.Room[rid] = &room
