@@ -95,6 +95,13 @@ type ChangeHostEvent struct {
 	HostId string `json:"hostId"`
 }
 
+// 新規ルーム作成リクエスト
+type CreateRoomRequest struct {
+	Avatar   int    `json:"avatar"`
+	Capacity int    `json:"capacity"`
+	Username string `json:"username"`
+}
+
 // 絵を送信する (ルームの各員 -> サーバー)
 //
 // -> (DRAWフェーズが終わってなかったら) また，DRAW_START が飛んでくる
@@ -119,24 +126,9 @@ type GameStartEvent struct {
 
 // ルーム参加リクエスト
 type JoinRoomRequest struct {
-	Avatar int    `json:"avatar"`
-	Name   string `json:"name"`
-	RoomId string `json:"roomId"`
-}
-
-// 新規ルーム情報
-type NewRoom struct {
-	// ルームID
-	RoomId string `json:"roomId"`
-
-	// ユーザーUUID
-	UserId uuid.UUID `json:"userId"`
-}
-
-// NewRoomRequest defines model for NewRoomRequest.
-type NewRoomRequest struct {
-	Capacity int    `json:"capacity"`
-	Name     string `json:"name"`
+	Avatar   int    `json:"avatar"`
+	RoomId   string `json:"roomId"`
+	Username string `json:"username"`
 }
 
 // 次のWebsocketイベントのリスト
@@ -188,24 +180,24 @@ type ShowOdaiEvent struct {
 	Odai string         `json:"odai"`
 }
 
-// User defines model for User.
+// ユーザー情報
 type User struct {
-	Avatar int       `json:"avatar"`
-	Name   string    `json:"name"`
-	UserId uuid.UUID `json:"userId"`
+	Avatar   int       `json:"avatar"`
+	UserId   uuid.UUID `json:"userId"`
+	Username string    `json:"username"`
 }
 
 // Websocketイベントのリスト
 type WsEvent string
 
-// RoomId defines model for roomId.
+// ルームID
 type RoomId string
 
 // JoinRoomJSONBody defines parameters for JoinRoom.
 type JoinRoomJSONBody JoinRoomRequest
 
 // CreateRoomJSONBody defines parameters for CreateRoom.
-type CreateRoomJSONBody NewRoomRequest
+type CreateRoomJSONBody CreateRoomRequest
 
 // WsJSONBody defines parameters for Ws.
 type WsJSONBody struct {
