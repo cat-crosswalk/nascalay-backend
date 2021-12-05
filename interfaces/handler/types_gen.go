@@ -95,6 +95,12 @@ type ChangeHostEvent struct {
 	HostId string `json:"hostId"`
 }
 
+// CreateRoomRequest defines model for CreateRoomRequest.
+type CreateRoomRequest struct {
+	Capacity int    `json:"capacity"`
+	Username string `json:"username"`
+}
+
 // 絵を送信する (ルームの各員 -> サーバー)
 //
 // -> (DRAWフェーズが終わってなかったら) また，DRAW_START が飛んでくる
@@ -119,24 +125,9 @@ type GameStartEvent struct {
 
 // ルーム参加リクエスト
 type JoinRoomRequest struct {
-	Avatar int    `json:"avatar"`
-	Name   string `json:"name"`
-	RoomId string `json:"roomId"`
-}
-
-// 新規ルーム情報
-type NewRoom struct {
-	// ルームID
-	RoomId string `json:"roomId"`
-
-	// ユーザーUUID
-	UserId uuid.UUID `json:"userId"`
-}
-
-// NewRoomRequest defines model for NewRoomRequest.
-type NewRoomRequest struct {
-	Capacity int    `json:"capacity"`
-	Name     string `json:"name"`
+	Avatar   int    `json:"avatar"`
+	RoomId   string `json:"roomId"`
+	Username string `json:"username"`
 }
 
 // 次のWebsocketイベントのリスト
@@ -147,13 +138,23 @@ type OdaiSendEvent struct {
 	Odai string `json:"odai"`
 }
 
-// ルーム情報
+// 新規ルーム情報
 type Room struct {
+	// ルームID
+	RoomId string `json:"roomId"`
+
+	// ユーザーUUID
+	UserId uuid.UUID `json:"userId"`
+}
+
+// RoomDetail defines model for RoomDetail.
+type RoomDetail struct {
+	// Embedded struct due to allOf(#/components/schemas/Room)
+	Room `yaml:",inline"`
+	// Embedded fields due to inline allOf schema
 	Capacity int       `json:"capacity"`
 	HostId   uuid.UUID `json:"hostId"`
 	Members  []User    `json:"members"`
-	RoomId   string    `json:"roomId"`
-	UserId   uuid.UUID `json:"userId"`
 }
 
 // 部屋に追加のメンバーが来たことを通知する (サーバー -> ルーム全員)
@@ -174,7 +175,7 @@ type ShowAnswerEvent struct {
 }
 
 // 次のキャンバスを受信する (サーバー -> ルーム全員)
-type ShowCanbasEvent struct {
+type ShowCanvasEvent struct {
 	Img string `json:"img"`
 
 	// 次のWebsocketイベントのリスト
@@ -190,9 +191,9 @@ type ShowOdaiEvent struct {
 
 // User defines model for User.
 type User struct {
-	Avatar int       `json:"avatar"`
-	Name   string    `json:"name"`
-	UserId uuid.UUID `json:"userId"`
+	Avatar   int       `json:"avatar"`
+	UserId   uuid.UUID `json:"userId"`
+	Username string    `json:"username"`
 }
 
 // Websocketイベントのリスト
@@ -205,7 +206,7 @@ type RoomId string
 type JoinRoomJSONBody JoinRoomRequest
 
 // CreateRoomJSONBody defines parameters for CreateRoom.
-type CreateRoomJSONBody NewRoomRequest
+type CreateRoomJSONBody CreateRoomRequest
 
 // WsJSONBody defines parameters for Ws.
 type WsJSONBody struct {
