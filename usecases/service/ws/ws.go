@@ -46,7 +46,7 @@ func (s *streamer) ServeWS(w http.ResponseWriter, r *http.Request, userId model.
 	return nil
 }
 
-func (s *streamer) addNewClient(userId model.UserId, conn *websocket.Conn) error {
+func (s *streamer) addNewClient(userId model.UserId, conn *websocket.Conn) {
 	cli := NewClient(userId, conn)
 	s.hub.Register(cli)
 
@@ -56,6 +56,4 @@ func (s *streamer) addNewClient(userId model.UserId, conn *websocket.Conn) error
 		s.userIdToClients[userId] = m
 	}
 	m[cli] = true
-
-	return nil
 }
