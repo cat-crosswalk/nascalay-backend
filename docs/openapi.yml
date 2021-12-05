@@ -95,7 +95,7 @@ paths:
                     - $ref: '#/components/schemas/AnswerReadyEvent'
                     - $ref: '#/components/schemas/AnswerSendEvent'
                     - $ref: '#/components/schemas/ShowOdaiEvent'
-                    - $ref: '#/components/schemas/ShowCanbasEvent'
+                    - $ref: '#/components/schemas/ShowCanvasEvent'
                     - $ref: '#/components/schemas/ShowAnswerEvent'
                     - $ref: '#/components/schemas/ChangeHostEvent'
       description: |-
