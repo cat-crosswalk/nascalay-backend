@@ -51,5 +51,5 @@ func (h *handler) GetRoom(c echo.Context, roomId RoomId) error {
 		return newEchoHTTPError(err)
 	}
 
-	return c.JSON(http.StatusOK, refillRoom(room, uuid.Nil)) // ユーザーIDが必要ないのでとりあえずuuid.Nilにしておく
+	return c.JSON(http.StatusOK, refillRoom(room, model.UserId(uuid.Nil))) // ユーザーIDが必要ないのでとりあえずuuid.Nilにしておく
 }
