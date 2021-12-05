@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/usecases/repository"
 	"github.com/gofrs/uuid"
 	"github.com/labstack/echo/v4"
@@ -15,9 +16,9 @@ func (h *handler) JoinRoom(c echo.Context) error {
 	}
 
 	room, uid, err := h.r.JoinRoom(&repository.JoinRoomArgs{
-		Avatar:   req.Avatar,
-		RoomId:   req.RoomId,
-		Username: req.Username,
+		Avatar:   model.Avatar(req.Avatar),
+		RoomId:   model.RoomId(req.RoomId),
+		Username: model.Username(req.Username),
 	})
 	if err != nil {
 		return newEchoHTTPError(err)
@@ -33,9 +34,9 @@ func (h *handler) CreateRoom(c echo.Context) error {
 	}
 
 	room, err := h.r.CreateRoom(&repository.CreateRoomArgs{
-		Avatar:   req.Avatar,
-		Capacity: req.Capacity,
-		Username: req.Username,
+		Avatar:   model.Avatar(req.Avatar),
+		Capacity: model.Capacity(req.Capacity),
+		Username: model.Username(req.Username),
 	})
 	if err != nil {
 		return newEchoHTTPError(err)
