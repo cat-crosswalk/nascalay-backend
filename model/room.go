@@ -1,10 +1,20 @@
 package model
 
-import "github.com/gofrs/uuid"
-
 type Room struct {
-	Id       string
-	Capacity int
-	HostId   uuid.UUID
+	Id       RoomId
+	Capacity Capacity
+	HostId   UserId
 	Members  []User
+}
+
+type RoomId string
+
+func (rid RoomId) String() string {
+	return string(rid)
+}
+
+type Capacity int
+
+func (c Capacity) Int() int {
+	return int(c)
 }

@@ -2,23 +2,22 @@ package repository
 
 import (
 	"github.com/21hack02win/nascalay-backend/model"
-	"github.com/gofrs/uuid"
 )
 
 type RoomRepository interface {
-	JoinRoom(jr *JoinRoomArgs) (*model.Room, uuid.UUID, error)
+	JoinRoom(jr *JoinRoomArgs) (*model.Room, model.UserId, error)
 	CreateRoom(cr *CreateRoomArgs) (*model.Room, error)
 	GetRoom(rid string) (*model.Room, error)
 }
 
 type CreateRoomArgs struct {
-	Avatar   int
-	Capacity int
-	Username string
+	Avatar   model.Avatar
+	Capacity model.Capacity
+	Username model.Username
 }
 
 type JoinRoomArgs struct {
-	Avatar   int
-	RoomId   string
-	Username string
+	Avatar   model.Avatar
+	RoomId   model.RoomId
+	Username model.Username
 }
