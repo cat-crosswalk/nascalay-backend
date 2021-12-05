@@ -95,8 +95,9 @@ type ChangeHostEvent struct {
 	HostId string `json:"hostId"`
 }
 
-// CreateRoomRequest defines model for CreateRoomRequest.
+// 新規ルーム作成リクエスト
 type CreateRoomRequest struct {
+	Avatar   int    `json:"avatar"`
 	Capacity int    `json:"capacity"`
 	Username string `json:"username"`
 }
@@ -138,23 +139,13 @@ type OdaiSendEvent struct {
 	Odai string `json:"odai"`
 }
 
-// 新規ルーム情報
+// ルーム情報
 type Room struct {
-	// ルームID
-	RoomId string `json:"roomId"`
-
-	// ユーザーUUID
-	UserId uuid.UUID `json:"userId"`
-}
-
-// RoomDetail defines model for RoomDetail.
-type RoomDetail struct {
-	// Embedded struct due to allOf(#/components/schemas/Room)
-	Room `yaml:",inline"`
-	// Embedded fields due to inline allOf schema
 	Capacity int       `json:"capacity"`
 	HostId   uuid.UUID `json:"hostId"`
 	Members  []User    `json:"members"`
+	RoomId   string    `json:"roomId"`
+	UserId   uuid.UUID `json:"userId"`
 }
 
 // 部屋に追加のメンバーが来たことを通知する (サーバー -> ルーム全員)
@@ -189,7 +180,7 @@ type ShowOdaiEvent struct {
 	Odai string         `json:"odai"`
 }
 
-// User defines model for User.
+// ユーザー情報
 type User struct {
 	Avatar   int       `json:"avatar"`
 	UserId   uuid.UUID `json:"userId"`
@@ -199,7 +190,7 @@ type User struct {
 // Websocketイベントのリスト
 type WsEvent string
 
-// RoomId defines model for roomId.
+// ルームID
 type RoomId string
 
 // JoinRoomJSONBody defines parameters for JoinRoom.

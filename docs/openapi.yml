@@ -148,6 +148,7 @@ components:
     User:
       title: User
       type: object
+      description: ユーザー情報
       example:
         username: John
         avatar: 5
@@ -168,6 +169,7 @@ components:
     CreateRoomRequest:
       title: CreateRoomRequest
       type: object
+      description: 新規ルーム作成リクエスト
       example:
         username: John
         avatar: 5
@@ -419,6 +421,7 @@ components:
       required: true
       schema:
         type: string
+        description: ルームID
       description: ルームID
 tags:
   - name: room
