@@ -2,26 +2,23 @@ package random
 
 import (
 	"crypto/rand"
-	"encoding/base64"
 	"math/big"
 
 	"github.com/gofrs/uuid"
 )
 
 const (
+	letters      = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 	roomIdLength = 10
-	letterlen    = 26*2 + 10 // A-Z, a-z, 0-9
 )
 
 func RoomId() string {
-	runes := make([]byte, roomIdLength)
-
+	ret := make([]byte, roomIdLength)
 	for i := 0; i < roomIdLength; i++ {
-		num, _ := rand.Int(rand.Reader, big.NewInt(letterlen))
-		runes[i] = byte(num.Int64())
+		num, _ := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
+		ret[i] = letters[num.Int64()]
 	}
-
-	return base64.RawStdEncoding.EncodeToString(runes)
+	return string(ret)
 }
 
 func UserId() uuid.UUID {
