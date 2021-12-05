@@ -13,10 +13,13 @@ func (r *storeRepository) CreateRoom(cr *repository.CreateRoomArgs) (*model.Room
 	}
 
 	room := model.Room{
-		RoomId:   rid,
-		UserId:   random.UserId(),
-		Name:     cr.Name,
+		Id:       rid,
 		Capacity: cr.Capacity,
+		User: model.User{
+			Id:     random.UserId(),
+			Name:   cr.Username,
+			Avatar: cr.Avatar,
+		},
 	}
 	r.Room[rid] = &room
 

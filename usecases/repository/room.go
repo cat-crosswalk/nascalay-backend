@@ -9,6 +9,7 @@ type RoomRepository interface {
 }
 
 type CreateRoomArgs struct {
-	Name     string
+	Avatar   int
+	Username string
 	Capacity int
 }

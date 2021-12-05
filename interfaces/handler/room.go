@@ -18,16 +18,26 @@ func (h *handler) CreateRoom(c echo.Context) error {
 	}
 
 	room, err := h.r.CreateRoom(&repository.CreateRoomArgs{
+		Avatar:   req.Avatar,
 		Capacity: req.Capacity,
-		Name: req.Name,
+		Username: req.Username,
 	})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	return echo.NewHTTPError(http.StatusCreated, NewRoom{
-		RoomId: room.RoomId,
-		UserId: room.UserId,
+	return echo.NewHTTPError(http.StatusCreated, Room{
+		Capacity: room.Capacity,
+		HostId:   room.User.Id,
+		Members: []User{
+			{
+				Avatar:   room.User.Avatar,
+				UserId:   room.User.Id,
+				Username: room.User.Name,
+			},
+		},
+		RoomId: room.Id,
+		UserId: room.User.Id,
 	})
 }
 
