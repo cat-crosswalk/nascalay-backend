@@ -137,7 +137,7 @@ components:
         userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
         hostId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
         members:
-          - name: John
+          - username: John
             avatar: 5
             userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
       properties:
@@ -167,7 +167,7 @@ components:
       title: User
       type: object
       example:
-        name: John
+        username: John
         avatar: 5
         userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
       properties:
@@ -175,27 +175,27 @@ components:
           type: string
           format: uuid
           x-go-type: uuid.UUID
-        name:
+        username:
           type: string
         avatar:
           type: integer
       required:
         - userId
-        - name
+        - username
         - avatar
     NewRoomRequest:
       title: NewRoomRequest
       type: object
       example:
-        name: John
+        username: John
         capacity: 4
       properties:
-        name:
+        username:
           type: string
         capacity:
           type: integer
       required:
-        - name
+        - username
         - capacity
     JoinRoomRequest:
       title: JoinRoomRequest
@@ -203,18 +203,18 @@ components:
       description: ルーム参加リクエスト
       example:
         roomId: Nao340bzc0b23
-        name: John
+        username: John
         avatar: 5
       properties:
         roomId:
           type: string
-        name:
+        username:
           type: string
         avatar:
           type: integer
       required:
         - roomId
-        - name
+        - username
         - avatar
     WsEvent:
       title: WsEvent
