@@ -13,7 +13,7 @@ func (h *handler) JoinRoom(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	room, err := h.r.JoinRoom(&repository.JoinRoomArgs{
+	room, uid, err := h.r.JoinRoom(&repository.JoinRoomArgs{
 		Avatar:   req.Avatar,
 		RoomId:   req.RoomId,
 		Username: req.Username,
@@ -22,7 +22,7 @@ func (h *handler) JoinRoom(c echo.Context) error {
 		return newEchoHTTPError(err)
 	}
 
-	return echo.NewHTTPError(http.StatusOK, refillRoom(room, room.Members[len(room.Members)-1].Id)) // TODO: sessionでとる
+	return echo.NewHTTPError(http.StatusOK, refillRoom(room, uid))
 }
 
 func (h *handler) CreateRoom(c echo.Context) error {
