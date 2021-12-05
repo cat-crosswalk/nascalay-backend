@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/21hack02win/nascalay-backend/usecases/repository"
+	"github.com/gofrs/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -44,5 +45,10 @@ func (h *handler) CreateRoom(c echo.Context) error {
 }
 
 func (h *handler) GetRoom(c echo.Context, roomId RoomId) error {
-	return nil
+	room, err := h.r.GetRoom(string(roomId))
+	if err != nil {
+		return newEchoHTTPError(err)
+	}
+
+	return c.JSON(http.StatusOK, refillRoom(room, uuid.Nil)) // ユーザーIDが必要ないのでとりあえずuuid.Nilにしておく
 }
