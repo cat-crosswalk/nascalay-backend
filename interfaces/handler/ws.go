@@ -14,7 +14,7 @@ func (h *handler) Ws(c echo.Context) error {
 	err := h.stream.ServeWS(c.Response().Writer, c.Request(), model.UserId(uuid.FromStringOrNil(userId)))
 	if err != nil {
 		c.Logger().Error(err)
-		return err // TODO: あとで
+		return newEchoHTTPError(err)
 	}
 
 	return c.NoContent(http.StatusNoContent)
