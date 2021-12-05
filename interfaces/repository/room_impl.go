@@ -4,13 +4,12 @@ import (
 	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/usecases/repository"
 	"github.com/21hack02win/nascalay-backend/util/random"
-	"github.com/gofrs/uuid"
 )
 
-func (r *storeRepository) JoinRoom(jr *repository.JoinRoomArgs) (*model.Room, uuid.UUID, error) {
+func (r *storeRepository) JoinRoom(jr *repository.JoinRoomArgs) (*model.Room, model.UserId, error) {
 	room, ok := r.Room[jr.RoomId]
 	if !ok {
-		return nil, uuid.Nil, repository.ErrNotFound
+		return nil, model.UserId{}, repository.ErrNotFound
 	}
 
 	uid := random.UserId()

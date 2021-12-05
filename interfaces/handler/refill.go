@@ -2,16 +2,15 @@ package handler
 
 import (
 	"github.com/21hack02win/nascalay-backend/model"
-	"github.com/gofrs/uuid"
 )
 
-func refillRoom(mr *model.Room, userId uuid.UUID) Room {
+func refillRoom(mr *model.Room, userId model.UserId) Room {
 	var r Room
 	r.Capacity = mr.Capacity
-	r.HostId = mr.HostId
+	r.HostId = mr.HostId.UUID()
 	r.Members = make([]User, len(mr.Members))
 	r.RoomId = mr.Id.String()
-	r.UserId = userId
+	r.UserId = userId.UUID()
 
 	for i, v := range mr.Members {
 		r.Members[i] = refillUser(&v)
@@ -23,7 +22,7 @@ func refillRoom(mr *model.Room, userId uuid.UUID) Room {
 func refillUser(mu *model.User) User {
 	var u User
 	u.Avatar = mu.Avatar
-	u.UserId = mu.Id
+	u.UserId = mu.Id.UUID()
 	u.Username = mu.Name
 
 	return u

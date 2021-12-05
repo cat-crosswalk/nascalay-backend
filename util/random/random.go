@@ -22,6 +22,6 @@ func RoomId() model.RoomId {
 	return model.RoomId(ret)
 }
 
-func UserId() uuid.UUID {
-	return uuid.Must(uuid.NewV4())
+func UserId() model.UserId {
+	return model.UserId(uuid.Must(uuid.NewV4()))
 }
