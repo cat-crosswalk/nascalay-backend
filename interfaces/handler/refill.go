@@ -21,7 +21,7 @@ func refillRoom(mr *model.Room, userId model.UserId) Room {
 
 func refillUser(mu *model.User) User {
 	var u User
-	u.Avatar = mu.Avatar
+	u.Avatar = mu.Avatar.Int()
 	u.UserId = mu.Id.UUID()
 	u.Username = mu.Name.String()
 
