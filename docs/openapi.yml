@@ -114,7 +114,7 @@ components:
       description: 新規ルーム情報
       example:
         - roomId: Nao340bzc0b23
-          userId: 0fa5d740-0841-4b88-b7c8-34a68774c784
+          userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
       properties:
         roomId:
           type: string
@@ -132,14 +132,14 @@ components:
       type: object
       description: ルーム情報
       example:
-        - roomId: c3631f02-ff67-42b8-8775-18c47f52a678
+        - roomId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
           capacity: 0
-          userId: 2c4a230c-5085-4924-a3e1-25fb4fc5965b
-          hostId: 70e3fb2d-1cb6-4dbc-ab8d-fa7209aca5dd
+          userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          hostId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
           members:
-            - name: xxxxx
+            - name: RUxKNy
               avatar: 5
-              userId: xxxxxxxx-xxxx-xxxx-Nxxx-xxxxxxxxxxxx
+              userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
       properties:
         roomId:
           type: string
@@ -167,9 +167,9 @@ components:
       title: User
       type: object
       example:
-        - name: xxxxx
+        - name: RUxKNy
           avatar: 5
-          userId: xxxxxxxx-xxxx-xxxx-Nxxx-xxxxxxxxxxxx
+          userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
       properties:
         userId:
           type: string
@@ -187,7 +187,7 @@ components:
       title: NewRoomRequest
       type: object
       example:
-        - name: xxxxx
+        - name: RUxKNy
           capacity: 4
       properties:
         name:
@@ -203,7 +203,7 @@ components:
       description: ルーム参加リクエスト
       example:
         - roomId: Nao340bzc0b23
-          name: xxxxx
+          name: RUxKNy
           avatar: 5
       properties:
         roomId:
@@ -419,7 +419,7 @@ components:
       type: object
       description: 最後の回答を受信する (サーバー -> ルーム全員)
       example:
-        - hostId: xxxxxxxx-xxxx-xxxx-Nxxx-xxxxxxxxxxxx
+        - hostId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
       properties:
         hostId:
           type: string
