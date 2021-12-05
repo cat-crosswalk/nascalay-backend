@@ -34,7 +34,7 @@ func (h *handler) CreateRoom(c echo.Context) error {
 
 	room, err := h.r.CreateRoom(&repository.CreateRoomArgs{
 		Avatar:   model.Avatar(req.Avatar),
-		Capacity: req.Capacity,
+		Capacity: model.Capacity(req.Capacity),
 		Username: model.Username(req.Username),
 	})
 	if err != nil {

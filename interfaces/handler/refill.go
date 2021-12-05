@@ -6,7 +6,7 @@ import (
 
 func refillRoom(mr *model.Room, userId model.UserId) Room {
 	var r Room
-	r.Capacity = mr.Capacity
+	r.Capacity = mr.Capacity.Int()
 	r.HostId = mr.HostId.UUID()
 	r.Members = make([]User, len(mr.Members))
 	r.RoomId = mr.Id.String()

@@ -11,7 +11,7 @@ type RoomRepository interface {
 
 type CreateRoomArgs struct {
 	Avatar   model.Avatar
-	Capacity int
+	Capacity model.Capacity
 	Username model.Username
 }
 
