@@ -165,6 +165,22 @@ type RoomSetOptionEvent map[string]interface{}
 // RoomUpdateOptionEvent defines model for RoomUpdateOptionEvent.
 type RoomUpdateOptionEvent map[string]interface{}
 
+// 最後の回答を受信する (サーバー -> ルーム全員)
+type ShowAnswerEvent struct {
+	Answer string `json:"answer"`
+
+	// 次のWebsocketイベントのリスト
+	Next NextShowStatus `json:"next"`
+}
+
+// 次のキャンバスを受信する (サーバー -> ルーム全員)
+type ShowCanbasEvent struct {
+	Img string `json:"img"`
+
+	// 次のWebsocketイベントのリスト
+	Next NextShowStatus `json:"next"`
+}
+
 // 最初のお題を受信する (サーバー -> ルーム全員)
 type ShowOdaiEvent struct {
 	// 次のWebsocketイベントのリスト

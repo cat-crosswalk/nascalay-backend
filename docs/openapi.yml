@@ -1,4 +1,4 @@
-openapi: 3.1.0
+openapi: 3.0.3
 info:
   title: nascalay
   version: '1.0'
@@ -95,8 +95,8 @@ paths:
                     - $ref: '#/components/schemas/AnswerReadyEvent'
                     - $ref: '#/components/schemas/AnswerSendEvent'
                     - $ref: '#/components/schemas/ShowOdaiEvent'
-                    - $ref: '#/components/schemas/ShowOdaiEvent'
-                    - $ref: '#/components/schemas/ShowOdaiEvent'
+                    - $ref: '#/components/schemas/ShowCanbasEvent'
+                    - $ref: '#/components/schemas/ShowAnswerEvent'
                     - $ref: '#/components/schemas/ChangeHostEvent'
       description: |-
         Websocketを送受信する
@@ -112,9 +112,9 @@ components:
     NewRoom:
       type: object
       description: 新規ルーム情報
-      examples:
-        - roomId: Nao340bzc0b23
-          userId: 0fa5d740-0841-4b88-b7c8-34a68774c784
+      example:
+        roomId: Nao340bzc0b23
+        userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
       properties:
         roomId:
           type: string
@@ -131,15 +131,15 @@ components:
       title: Room
       type: object
       description: ルーム情報
-      examples:
-        - roomId: c3631f02-ff67-42b8-8775-18c47f52a678
-          capacity: 0
-          userId: 2c4a230c-5085-4924-a3e1-25fb4fc5965b
-          hostId: 70e3fb2d-1cb6-4dbc-ab8d-fa7209aca5dd
-          members:
-            - name: xxxxx
-              avatar: 5
-              userId: xxxxxxxx-xxxx-xxxx-Nxxx-xxxxxxxxxxxx
+      example:
+        roomId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        capacity: 0
+        userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        hostId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        members:
+          - name: John
+            avatar: 5
+            userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
       properties:
         roomId:
           type: string
@@ -166,10 +166,10 @@ components:
     User:
       title: User
       type: object
-      examples:
-        - name: xxxxx
-          avatar: 5
-          userId: xxxxxxxx-xxxx-xxxx-Nxxx-xxxxxxxxxxxx
+      example:
+        name: John
+        avatar: 5
+        userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
       properties:
         userId:
           type: string
@@ -186,9 +186,9 @@ components:
     NewRoomRequest:
       title: NewRoomRequest
       type: object
-      examples:
-        - name: xxxxx
-          capacity: 4
+      example:
+        name: John
+        capacity: 4
       properties:
         name:
           type: string
@@ -201,10 +201,10 @@ components:
       title: JoinRoomRequest
       type: object
       description: ルーム参加リクエスト
-      examples:
-        - roomId: Nao340bzc0b23
-          name: xxxxx
-          avatar: 5
+      example:
+        roomId: Nao340bzc0b23
+        name: John
+        avatar: 5
       properties:
         roomId:
           type: string
@@ -273,9 +273,9 @@ components:
       title: GameStartEvent
       type: object
       description: ゲームの開始を通知する (サーバー -> ルーム全員)
-      examples:
-        - odaiHint: ねこのおばけ
-          timeLimit: 40
+      example:
+        odaiHint: ねこのおばけ
+        timeLimit: 40
       properties:
         odaiHint:
           type: string
@@ -287,8 +287,8 @@ components:
     OdaiSendEvent:
       title: OdaiSendEvent
       type: object
-      examples:
-        - odai: ねこのおばけ
+      example:
+        odai: ねこのおばけ
       description: お題を送信する (ルームの各員 -> サーバー)
       properties:
         odai:
@@ -298,12 +298,12 @@ components:
     DrawStartEvent:
       title: DrawStartEvent
       type: object
-      examples:
-        - timeLimit: 40
-          img: iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKAQAAAAClSfIQAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgA...
-          odai: ねこのおばけ
-          drawPhaseNum: 3
-          allDrawPhaseNum: 10
+      example:
+        timeLimit: 40
+        img: iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKAQAAAAClSfIQAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgA...
+        odai: ねこのおばけ
+        drawPhaseNum: 3
+        allDrawPhaseNum: 10
       description: キャンバス情報とお題を送信する (サーバー -> ルーム各員)
       properties:
         timeLimit:
@@ -325,8 +325,8 @@ components:
     DrawSendEvent:
       title: DrawSendEvent
       type: object
-      examples:
-        - img: iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKAQAAAAClSfIQAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgA...
+      example:
+        img: iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKAQAAAAClSfIQAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgA...
       description: |-
         絵を送信する (ルームの各員 -> サーバー)
 
@@ -340,8 +340,8 @@ components:
       title: AnswerStartEvent
       type: object
       description: 絵が飛んできて，回答する (サーバー -> ルーム各員)
-      examples:
-        - img: iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKAQAAAAClSfIQAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgA...
+      example:
+        img: iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKAQAAAAClSfIQAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgA...
       properties:
         img:
           type: string
@@ -351,8 +351,8 @@ components:
       title: AnswerReadyEvent
       type: object
       description: 回答の入力が完了していることを通知する (ルームの各員 -> サーバー)
-      examples:
-        - answer: とらのおばけ
+      example:
+        answer: とらのおばけ
       properties:
         answer:
           type: string
@@ -362,8 +362,8 @@ components:
       title: AnswerSendEvent
       type: object
       description: 回答を送信する (ルームの各員 -> サーバー)
-      examples:
-        - answer: ねこのおばけ
+      example:
+        answer: ねこのおばけ
       properties:
         answer:
           type: string
@@ -373,9 +373,9 @@ components:
       title: ShowOdaiEvent
       type: object
       description: 最初のお題を受信する (サーバー -> ルーム全員)
-      examples:
-        - odai: そうじきをかけるねこ
-          next: odai
+      example:
+        odai: そうじきをかけるねこ
+        next: odai
       properties:
         odai:
           type: string
@@ -387,9 +387,9 @@ components:
     ShowCanvasEvent:
       title: ShowCanvasEvent
       type: object
-      examples:
-        - odai: そうじきをかけるねこ
-          next: odai
+      example:
+        img: iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKAQAAAAClSfIQAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgA...
+        next: odai
       description: 次のキャンバスを受信する (サーバー -> ルーム全員)
       properties:
         img:
@@ -403,9 +403,9 @@ components:
       title: ShowAnswerEvent
       type: object
       description: 最後の回答を受信する (サーバー -> ルーム全員)
-      examples:
-        - odai: そうじきをかけるねこ
-          next: odai
+      example:
+        answer: そうじきをかけるねこ
+        next: odai
       properties:
         answer:
           type: string
@@ -418,8 +418,8 @@ components:
       title: ShowAnswerEvent
       type: object
       description: 最後の回答を受信する (サーバー -> ルーム全員)
-      examples:
-        - hostId: xxxxxxxx-xxxx-xxxx-Nxxx-xxxxxxxxxxxx
+      example:
+        hostId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
       properties:
         hostId:
           type: string
