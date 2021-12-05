@@ -6,10 +6,25 @@ import (
 	"github.com/21hack02win/nascalay-backend/util/random"
 )
 
+func (r *storeRepository) JoinRoom(jr *repository.JoinRoomArgs) (*model.Room, error) {
+	room, ok := r.Room[jr.RoomId]
+	if !ok {
+		return nil, repository.ErrNotFound
+	}
+
+	room.Members = append(room.Members, model.User{
+		Id:     random.UserId(),
+		Name:   jr.Username,
+		Avatar: jr.Avatar,
+	})
+
+	return room, nil
+}
+
 func (r *storeRepository) CreateRoom(cr *repository.CreateRoomArgs) (*model.Room, error) {
 	rid := random.RoomId()
 	if _, ok := r.Room[rid]; ok {
-		return nil, errAlreadyExists
+		return nil, repository.ErrAlreadyExists
 	}
 
 	uid := random.UserId()

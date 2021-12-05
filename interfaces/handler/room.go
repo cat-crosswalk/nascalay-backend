@@ -8,13 +8,27 @@ import (
 )
 
 func (h *handler) JoinRoom(c echo.Context) error {
-	return nil
+	req := new(JoinRoomJSONRequestBody)
+	if err := c.Bind(req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	room, err := h.r.JoinRoom(&repository.JoinRoomArgs{
+		Avatar:   req.Avatar,
+		RoomId:   req.RoomId,
+		Username: req.Username,
+	})
+	if err != nil {
+		return newEchoHTTPError(err)
+	}
+
+	return echo.NewHTTPError(http.StatusOK, refillRoom(room, room.Members[len(room.Members)-1].Id)) // TODO: sessionでとる
 }
 
 func (h *handler) CreateRoom(c echo.Context) error {
 	req := new(CreateRoomJSONRequestBody)
 	if err := c.Bind(req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err) // TODO: エラーそのまま返すのどうにかする
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	room, err := h.r.CreateRoom(&repository.CreateRoomArgs{
@@ -23,7 +37,7 @@ func (h *handler) CreateRoom(c echo.Context) error {
 		Username: req.Username,
 	})
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return newEchoHTTPError(err)
 	}
 
 	return echo.NewHTTPError(http.StatusCreated, refillRoom(room, room.HostId))
