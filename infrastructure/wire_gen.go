@@ -8,11 +8,15 @@ package infrastructure
 
 import (
 	"github.com/21hack02win/nascalay-backend/interfaces/handler"
+	"github.com/21hack02win/nascalay-backend/interfaces/repository"
+	"github.com/21hack02win/nascalay-backend/usecases/service"
 )
 
 // Injectors from wire.go:
 
 func injectServer() handler.ServerInterface {
-	serverInterface := handler.NewHandler()
+	serviceService := service.NewService()
+	repositoryRepository := repository.NewRepository()
+	serverInterface := handler.NewHandler(serviceService, repositoryRepository)
 	return serverInterface
 }

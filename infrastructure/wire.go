@@ -6,12 +6,16 @@ package infrastructure
 
 import (
 	"github.com/21hack02win/nascalay-backend/interfaces/handler"
+	"github.com/21hack02win/nascalay-backend/interfaces/repository"
+	"github.com/21hack02win/nascalay-backend/usecases/service"
 	"github.com/google/wire"
 )
 
 func injectServer() handler.ServerInterface {
 	wire.Build(
 		handler.NewHandler,
+		service.NewService,
+		repository.NewRepository,
 	)
 
 	return nil

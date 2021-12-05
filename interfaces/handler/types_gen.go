@@ -174,7 +174,7 @@ type ShowAnswerEvent struct {
 }
 
 // 次のキャンバスを受信する (サーバー -> ルーム全員)
-type ShowCanbasEvent struct {
+type ShowCanvasEvent struct {
 	Img string `json:"img"`
 
 	// 次のWebsocketイベントのリスト

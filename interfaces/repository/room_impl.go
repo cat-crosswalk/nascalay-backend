@@ -1,0 +1,24 @@
+package repository
+
+import (
+	"github.com/21hack02win/nascalay-backend/model"
+	"github.com/21hack02win/nascalay-backend/usecases/repository"
+	"github.com/21hack02win/nascalay-backend/util/random"
+)
+
+func (r *storeRepository) CreateRoom(cr *repository.CreateRoomArgs) (*model.Room, error) {
+	rid := random.RoomId()
+	if _, ok := r.Room[rid]; ok {
+		return nil, errAlreadyExists
+	}
+
+	room := model.Room{
+		RoomId:   rid,
+		UserId:   random.UserId(),
+		Name:     cr.Name,
+		Capacity: cr.Capacity,
+	}
+	r.Room[rid] = &room
+
+	return &room, nil
+}
