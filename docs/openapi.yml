@@ -384,8 +384,8 @@ components:
       required:
         - odai
         - next
-    ShowCanbasEvent:
-      title: ShowCanbasEvent
+    ShowCanvasEvent:
+      title: ShowCanvasEvent
       type: object
       examples:
         - odai: そうじきをかけるねこ
