@@ -13,7 +13,7 @@ const (
 	letterlen    = 26*2 + 10 // A-Z, a-z, 0-9
 )
 
-func MakeRoomId() string {
+func RoomId() string {
 	runes := make([]byte, roomIdLength)
 
 	for i := 0; i < roomIdLength; i++ {
@@ -24,6 +24,6 @@ func MakeRoomId() string {
 	return base64.RawStdEncoding.EncodeToString(runes)
 }
 
-func MakeUserId() uuid.UUID {
+func UserId() uuid.UUID {
 	return uuid.Must(uuid.NewV4())
 }

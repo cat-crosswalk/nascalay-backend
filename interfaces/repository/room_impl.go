@@ -7,7 +7,7 @@ import (
 )
 
 func (r *storeRepository) CreateRoom(cr *repository.CreateRoomArgs) (*model.Room, error) {
-	rid := random.MakeRoomId()
+	rid := random.RoomId()
 	if _, ok := r.Room[rid]; ok {
 		return nil, errAlreadyExists
 	}
@@ -16,7 +16,7 @@ func (r *storeRepository) CreateRoom(cr *repository.CreateRoomArgs) (*model.Room
 		Id:       rid,
 		Capacity: cr.Capacity,
 		User: model.User{
-			Id:     random.MakeUserId(),
+			Id:     random.UserId(),
 			Name:   cr.Username,
 			Avatar: cr.Avatar,
 		},
