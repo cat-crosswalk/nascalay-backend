@@ -18,6 +18,6 @@ type CreateRoomArgs struct {
 
 type JoinRoomArgs struct {
 	Avatar   int
-	RoomId   string
+	RoomId   model.RoomId
 	Username string
 }

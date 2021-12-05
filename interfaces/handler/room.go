@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/usecases/repository"
 	"github.com/labstack/echo/v4"
 )
@@ -15,7 +16,7 @@ func (h *handler) JoinRoom(c echo.Context) error {
 
 	room, uid, err := h.r.JoinRoom(&repository.JoinRoomArgs{
 		Avatar:   req.Avatar,
-		RoomId:   req.RoomId,
+		RoomId:   model.RoomId(req.RoomId),
 		Username: req.Username,
 	})
 	if err != nil {
