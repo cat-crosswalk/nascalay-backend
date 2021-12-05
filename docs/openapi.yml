@@ -19,7 +19,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Room'
+                $ref: '#/components/schemas/NewRoom'
       operationId: createRoom
       parameters: []
       description: 新規ルーム作成
@@ -27,7 +27,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateRoomRequest'
+              $ref: '#/components/schemas/NewRoomRequest'
       tags:
         - room
   /rooms/join:
@@ -40,7 +40,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RoomDetail'
+                $ref: '#/components/schemas/Room'
       description: ルームに参加
       requestBody:
         content:
@@ -60,7 +60,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RoomDetail'
+                $ref: '#/components/schemas/Room'
       operationId: getRoom
       description: ルーム情報を取得
       tags:
@@ -109,7 +109,7 @@ paths:
         }
 components:
   schemas:
-    Room:
+    NewRoom:
       type: object
       description: 新規ルーム情報
       example:
@@ -127,37 +127,42 @@ components:
       required:
         - roomId
         - userId
-    RoomDetail:
-      title: RoomDetail
+    Room:
+      title: Room
+      type: object
       description: ルーム情報
       example:
-        roomId: Nao340bzc0b23
-        userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        roomId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
         capacity: 0
+        userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
         hostId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
         members:
           - username: John
             avatar: 5
             userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
-      allOf:
-        - $ref: '#/components/schemas/Room'
-        - type: object
-          properties:
-            capacity:
-              type: integer
-            hostId:
-              type: string
-              format: uuid
-              x-go-type: uuid.UUID
-            members:
-              type: array
-              items:
-                $ref: '#/components/schemas/User'
-          required:
-            - capacity
-            - hostId
-            - members
-      type: object
+      properties:
+        roomId:
+          type: string
+        capacity:
+          type: integer
+        userId:
+          type: string
+          format: uuid
+          x-go-type: uuid.UUID
+        hostId:
+          type: string
+          format: uuid
+          x-go-type: uuid.UUID
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+      required:
+        - roomId
+        - capacity
+        - userId
+        - hostId
+        - members
     User:
       title: User
       type: object
@@ -178,8 +183,8 @@ components:
         - userId
         - username
         - avatar
-    CreateRoomRequest:
-      title: CreateRoomRequest
+    NewRoomRequest:
+      title: NewRoomRequest
       type: object
       example:
         username: John
