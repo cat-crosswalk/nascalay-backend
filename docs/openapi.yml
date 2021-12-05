@@ -19,7 +19,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NewRoom'
+                $ref: '#/components/schemas/Room'
       operationId: createRoom
       parameters: []
       description: 新規ルーム作成
@@ -27,7 +27,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewRoomRequest'
+              $ref: '#/components/schemas/CreateRoomRequest'
       tags:
         - room
   /rooms/join:
@@ -109,24 +109,6 @@ paths:
         }
 components:
   schemas:
-    NewRoom:
-      type: object
-      description: 新規ルーム情報
-      example:
-        roomId: Nao340bzc0b23
-        userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
-      properties:
-        roomId:
-          type: string
-          description: ルームID
-        userId:
-          type: string
-          description: ユーザーUUID
-          format: uuid
-          x-go-type: uuid.UUID
-      required:
-        - roomId
-        - userId
     Room:
       title: Room
       type: object
@@ -183,19 +165,23 @@ components:
         - userId
         - username
         - avatar
-    NewRoomRequest:
-      title: NewRoomRequest
+    CreateRoomRequest:
+      title: CreateRoomRequest
       type: object
       example:
         username: John
+        avatar: 5
         capacity: 4
       properties:
         username:
           type: string
+        avatar:
+          type: integer
         capacity:
           type: integer
       required:
         - username
+        - avatar
         - capacity
     JoinRoomRequest:
       title: JoinRoomRequest
