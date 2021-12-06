@@ -191,7 +191,10 @@ type User struct {
 type WsEvent string
 
 // ルームID
-type RoomId string
+type RoomIdInPath string
+
+// UserIdInHeader defines model for userIdInHeader.
+type UserIdInHeader uuid.UUID
 
 // JoinRoomJSONBody defines parameters for JoinRoom.
 type JoinRoomJSONBody JoinRoomRequest
@@ -205,6 +208,12 @@ type WsJSONBody struct {
 
 	// Websocketイベントのリスト
 	Type *WsEvent `json:"type,omitempty"`
+}
+
+// WsParams defines parameters for Ws.
+type WsParams struct {
+	// ユーザーUUID
+	NascalayUser UserIdInHeader `json:"Nascalay-User"`
 }
 
 // JoinRoomJSONRequestBody defines body for JoinRoom for application/json ContentType.

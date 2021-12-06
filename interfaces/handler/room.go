@@ -44,8 +44,8 @@ func (h *handler) CreateRoom(c echo.Context) error {
 	return echo.NewHTTPError(http.StatusCreated, refillRoom(room, room.HostId))
 }
 
-func (h *handler) GetRoom(c echo.Context, roomId RoomId) error {
-	room, err := h.r.GetRoom(model.RoomId(roomId))
+func (h *handler) GetRoom(c echo.Context, roomId RoomIdInPath) error {
+	room, err := h.r.GetRoom(string(roomId))
 	if err != nil {
 		return newEchoHTTPError(err)
 	}
