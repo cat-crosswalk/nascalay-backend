@@ -32,12 +32,16 @@ type Client struct {
 	userId model.UserId
 	conn   *websocket.Conn
 	send   chan []byte
+	rcv    chan []byte
 }
 
-func NewClient(userId model.UserId, conn *websocket.Conn) *Client {
+func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn) *Client {
 	return &Client{
+		hub:    hub,
 		userId: userId,
 		conn:   conn,
+		send:   make(chan []byte, 256),
+		rcv:    make(chan []byte, 256),
 	}
 }
 
@@ -103,9 +107,10 @@ func (c *Client) readPump() {
 	c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
-		_, _, err := c.conn.ReadMessage()
+		_, m, err := c.conn.ReadMessage()
 		if err != nil {
 			break
 		}
+		c.rcv <- m
 	}
 }

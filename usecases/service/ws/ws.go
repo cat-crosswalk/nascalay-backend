@@ -48,11 +48,13 @@ func (s *streamer) ServeWS(w http.ResponseWriter, r *http.Request, userId model.
 	go cli.writePump()
 	go cli.readPump()
 
+	cli.send <- []byte("Welcome to nascalay-backend!")
+
 	return nil
 }
 
 func (s *streamer) addNewClient(userId model.UserId, conn *websocket.Conn) *Client {
-	cli := NewClient(userId, conn)
+	cli := NewClient(s.hub, userId, conn)
 	s.hub.Register(cli)
 
 	m, ok := s.userIdToClients[userId]
