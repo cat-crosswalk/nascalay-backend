@@ -10,6 +10,7 @@ import (
 	"github.com/21hack02win/nascalay-backend/interfaces/handler"
 	"github.com/21hack02win/nascalay-backend/interfaces/repository"
 	"github.com/21hack02win/nascalay-backend/usecases/service"
+	"github.com/21hack02win/nascalay-backend/usecases/service/ws"
 )
 
 // Injectors from wire.go:
@@ -17,6 +18,7 @@ import (
 func injectServer() handler.ServerInterface {
 	serviceService := service.NewService()
 	repositoryRepository := repository.NewRepository()
-	serverInterface := handler.NewHandler(serviceService, repositoryRepository)
+	streamer := ws.NewStreamer()
+	serverInterface := handler.NewHandler(serviceService, repositoryRepository, streamer)
 	return serverInterface
 }

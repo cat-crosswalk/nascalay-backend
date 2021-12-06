@@ -45,11 +45,11 @@ func (h *handler) CreateRoom(c echo.Context) error {
 	return echo.NewHTTPError(http.StatusCreated, refillRoom(room, room.HostId))
 }
 
-func (h *handler) GetRoom(c echo.Context, roomId RoomId) error {
+func (h *handler) GetRoom(c echo.Context, roomId RoomIdInPath) error {
 	room, err := h.r.GetRoom(string(roomId))
 	if err != nil {
 		return newEchoHTTPError(err)
 	}
 
-	return c.JSON(http.StatusOK, refillRoom(room, uuid.Nil)) // ユーザーIDが必要ないのでとりあえずuuid.Nilにしておく
+	return c.JSON(http.StatusOK, refillRoom(room, model.UserId(uuid.Nil))) // ユーザーIDが必要ないのでとりあえずuuid.Nilにしておく
 }
