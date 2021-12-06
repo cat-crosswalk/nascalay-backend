@@ -8,7 +8,7 @@ import (
 )
 
 func (h *handler) Ws(c echo.Context, params WsParams) error {
-	err := h.stream.ServeWS(c.Response().Writer, c.Request(), model.UserId(params.NascalayUser))
+	err := h.stream.ServeWS(c.Response().Writer, c.Request(), model.UserId(params.User))
 	if err != nil {
 		c.Logger().Error(err)
 		return newEchoHTTPError(err)

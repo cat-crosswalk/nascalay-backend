@@ -72,24 +72,11 @@ func (w *ServerInterfaceWrapper) Ws(ctx echo.Context) error {
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params WsParams
+	// ------------- Required query parameter "user" -------------
 
-	headers := ctx.Request().Header
-	// ------------- Required header parameter "Nascalay-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("Nascalay-User")]; found {
-		var NascalayUser UserIdInHeader
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Nascalay-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithLocation("simple", false, "Nascalay-User", runtime.ParamLocationHeader, valueList[0], &NascalayUser)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter Nascalay-User: %s", err))
-		}
-
-		params.NascalayUser = NascalayUser
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Header parameter Nascalay-User is required, but not found"))
+	err = runtime.BindQueryParameter("form", true, true, "user", ctx.QueryParams(), &params.User)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter user: %s", err))
 	}
 
 	// Invoke the callback with all the unmarshalled arguments
