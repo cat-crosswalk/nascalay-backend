@@ -108,7 +108,7 @@ paths:
             }
         }
       parameters:
-        - $ref: '#/components/parameters/userIdInHeader'
+        - $ref: '#/components/parameters/userIdInQuery'
 components:
   schemas:
     Room:
@@ -425,9 +425,9 @@ components:
         type: string
         description: ルームID
       description: ルームID
-    userIdInHeader:
-      name: Nascalay-User
-      in: header
+    userIdInQuery:
+      name: user
+      in: query
       required: true
       schema:
         type: string
