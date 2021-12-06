@@ -21,10 +21,10 @@ type ServerInterface interface {
 	CreateRoom(ctx echo.Context) error
 	// getRoom
 	// (GET /rooms/{roomId})
-	GetRoom(ctx echo.Context, roomId RoomId) error
+	GetRoom(ctx echo.Context, roomId RoomIdInPath) error
 	// Your GET endpoint
 	// (GET /ws)
-	Ws(ctx echo.Context) error
+	Ws(ctx echo.Context, params WsParams) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -54,7 +54,7 @@ func (w *ServerInterfaceWrapper) CreateRoom(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) GetRoom(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "roomId" -------------
-	var roomId RoomId
+	var roomId RoomIdInPath
 
 	err = runtime.BindStyledParameterWithLocation("simple", false, "roomId", runtime.ParamLocationPath, ctx.Param("roomId"), &roomId)
 	if err != nil {
@@ -70,8 +70,30 @@ func (w *ServerInterfaceWrapper) GetRoom(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) Ws(ctx echo.Context) error {
 	var err error
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params WsParams
+
+	headers := ctx.Request().Header
+	// ------------- Required header parameter "Nascalay-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Nascalay-User")]; found {
+		var NascalayUser UserIdInHeader
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Nascalay-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithLocation("simple", false, "Nascalay-User", runtime.ParamLocationHeader, valueList[0], &NascalayUser)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter Nascalay-User: %s", err))
+		}
+
+		params.NascalayUser = NascalayUser
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Header parameter Nascalay-User is required, but not found"))
+	}
+
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.Ws(ctx)
+	err = w.Handler.Ws(ctx, params)
 	return err
 }
 

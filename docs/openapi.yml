@@ -51,7 +51,7 @@ paths:
         - room
   '/rooms/{roomId}':
     parameters:
-      - $ref: '#/components/parameters/roomId'
+      - $ref: '#/components/parameters/roomIdInPath'
     get:
       summary: getRoom
       responses:
@@ -107,6 +107,8 @@ paths:
                 "------"
             }
         }
+      parameters:
+        - $ref: '#/components/parameters/userIdInHeader'
 components:
   schemas:
     Room:
@@ -415,7 +417,7 @@ components:
       required:
         - hostId
   parameters:
-    roomId:
+    roomIdInPath:
       name: roomId
       in: path
       required: true
@@ -423,6 +425,14 @@ components:
         type: string
         description: ルームID
       description: ルームID
+    userIdInHeader:
+      name: Nascalay-User
+      in: header
+      required: true
+      schema:
+        type: string
+        x-go-type: uuid.UUID
+      description: ユーザーUUID
 tags:
   - name: room
     description: ルームAPI
