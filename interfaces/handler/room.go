@@ -45,7 +45,7 @@ func (h *handler) CreateRoom(c echo.Context) error {
 }
 
 func (h *handler) GetRoom(c echo.Context, roomId RoomIdInPath) error {
-	room, err := h.r.GetRoom(string(roomId))
+	room, err := h.r.GetRoom(model.RoomId(roomId))
 	if err != nil {
 		return newEchoHTTPError(err)
 	}
