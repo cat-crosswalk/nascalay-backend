@@ -1,18 +1,17 @@
 package ws
 
-import "github.com/21hack02win/nascalay-backend/model"
-
 type Hub struct {
-	clientsPerRoom map[model.RoomId]map[*Client]bool
-	registerCh     chan *Client
-	unregisterCh   chan *Client
+	// repo         repository.Repository
+	clients      map[*Client]struct{}
+	registerCh   chan *Client
+	unregisterCh chan *Client
 }
 
 func NewHub() *Hub {
 	return &Hub{
-		clientsPerRoom: make(map[model.RoomId]map[*Client]bool),
-		registerCh:     make(chan *Client),
-		unregisterCh:   make(chan *Client),
+		clients:      make(map[*Client]struct{}),
+		registerCh:   make(chan *Client),
+		unregisterCh: make(chan *Client),
 	}
 }
 
@@ -35,17 +34,9 @@ func (h *Hub) Run() {
 }
 
 func (h *Hub) register(cli *Client) {
-	_ = cli.userId
-	roomId := model.RoomId("test") // TODO: userIdからroomIdを取得する
-	if _, ok := h.clientsPerRoom[roomId]; ok {
-		h.clientsPerRoom[roomId][cli] = true
-		return
-	}
-	h.clientsPerRoom[roomId] = map[*Client]bool{cli: true}
+	h.clients[cli] = struct{}{}
 }
 
 func (h *Hub) unregister(cli *Client) {
-	_ = cli.userId
-	roomId := model.RoomId("test") // TODO: userIdからroomIdを取得する
-	delete(h.clientsPerRoom[roomId], cli)
+	delete(h.clients, cli)
 }

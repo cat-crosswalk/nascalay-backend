@@ -13,6 +13,8 @@ func (r *storeRepository) JoinRoom(jr *repository.JoinRoomArgs) (*model.Room, mo
 	}
 
 	uid := random.UserId()
+	r.userIdToRoomId[uid] = jr.RoomId
+
 	room.Members = append(room.Members, model.User{
 		Id:     uid,
 		Name:   jr.Username,
@@ -29,6 +31,8 @@ func (r *storeRepository) CreateRoom(cr *repository.CreateRoomArgs) (*model.Room
 	}
 
 	uid := random.UserId()
+	r.userIdToRoomId[uid] = rid
+
 	room := model.Room{
 		Id:       rid,
 		Capacity: cr.Capacity,
@@ -53,4 +57,13 @@ func (r *storeRepository) GetRoom(rid model.RoomId) (*model.Room, error) {
 	}
 
 	return room, nil
+}
+
+func (r *storeRepository) GetRoomIdFromUserId(uid model.UserId) (model.RoomId, error) {
+	rid, ok := r.userIdToRoomId[uid]
+	if !ok {
+		return "", repository.ErrNotFound
+	}
+
+	return rid, nil
 }

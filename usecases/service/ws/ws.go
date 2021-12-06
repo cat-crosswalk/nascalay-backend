@@ -9,7 +9,7 @@ import (
 
 type Streamer interface {
 	Run()
-	ServeWS(w http.ResponseWriter, r *http.Request, userId model.UserId) error
+	ServeWS(w http.ResponseWriter, r *http.Request, uid model.UserId) error
 }
 
 type streamer struct {
