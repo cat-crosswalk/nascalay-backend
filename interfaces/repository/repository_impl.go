@@ -6,11 +6,11 @@ import (
 )
 
 type storeRepository struct {
-	Room map[model.RoomId]*model.Room
+	room map[model.RoomId]*model.Room
 }
 
 func NewRepository() repository.Repository {
 	return &storeRepository{
-		Room: make(map[model.RoomId]*model.Room),
+		room: make(map[model.RoomId]*model.Room),
 	}
 }

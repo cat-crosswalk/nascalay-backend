@@ -7,7 +7,7 @@ import (
 )
 
 func (r *storeRepository) JoinRoom(jr *repository.JoinRoomArgs) (*model.Room, model.UserId, error) {
-	room, ok := r.Room[jr.RoomId]
+	room, ok := r.room[jr.RoomId]
 	if !ok {
 		return nil, model.UserId{}, repository.ErrNotFound
 	}
@@ -24,7 +24,7 @@ func (r *storeRepository) JoinRoom(jr *repository.JoinRoomArgs) (*model.Room, mo
 
 func (r *storeRepository) CreateRoom(cr *repository.CreateRoomArgs) (*model.Room, error) {
 	rid := random.RoomId()
-	if _, ok := r.Room[rid]; ok {
+	if _, ok := r.room[rid]; ok {
 		return nil, repository.ErrAlreadyExists
 	}
 
@@ -41,13 +41,13 @@ func (r *storeRepository) CreateRoom(cr *repository.CreateRoomArgs) (*model.Room
 			},
 		},
 	}
-	r.Room[rid] = &room
+	r.room[rid] = &room
 
 	return &room, nil
 }
 
 func (r *storeRepository) GetRoom(rid model.RoomId) (*model.Room, error) {
-	room, ok := r.Room[rid]
+	room, ok := r.room[rid]
 	if !ok {
 		return nil, repository.ErrNotFound
 	}
