@@ -41,12 +41,17 @@ func (s *streamer) ServeWS(w http.ResponseWriter, r *http.Request, userId model.
 	if err != nil {
 		return err
 	}
-	s.addNewClient(userId, conn)
+	cli := s.addNewClient(userId, conn)
+
+	// Allow collection of memory referenced by the caller by doing all work in
+	// new goroutines.
+	go cli.writePump()
+	go cli.readPump()
 
 	return nil
 }
 
-func (s *streamer) addNewClient(userId model.UserId, conn *websocket.Conn) {
+func (s *streamer) addNewClient(userId model.UserId, conn *websocket.Conn) *Client {
 	cli := NewClient(userId, conn)
 	s.hub.Register(cli)
 
@@ -56,4 +61,6 @@ func (s *streamer) addNewClient(userId model.UserId, conn *websocket.Conn) {
 		s.userIdToClients[userId] = m
 	}
 	m[cli] = true
+
+	return cli
 }
