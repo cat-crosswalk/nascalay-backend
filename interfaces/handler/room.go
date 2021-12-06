@@ -3,13 +3,14 @@ package handler
 import (
 	"net/http"
 
+	"github.com/21hack02win/nascalay-backend/interfaces/handler/oapi"
 	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/usecases/repository"
 	"github.com/labstack/echo/v4"
 )
 
 func (h *handler) JoinRoom(c echo.Context) error {
-	req := new(JoinRoomJSONRequestBody)
+	req := new(oapi.JoinRoomJSONRequestBody)
 	if err := c.Bind(req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -27,7 +28,7 @@ func (h *handler) JoinRoom(c echo.Context) error {
 }
 
 func (h *handler) CreateRoom(c echo.Context) error {
-	req := new(CreateRoomJSONRequestBody)
+	req := new(oapi.CreateRoomJSONRequestBody)
 	if err := c.Bind(req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -44,7 +45,7 @@ func (h *handler) CreateRoom(c echo.Context) error {
 	return echo.NewHTTPError(http.StatusCreated, refillRoom(room, room.HostId))
 }
 
-func (h *handler) GetRoom(c echo.Context, roomId RoomIdInPath) error {
+func (h *handler) GetRoom(c echo.Context, roomId oapi.RoomIdInPath) error {
 	room, err := h.r.GetRoom(model.RoomId(roomId))
 	if err != nil {
 		return newEchoHTTPError(err)

@@ -1,0 +1,4 @@
+output: spec.go
+generate:
+  - spec
+package: oapi

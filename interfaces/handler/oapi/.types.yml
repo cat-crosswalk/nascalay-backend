@@ -1,0 +1,4 @@
+output: types.go
+generate:
+  - types
+package: oapi

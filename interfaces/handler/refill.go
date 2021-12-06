@@ -1,14 +1,15 @@
 package handler
 
 import (
+	"github.com/21hack02win/nascalay-backend/interfaces/handler/oapi"
 	"github.com/21hack02win/nascalay-backend/model"
 )
 
-func refillRoom(mr *model.Room, userId model.UserId) Room {
-	var r Room
+func refillRoom(mr *model.Room, userId model.UserId) oapi.Room {
+	var r oapi.Room
 	r.Capacity = mr.Capacity.Int()
 	r.HostId = mr.HostId.UUID()
-	r.Members = make([]User, len(mr.Members))
+	r.Members = make([]oapi.User, len(mr.Members))
 	r.RoomId = mr.Id.String()
 	r.UserId = userId.UUID()
 
@@ -19,8 +20,8 @@ func refillRoom(mr *model.Room, userId model.UserId) Room {
 	return r
 }
 
-func refillUser(mu *model.User) User {
-	var u User
+func refillUser(mu *model.User) oapi.User {
+	var u oapi.User
 	u.Avatar = mu.Avatar.Int()
 	u.UserId = mu.Id.UUID()
 	u.Username = mu.Name.String()
