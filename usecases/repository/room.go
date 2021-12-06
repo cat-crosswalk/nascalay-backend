@@ -7,7 +7,7 @@ import (
 type RoomRepository interface {
 	JoinRoom(jr *JoinRoomArgs) (*model.Room, model.UserId, error)
 	CreateRoom(cr *CreateRoomArgs) (*model.Room, error)
-	GetRoom(rid string) (*model.Room, error)
+	GetRoom(rid model.RoomId) (*model.Room, error)
 }
 
 type CreateRoomArgs struct {
