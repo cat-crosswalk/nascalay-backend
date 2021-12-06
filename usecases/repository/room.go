@@ -8,6 +8,7 @@ type RoomRepository interface {
 	JoinRoom(jr *JoinRoomArgs) (*model.Room, model.UserId, error)
 	CreateRoom(cr *CreateRoomArgs) (*model.Room, error)
 	GetRoom(rid model.RoomId) (*model.Room, error)
+	GetRoomIdFromUserId(uid model.UserId) (model.RoomId, error)
 }
 
 type CreateRoomArgs struct {

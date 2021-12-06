@@ -7,12 +7,14 @@ import (
 )
 
 func (r *storeRepository) JoinRoom(jr *repository.JoinRoomArgs) (*model.Room, model.UserId, error) {
-	room, ok := r.Room[jr.RoomId]
+	room, ok := r.room[jr.RoomId]
 	if !ok {
 		return nil, model.UserId{}, repository.ErrNotFound
 	}
 
 	uid := random.UserId()
+	r.userIdToRoomId[uid] = jr.RoomId
+
 	room.Members = append(room.Members, model.User{
 		Id:     uid,
 		Name:   jr.Username,
@@ -24,11 +26,13 @@ func (r *storeRepository) JoinRoom(jr *repository.JoinRoomArgs) (*model.Room, mo
 
 func (r *storeRepository) CreateRoom(cr *repository.CreateRoomArgs) (*model.Room, error) {
 	rid := random.RoomId()
-	if _, ok := r.Room[rid]; ok {
+	if _, ok := r.room[rid]; ok {
 		return nil, repository.ErrAlreadyExists
 	}
 
 	uid := random.UserId()
+	r.userIdToRoomId[uid] = rid
+
 	room := model.Room{
 		Id:       rid,
 		Capacity: cr.Capacity,
@@ -41,16 +45,25 @@ func (r *storeRepository) CreateRoom(cr *repository.CreateRoomArgs) (*model.Room
 			},
 		},
 	}
-	r.Room[rid] = &room
+	r.room[rid] = &room
 
 	return &room, nil
 }
 
 func (r *storeRepository) GetRoom(rid model.RoomId) (*model.Room, error) {
-	room, ok := r.Room[rid]
+	room, ok := r.room[rid]
 	if !ok {
 		return nil, repository.ErrNotFound
 	}
 
 	return room, nil
+}
+
+func (r *storeRepository) GetRoomIdFromUserId(uid model.UserId) (model.RoomId, error) {
+	rid, ok := r.userIdToRoomId[uid]
+	if !ok {
+		return "", repository.ErrNotFound
+	}
+
+	return rid, nil
 }
