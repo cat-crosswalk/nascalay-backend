@@ -14,6 +14,12 @@ func (uid UserId) UUID() uuid.UUID {
 	return uuid.UUID(uid)
 }
 
+func UserIdFromString(str string) (UserId, error) {
+	uid, err := uuid.FromString(str)
+
+	return UserId(uid), err
+}
+
 type Username string
 
 func (un Username) String() string {

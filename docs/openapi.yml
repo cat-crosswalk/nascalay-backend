@@ -431,7 +431,7 @@ components:
       required: true
       schema:
         type: string
-        x-go-type: uuid.UUID
+        format: uuid
       description: ユーザーUUID
 tags:
   - name: room
