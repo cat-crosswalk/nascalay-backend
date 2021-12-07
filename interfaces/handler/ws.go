@@ -19,5 +19,5 @@ func (h *handler) Ws(c echo.Context, params oapi.WsParams) error {
 		return newEchoHTTPError(err)
 	}
 
-	return echo.NewHTTPError(http.StatusNoContent)
+	return c.NoContent(http.StatusNoContent)
 }

@@ -38,5 +38,6 @@ func (h *Hub) register(cli *Client) {
 }
 
 func (h *Hub) unregister(cli *Client) {
+	close(cli.send)
 	delete(h.clients, cli)
 }

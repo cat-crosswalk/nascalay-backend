@@ -41,13 +41,20 @@ func (s *streamer) ServeWS(w http.ResponseWriter, r *http.Request, userId model.
 	if err != nil {
 		return err
 	}
-	s.addNewClient(userId, conn)
+	cli := s.addNewClient(userId, conn)
+
+	// Allow collection of memory referenced by the caller by doing all work in
+	// new goroutines.
+	go cli.writePump()
+	go cli.readPump()
+
+	cli.send <- []byte("Welcome to nascalay-backend!")
 
 	return nil
 }
 
-func (s *streamer) addNewClient(userId model.UserId, conn *websocket.Conn) {
-	cli := NewClient(userId, conn)
+func (s *streamer) addNewClient(userId model.UserId, conn *websocket.Conn) *Client {
+	cli := NewClient(s.hub, userId, conn)
 	s.hub.Register(cli)
 
 	m, ok := s.userIdToClients[userId]
@@ -56,4 +63,6 @@ func (s *streamer) addNewClient(userId model.UserId, conn *websocket.Conn) {
 		s.userIdToClients[userId] = m
 	}
 	m[cli] = true
+
+	return cli
 }
