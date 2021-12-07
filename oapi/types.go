@@ -207,7 +207,7 @@ type WsJSONBody struct {
 	Body *interface{} `json:"body,omitempty"`
 
 	// Websocketイベントのリスト
-	Type *WsEvent `json:"type,omitempty"`
+	Type WsEvent `json:"type"`
 }
 
 // WsParams defines parameters for Ws.

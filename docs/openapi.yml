@@ -98,6 +98,8 @@ paths:
                     - $ref: '#/components/schemas/ShowCanvasEvent'
                     - $ref: '#/components/schemas/ShowAnswerEvent'
                     - $ref: '#/components/schemas/ChangeHostEvent'
+              required:
+                - type
       description: |-
         Websocketを送受信する
 
