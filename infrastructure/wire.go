@@ -6,8 +6,8 @@ package infrastructure
 
 import (
 	"github.com/21hack02win/nascalay-backend/interfaces/handler"
-	"github.com/21hack02win/nascalay-backend/interfaces/handler/oapi"
 	"github.com/21hack02win/nascalay-backend/interfaces/repository"
+	"github.com/21hack02win/nascalay-backend/oapi"
 	"github.com/21hack02win/nascalay-backend/usecases/service"
 	"github.com/21hack02win/nascalay-backend/usecases/service/ws"
 	"github.com/google/wire"

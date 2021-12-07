@@ -1,7 +1,7 @@
 package infrastructure
 
 import (
-	"github.com/21hack02win/nascalay-backend/interfaces/handler/oapi"
+	"github.com/21hack02win/nascalay-backend/oapi"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )

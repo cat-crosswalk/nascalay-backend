@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	"github.com/21hack02win/nascalay-backend/interfaces/handler/oapi"
 	"github.com/21hack02win/nascalay-backend/model"
+	"github.com/21hack02win/nascalay-backend/oapi"
 	"github.com/21hack02win/nascalay-backend/usecases/repository"
 	"github.com/labstack/echo/v4"
 )
