@@ -290,6 +290,9 @@ components:
       type: object
       example:
         timeLimit: 40
+        canvas:
+          - boardName: "5×5"
+            areaId: 5
         img: iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKAQAAAAClSfIQAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgA...
         odai: ねこのおばけ
         drawPhaseNum: 3
@@ -298,6 +301,8 @@ components:
       properties:
         timeLimit:
           type: integer
+        canvas:
+          $ref: '#/components/schemas/Canvas'
         img:
           type: string
         odai:
@@ -308,10 +313,26 @@ components:
           type: number
       required:
         - timeLimit
+        - canvas
         - img
         - odai
         - drawPhaseNum
         - allDrawPhaseNum
+    Canvas:
+      title: Canvas
+      type: object
+      description: ユーザーが描画するキャンバスの分割情報・描画位置
+      example:
+        boardName: "5×5"
+        areaId: 5
+      properties:
+        boardName:
+          type: string
+        areaId:
+          type: integer
+      required:
+        - boardName
+        - areaId
     DrawSendEvent:
       title: DrawSendEvent
       type: object
@@ -331,11 +352,15 @@ components:
       type: object
       description: 絵が飛んできて，回答する (サーバー -> ルーム各員)
       example:
+        timeLimit: 40
         img: iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKAQAAAAClSfIQAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgA...
       properties:
         img:
           type: string
+        timeLimit:
+          type: integer
       required:
+        - timeLimit
         - img
     AnswerReadyEvent:
       title: AnswerReadyEvent
