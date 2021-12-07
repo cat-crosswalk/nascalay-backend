@@ -8,6 +8,7 @@ package infrastructure
 
 import (
 	"github.com/21hack02win/nascalay-backend/interfaces/handler"
+	"github.com/21hack02win/nascalay-backend/interfaces/handler/oapi"
 	"github.com/21hack02win/nascalay-backend/interfaces/repository"
 	"github.com/21hack02win/nascalay-backend/usecases/service"
 	"github.com/21hack02win/nascalay-backend/usecases/service/ws"
@@ -15,7 +16,7 @@ import (
 
 // Injectors from wire.go:
 
-func injectServer() handler.ServerInterface {
+func injectServer() oapi.ServerInterface {
 	serviceService := service.NewService()
 	repositoryRepository := repository.NewRepository()
 	streamer := ws.NewStreamer()

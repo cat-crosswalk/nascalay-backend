@@ -1,4 +1,0 @@
-output: ../../interfaces/handler/server_gen.go
-generate:
-  - server
-package: handler

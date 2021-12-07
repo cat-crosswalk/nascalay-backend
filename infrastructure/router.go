@@ -1,7 +1,7 @@
 package infrastructure
 
 import (
-	"github.com/21hack02win/nascalay-backend/interfaces/handler"
+	"github.com/21hack02win/nascalay-backend/interfaces/handler/oapi"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -11,5 +11,5 @@ func Setup(e *echo.Echo) {
 	e.Use(middleware.Recover())
 
 	s := injectServer()
-	handler.RegisterHandlers(e, s)
+	oapi.RegisterHandlers(e, s)
 }
