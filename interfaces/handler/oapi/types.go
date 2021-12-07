@@ -194,7 +194,7 @@ type WsEvent string
 type RoomIdInPath string
 
 // UserIdInQuery defines model for userIdInQuery.
-type UserIdInQuery uuid.UUID
+type UserIdInQuery string
 
 // JoinRoomJSONBody defines parameters for JoinRoom.
 type JoinRoomJSONBody JoinRoomRequest
