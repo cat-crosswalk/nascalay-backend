@@ -3,3 +3,12 @@
 //go:generate go run github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest --config ./.spec.yml ../../../docs/openapi.yml
 
 package oapi
+
+import (
+	"github.com/21hack02win/nascalay-backend/model"
+)
+
+// NOTE: UserIdInQueryをuuid.UUID型にするとBindしてくれないためstring型にしてここで詰め替えをする
+func (u UserIdInQuery) Refill() model.UserId {
+	return model.UserIdFromStringOrNil(string(u))
+}
