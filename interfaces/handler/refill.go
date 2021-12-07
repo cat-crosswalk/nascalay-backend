@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"github.com/21hack02win/nascalay-backend/interfaces/handler/oapi"
 	"github.com/21hack02win/nascalay-backend/model"
+	"github.com/21hack02win/nascalay-backend/oapi"
 )
 
 func refillRoom(mr *model.Room, userId model.UserId) oapi.Room {
