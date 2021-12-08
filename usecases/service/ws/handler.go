@@ -45,8 +45,8 @@ func (c *Client) RoomSetOption(body interface{}) error {
 		return errors.New("body is nil")
 	}
 
-	_, ok := body.(oapi.WsRoomSetOptionEventBody)
-	if !ok {
+	e := new(oapi.WsRoomSetOptionEventBody)
+	if err := mapstructure.Decode(body, e); err != nil {
 		return errors.New("invalid body")
 	}
 
@@ -91,8 +91,8 @@ func (c *Client) DrawSend(body interface{}) error {
 		return errors.New("body is nil")
 	}
 
-	_, ok := body.(oapi.WsDrawSendEventBody)
-	if !ok {
+	e := new(oapi.WsDrawSendEventBody)
+	if err := mapstructure.Decode(body, e); err != nil {
 		return errors.New("invalid body")
 	}
 
@@ -112,8 +112,8 @@ func (c *Client) AnswerSend(body interface{}) error {
 		return errors.New("body is nil")
 	}
 
-	_, ok := body.(oapi.WsAnswerSendEventBody)
-	if !ok {
+	e := new(oapi.WsAnswerSendEventBody)
+	if err := mapstructure.Decode(body, e); err != nil {
 		return errors.New("invalid body")
 	}
 
