@@ -412,8 +412,6 @@ components:
           type: integer
         img:
           type: string
-        timeLimit:
-          type: integer
       required:
         - timeLimit
         - img
