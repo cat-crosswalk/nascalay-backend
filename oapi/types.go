@@ -208,6 +208,7 @@ type CreateRoomJSONBody CreateRoomRequest
 
 // WsJSONBody defines parameters for Ws.
 type WsJSONBody struct {
+	// Embedded fields due to inline allOf schema
 	Body *interface{} `json:"body,omitempty"`
 
 	// Websocketイベントのリスト
