@@ -8,6 +8,7 @@ require (
 	github.com/google/wire v0.5.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/labstack/echo/v4 v4.6.1
+	github.com/mitchellh/mapstructure v1.4.3
 )
 
 require (

@@ -59,11 +59,16 @@ func (r *storeRepository) GetRoom(rid model.RoomId) (*model.Room, error) {
 	return room, nil
 }
 
-func (r *storeRepository) GetRoomIdFromUserId(uid model.UserId) (model.RoomId, error) {
+func (r *storeRepository) GetRoomFromUserId(uid model.UserId) (*model.Room, error) {
 	rid, ok := r.userIdToRoomId[uid]
 	if !ok {
-		return "", repository.ErrNotFound
+		return nil, repository.ErrNotFound
 	}
 
-	return rid, nil
+	room, ok := r.room[rid]
+	if !ok {
+		return nil, repository.ErrNotFound
+	}
+
+	return room, nil
 }

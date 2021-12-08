@@ -19,7 +19,8 @@ import (
 func injectServer() oapi.ServerInterface {
 	serviceService := service.NewService()
 	repositoryRepository := repository.NewRepository()
-	streamer := ws.NewStreamer()
+	hub := ws.NewHub(repositoryRepository)
+	streamer := ws.NewStreamer(hub)
 	serverInterface := handler.NewHandler(serviceService, repositoryRepository, streamer)
 	return serverInterface
 }
