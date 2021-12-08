@@ -9,3 +9,16 @@ import "github.com/21hack02win/nascalay-backend/model"
 func (u UserIdInQuery) Refill() (model.UserId, error) {
 	return model.UserIdFromString(string(u))
 }
+
+func RefillUsers(mus []model.User) []User {
+	us := make([]User, len(mus))
+	for i, v := range mus {
+		us[i] = User{
+			Avatar:   v.Avatar.Int(),
+			Username: v.Name.String(),
+			UserId:   v.Id.UUID(),
+		}
+	}
+
+	return us
+}

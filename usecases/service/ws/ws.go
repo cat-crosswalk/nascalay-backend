@@ -10,6 +10,7 @@ import (
 type Streamer interface {
 	Run()
 	ServeWS(w http.ResponseWriter, r *http.Request, uid model.UserId) error
+	JoinNewRoomMember(room *model.Room) error
 }
 
 type streamer struct {
@@ -51,6 +52,16 @@ func (s *streamer) ServeWS(w http.ResponseWriter, r *http.Request, userId model.
 	go cli.readPump()
 
 	cli.send <- []byte("Welcome to nascalay-backend!")
+
+	return nil
+}
+
+func (s *streamer) JoinNewRoomMember(room *model.Room) error {
+	for c := range s.hub.userIdToClients[room.HostId] {
+		if err := c.sendRoomNewMemberEvent(room); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

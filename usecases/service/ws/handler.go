@@ -38,10 +38,26 @@ var receivedEventMap = map[oapi.WsEvent]eventHandler{
 
 // ROOM_NEW_MEMBER
 // 部屋に追加のメンバーが来たことを通知する (サーバー -> ルーム全員)
-func (c *Client) sendRoomNewMemberEvent(body interface{}) error {
+func (c *Client) sendRoomNewMemberEvent(room *model.Room) error {
 	if !c.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
 	}
+
+	buf, err := json.Marshal(
+		&oapi.WsJSONBody{
+			Type: oapi.WsEventROOMNEWMEMBER,
+			Body: oapi.WsRoomNewMemberEventBody{
+				Capacity: room.Capacity.Int(),
+				HostId:   room.HostId.UUID(),
+				Members:  oapi.RefillUsers(room.Members),
+			},
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	c.sendToEachClientInRoom(buf)
 
 	return nil
 }
