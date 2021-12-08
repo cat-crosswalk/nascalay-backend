@@ -37,6 +37,10 @@ var receivedEventMap = map[oapi.WsEvent]eventHandler{
 
 // Receive event handlers
 func (c *Client) receiveRoomSetOptionEvent(body interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusRoom) {
+		return errWrongPhase
+	}
+
 	if body == nil {
 		return errNilBody
 	}
@@ -50,6 +54,10 @@ func (c *Client) receiveRoomSetOptionEvent(body interface{}) error {
 }
 
 func (c *Client) receiveRequestGameStartEvent(_ interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusRoom) {
+		return errWrongPhase
+	}
+
 	if c.userId != c.room.HostId {
 		return errUnAuthorized
 	}
@@ -64,6 +72,10 @@ func (c *Client) receiveRequestGameStartEvent(_ interface{}) error {
 }
 
 func (c *Client) receiveOdaiReadyEvent(_ interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusOdai) {
+		return errWrongPhase
+	}
+
 	c.room.Game.AddReady(c.userId)
 
 	if c.room.AllMembersAreReady() {
@@ -76,12 +88,20 @@ func (c *Client) receiveOdaiReadyEvent(_ interface{}) error {
 }
 
 func (c *Client) receiveOdaiCancelEvent(_ interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusOdai) {
+		return errWrongPhase
+	}
+
 	c.room.Game.CancelReady(c.userId)
 
 	return nil
 }
 
 func (c *Client) receiveOdaiSendEvent(body interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusOdai) {
+		return errWrongPhase
+	}
+
 	if body == nil {
 		return errNilBody
 	}
@@ -95,14 +115,26 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 }
 
 func (c *Client) receiveDrawReadyEvent(_ interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusDraw) {
+		return errWrongPhase
+	}
+
 	return nil
 }
 
 func (c *Client) receiveDrawCancelEvent(_ interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusDraw) {
+		return errWrongPhase
+	}
+
 	return nil
 }
 
 func (c *Client) receiveDrawSendEvent(body interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusDraw) {
+		return errWrongPhase
+	}
+
 	if body == nil {
 		return errNilBody
 	}
@@ -116,14 +148,26 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 }
 
 func (c *Client) receiveAnswerReadyEvent(_ interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusAnswer) {
+		return errWrongPhase
+	}
+
 	return nil
 }
 
 func (c *Client) receiveAnswerCancelEvent(_ interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusAnswer) {
+		return errWrongPhase
+	}
+
 	return nil
 }
 
 func (c *Client) receiveAnswerSendEvent(body interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusAnswer) {
+		return errWrongPhase
+	}
+
 	if body == nil {
 		return errNilBody
 	}
@@ -137,23 +181,43 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 }
 
 func (c *Client) receiveShowNextEvent(_ interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusShow) {
+		return errWrongPhase
+	}
+
 	return nil
 }
 
 func (c *Client) receiveReturnRoomEvent(_ interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusAnswer) {
+		return errWrongPhase
+	}
+
 	return nil
 }
 
 // // Send event handlers
 // func (c *Client) sendRoomNewMemberEvent(body interface{}) error {
+// 	if !c.room.GameStatusIs(model.GameStatusRoom) {
+// 		return errWrongPhase
+// 	}
+
 // 	return nil
 // }
 
-// func (c *Client) sendRoomUpdateOptionEvent(body interface{}) error {
-// 	return nil
-// }
+func (c *Client) sendRoomUpdateOptionEvent(body interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusRoom) {
+		return errWrongPhase
+	}
+
+	return nil
+}
 
 func (c *Client) sendGameStartEvent() error {
+	if !c.room.GameStatusIs(model.GameStatusRoom) {
+		return errWrongPhase
+	}
+
 	buf, err := json.Marshal(
 		&oapi.WsJSONBody{
 			Type: oapi.WsEventGAMESTART,
@@ -174,6 +238,10 @@ func (c *Client) sendGameStartEvent() error {
 }
 
 func (c *Client) sendOdaiFinishEvent() error {
+	if !c.room.GameStatusIs(model.GameStatusOdai) {
+		return errWrongPhase
+	}
+
 	buf, err := json.Marshal(
 		&oapi.WsJSONBody{
 			Type: oapi.WsEventODAIFINISH,
@@ -189,38 +257,74 @@ func (c *Client) sendOdaiFinishEvent() error {
 }
 
 // func (c *Client) sendDrawStartEvent(body interface{}) error {
+// 	if !c.room.GameStatusIs(model.GameStatusDraw) {
+// 		return errWrongPhase
+// 	}
+
 // 	return nil
 // }
 
 // func (c *Client) sendDrawFinishEvent(body interface{}) error {
+// 	if !c.room.GameStatusIs(model.GameStatusDraw) {
+// 		return errWrongPhase
+// 	}
+
 // 	return nil
 // }
 
 // func (c *Client) sendAnswerStartEvent(body interface{}) error {
+// 	if !c.room.GameStatusIs(model.GameStatusAnswer) {
+// 		return errWrongPhase
+// 	}
+
 // 	return nil
 // }
 
 // func (c *Client) sendAnswerFinishEvent(body interface{}) error {
+// 	if !c.room.GameStatusIs(model.GameStatusAnswer) {
+// 		return errWrongPhase
+// 	}
+
 // 	return nil
 // }
 
 // func (c *Client) sendShowStartEvent(body interface{}) error {
+// 	if !c.room.GameStatusIs(model.GameStatusShow) {
+// 		return errWrongPhase
+// 	}
+
 // 	return nil
 // }
 
 // func (c *Client) sendShowOdaiEvent(body interface{}) error {
+// 	if !c.room.GameStatusIs(model.GameStatusShow) {
+// 		return errWrongPhase
+// 	}
+
 // 	return nil
 // }
 
 // func (c *Client) sendShowCanvasEvent(body interface{}) error {
+// 	if !c.room.GameStatusIs(model.GameStatusShow) {
+// 		return errWrongPhase
+// 	}
+
 // 	return nil
 // }
 
 // func (c *Client) sendShowAnswerEvent(body interface{}) error {
+// 	if !c.room.GameStatusIs(model.GameStatusShow) {
+// 		return errWrongPhase
+// 	}
+
 // 	return nil
 // }
 
 // func (c *Client) sendNextRoomEvent(body interface{}) error {
+// 	if !c.room.GameStatusIs(model.GameStatusShow) {
+// 		return errWrongPhase
+// 	}
+
 // 	return nil
 // }
 

@@ -29,3 +29,7 @@ func (r *Room) AllMembersAreReady() bool {
 
 	return true
 }
+
+func (r *Room) GameStatusIs(status GameStatus) bool {
+	return r.Game.Status == status
+}
