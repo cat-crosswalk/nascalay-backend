@@ -195,6 +195,7 @@ func (c *Client) sendOdaiFinishEvent() error {
 
 // ODAI_SEND
 // お題を送信する (ルームの各員 -> サーバー)
+// DRAWフェーズを開始する
 func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusOdai) {
 		return errWrongPhase
@@ -208,6 +209,9 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 	if err := mapstructure.Decode(body, e); err != nil {
 		return err
 	}
+
+	// // DRAWフェーズに移行
+	// c.room.Game.Status = model.GameStatusDraw
 
 	return nil
 }
@@ -255,7 +259,8 @@ func (c *Client) sendDrawFinishEvent(body interface{}) error {
 
 // DRAW_SEND
 // 絵を送信する (ルームの各員 -> サーバー)
-// -> (DRAWフェーズが終わってなかったら) また，DRAW_START が飛んでくる
+// お題が残っていたら再度DRAW_START が送信される
+// お題がすべて終わったらANSWERフェーズを開始する
 func (c *Client) receiveDrawSendEvent(body interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusDraw) {
 		return errWrongPhase
@@ -269,6 +274,9 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 	if err := mapstructure.Decode(body, e); err != nil {
 		return err
 	}
+
+	// // お題がすべて終わったらANSWERフェーズに移行
+	// c.room.Game.Status = model.GameStatusAnswer
 
 	return nil
 }
@@ -316,6 +324,7 @@ func (c *Client) sendAnswerFinishEvent(body interface{}) error {
 
 // ANSWER_SEND
 // 回答を送信する (ルームの各員 -> サーバー)
+// SHOWフェーズを開始する
 func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusAnswer) {
 		return errWrongPhase
@@ -329,6 +338,9 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 	if err := mapstructure.Decode(body, e); err != nil {
 		return err
 	}
+
+	// // SHOWフェーズに移行
+	// c.room.Game.Status = model.GameStatusShow
 
 	return nil
 }
@@ -387,7 +399,7 @@ func (c *Client) sendShowAnswerEvent(body interface{}) error {
 // ルーム(新規加入待機状態) に戻る (ホスト -> サーバー)
 // このタイミングでサーバーは保持しているゲームデータを削除
 func (c *Client) receiveReturnRoomEvent(_ interface{}) error {
-	if !c.room.GameStatusIs(model.GameStatusAnswer) {
+	if !c.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
 
