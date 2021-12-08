@@ -121,6 +121,7 @@ func (c *Client) readPump() {
 
 		if err := c.callEventHandler(req); err != nil {
 			log.Println("Error:", err.Error())
+			c.send <- []byte(err.Error())
 			continue
 		}
 	}
@@ -134,10 +135,6 @@ func (c *Client) sendToEachClientInRoom(msg []byte) {
 	}
 
 	for _, m := range room.Members {
-		if m.Id == c.userId {
-			continue
-		}
-
 		cc, ok := c.hub.userIdToClient[m.Id]
 		if !ok {
 			continue
