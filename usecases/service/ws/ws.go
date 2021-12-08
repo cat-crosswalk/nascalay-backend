@@ -10,7 +10,7 @@ import (
 type Streamer interface {
 	Run()
 	ServeWS(w http.ResponseWriter, r *http.Request, uid model.UserId) error
-	JoinNewRoomMember(room *model.Room) error
+	NotifyOfNewRoomMember(room *model.Room) error
 }
 
 type streamer struct {
@@ -56,8 +56,12 @@ func (s *streamer) ServeWS(w http.ResponseWriter, r *http.Request, userId model.
 	return nil
 }
 
-func (s *streamer) JoinNewRoomMember(room *model.Room) error {
-	cli := s.hub.userIdToClient[room.HostId]
+func (s *streamer) NotifyOfNewRoomMember(room *model.Room) error {
+	cli, ok := s.hub.userIdToClient[room.HostId]
+	if !ok {
+		return errNotFound
+	}
+
 	if err := cli.sendRoomNewMemberEvent(room); err != nil {
 		return err
 	}

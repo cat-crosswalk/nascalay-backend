@@ -134,9 +134,13 @@ func (c *Client) sendToEachClientInRoom(msg []byte) {
 	}
 
 	for _, m := range room.Members {
+		if m.Id == c.userId {
+			continue
+		}
+
 		cc, ok := c.hub.userIdToClient[m.Id]
 		if !ok {
-			log.Printf("userId %s is not in any room", c.userId)
+			continue
 		}
 
 		select {
