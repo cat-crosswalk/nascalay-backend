@@ -75,11 +75,6 @@ const (
 	WsEventSHOWSTART WsEvent = "SHOW_START"
 )
 
-// 回答の入力が完了していることを通知する (ルームの各員 -> サーバー)
-type AnswerReadyEvent struct {
-	Answer string `json:"answer"`
-}
-
 // 回答を送信する (ルームの各員 -> サーバー)
 type AnswerSendEvent struct {
 	Answer string `json:"answer"`
@@ -87,7 +82,8 @@ type AnswerSendEvent struct {
 
 // 絵が飛んできて，回答する (サーバー -> ルーム各員)
 type AnswerStartEvent struct {
-	Img string `json:"img"`
+	Img       string `json:"img"`
+	TimeLimit int    `json:"timeLimit"`
 }
 
 // 最後の回答を受信する (サーバー -> ルーム全員)
@@ -149,13 +145,21 @@ type Room struct {
 }
 
 // 部屋に追加のメンバーが来たことを通知する (サーバー -> ルーム全員)
-type RoomNewMemberEvent map[string]interface{}
+type RoomNewMemberEvent struct {
+	Capacity int    `json:"capacity"`
+	HostId   string `json:"hostId"`
+	Members  []User `json:"members"`
+}
 
 // ゲームのオプションを設定する (ホスト -> サーバー)
-type RoomSetOptionEvent map[string]interface{}
+type RoomSetOptionEvent struct {
+	Something string `json:"something"`
+}
 
 // RoomUpdateOptionEvent defines model for RoomUpdateOptionEvent.
-type RoomUpdateOptionEvent map[string]interface{}
+type RoomUpdateOptionEvent struct {
+	Something string `json:"something"`
+}
 
 // 最後の回答を受信する (サーバー -> ルーム全員)
 type ShowAnswerEvent struct {
@@ -207,7 +211,7 @@ type WsJSONBody struct {
 	Body *interface{} `json:"body,omitempty"`
 
 	// Websocketイベントのリスト
-	Type *WsEvent `json:"type,omitempty"`
+	Type WsEvent `json:"type"`
 }
 
 // WsParams defines parameters for Ws.
