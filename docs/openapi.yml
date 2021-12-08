@@ -291,8 +291,8 @@ components:
       example:
         timeLimit: 40
         canvas:
-          - boardName: "5×5"
-            areaId: 5
+          boardName: "5×5"
+          areaId: 5
         img: iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKAQAAAAClSfIQAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgA...
         odai: ねこのおばけ
         drawPhaseNum: 3
