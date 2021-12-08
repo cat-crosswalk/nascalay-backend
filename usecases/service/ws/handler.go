@@ -67,6 +67,19 @@ func (c *Client) receiveRequestGameStartEvent(_ interface{}) error {
 }
 
 func (c *Client) receiveOdaiReadyEvent(_ interface{}) error {
+	room, err := c.hub.repo.GetRoomFromUserId(c.userId)
+	if err != nil {
+		return err
+	}
+
+	room.Game.AddReady(c.userId)
+
+	if room.AllMembersAreReady() {
+		if err := c.sendOdaiFinishEvent(); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -166,9 +179,20 @@ func (c *Client) sendGameStartEvent() error {
 	return nil
 }
 
-// func (c *Client) sendOdaiFinishEvent(body interface{}) error {
-// 	return nil
-// }
+func (c *Client) sendOdaiFinishEvent() error {
+	buf, err := json.Marshal(
+		&oapi.WsJSONBody{
+			Type: oapi.WsEventODAIFINISH,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	go c.sendToEachClientInRoom(buf)
+
+	return nil
+}
 
 // func (c *Client) sendDrawStartEvent(body interface{}) error {
 // 	return nil

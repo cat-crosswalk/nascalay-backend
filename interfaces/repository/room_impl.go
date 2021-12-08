@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"time"
+
 	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/usecases/repository"
 	"github.com/21hack02win/nascalay-backend/util/random"
@@ -43,6 +45,18 @@ func (r *storeRepository) CreateRoom(cr *repository.CreateRoomArgs) (*model.Room
 				Name:   cr.Username,
 				Avatar: cr.Avatar,
 			},
+		},
+		Game: model.Game{
+			// TODO: ちゃんと書く
+			Status:  0,
+			Ready:   make(map[model.UserId]struct{}),
+			Timeout: 0,
+			Timer: model.Timer{
+				C: make(<-chan time.Time),
+			},
+			DrawCount: 0,
+			ShowCount: 0,
+			ShowPhase: 0,
 		},
 	}
 	r.room[rid] = &room

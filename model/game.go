@@ -4,7 +4,7 @@ import "time"
 
 type Game struct {
 	Status    GameStatus
-	Ready     []UserId
+	Ready     map[UserId]struct{}
 	Timeout   Timeout
 	Timer     Timer
 	DrawCount DrawCount
@@ -37,3 +37,7 @@ const (
 	GameShowPhaseCanvas
 	GameShowPhaseAnswer
 )
+
+func (g *Game) AddReady(uid UserId) {
+	g.Ready[uid] = struct{}{}
+}
