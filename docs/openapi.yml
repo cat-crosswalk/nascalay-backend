@@ -135,7 +135,7 @@ components:
       type: object
       description: ルーム情報
       example:
-        roomId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        roomId: Nao340bzc0
         capacity: 0
         userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
         hostId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
@@ -146,6 +146,7 @@ components:
       properties:
         roomId:
           type: string
+          pattern: '^[A-Za-z0-9]{10}$'
         capacity:
           type: integer
         userId:
@@ -211,12 +212,13 @@ components:
       type: object
       description: ルーム参加リクエスト
       example:
-        roomId: Nao340bzc0b23
+        roomId: Nao340bzc0
         username: John
         avatar: 5
       properties:
         roomId:
           type: string
+          pattern: '^[A-Za-z0-9]{10}$'
         username:
           type: string
         avatar:
@@ -230,7 +232,7 @@ components:
       type: object
       description: ユーザーが描画するキャンバスの分割情報・描画位置
       example:
-        boardName: "5×5"
+        boardName: 5×5
         areaId: 5
       properties:
         boardName:
@@ -359,7 +361,7 @@ components:
       example:
         timeLimit: 40
         canvas:
-          boardName: "5×5"
+          boardName: 5×5
           areaId: 5
         img: iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKAQAAAAClSfIQAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgA...
         odai: ねこのおばけ
@@ -491,6 +493,7 @@ components:
       schema:
         type: string
         description: ルームID
+        pattern: '^[A-Za-z0-9]{10}'
       description: ルームID
     userIdInQuery:
       name: user
