@@ -29,17 +29,24 @@ var newline = []byte{'\n'}
 type Client struct {
 	hub    *Hub
 	userId model.UserId
+	room   *model.Room
 	conn   *websocket.Conn
 	send   chan []byte
 }
 
-func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn) *Client {
+func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn) (*Client, error) {
+	room, err := hub.repo.GetRoomFromUserId(userId)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Client{
 		hub:    hub,
 		userId: userId,
+		room:   room,
 		conn:   conn,
 		send:   make(chan []byte, 256),
-	}
+	}, nil
 }
 
 // writePump pumps messages from the hub to the websocket connection.
@@ -114,18 +121,25 @@ func (c *Client) readPump() {
 
 		if err := c.callEventHandler(req); err != nil {
 			log.Println("Error:", err.Error())
+			c.send <- []byte(err.Error())
 			continue
 		}
 	}
 }
 
 func (c *Client) sendToEachClientInRoom(msg []byte) {
-	clientsInRoom, ok := c.hub.userIdToClients[c.userId]
-	if !ok {
-		log.Printf("userId %s is not in any room", c.userId)
+	room, err := c.hub.repo.GetRoomFromUserId(c.userId)
+	if err != nil {
+		log.Println("Error:", err.Error())
+		return
 	}
 
-	for cc := range clientsInRoom {
+	for _, m := range room.Members {
+		cc, ok := c.hub.userIdToClient[m.Id]
+		if !ok {
+			continue
+		}
+
 		select {
 		case cc.send <- msg:
 		default:
