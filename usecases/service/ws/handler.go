@@ -25,23 +25,23 @@ func (c *Client) callEventHandler(req *oapi.WsJSONRequestBody) error {
 type eventHandler func(c *Client, body interface{}) error
 
 var receivedEventMap = map[oapi.WsEvent]eventHandler{
-	oapi.WsEventROOMSETOPTION:    (*Client).roomSetOption,
-	oapi.WsEventREQUESTGAMESTART: (*Client).requestGameStart,
-	oapi.WsEventODAIREADY:        (*Client).odaiReady,
-	oapi.WsEventODAICANCEL:       (*Client).odaiCancel,
-	oapi.WsEventODAISEND:         (*Client).odaiSend,
-	oapi.WsEventDRAWREADY:        (*Client).drawReady,
-	oapi.WsEventDRAWCANCEL:       (*Client).drawCancel,
-	oapi.WsEventDRAWSEND:         (*Client).drawSend,
-	oapi.WsEventANSWERREADY:      (*Client).answerReady,
-	oapi.WsEventANSWERCANCEL:     (*Client).answerCancel,
-	oapi.WsEventANSWERSEND:       (*Client).answerSend,
-	oapi.WsEventSHOWNEXT:         (*Client).showNext,
-	oapi.WsEventRETURNROOM:       (*Client).returnRoom,
+	oapi.WsEventROOMSETOPTION:    (*Client).receiveRoomSetOptionEvent,
+	oapi.WsEventREQUESTGAMESTART: (*Client).receiveRequestGameStartEvent,
+	oapi.WsEventODAIREADY:        (*Client).receiveOdaiReadyEvent,
+	oapi.WsEventODAICANCEL:       (*Client).receiveOdaiCancelEvent,
+	oapi.WsEventODAISEND:         (*Client).receiveOdaiSendEvent,
+	oapi.WsEventDRAWREADY:        (*Client).receiveDrawReadyEvent,
+	oapi.WsEventDRAWCANCEL:       (*Client).receiveDrawCancelEvent,
+	oapi.WsEventDRAWSEND:         (*Client).receiveDrawSendEvent,
+	oapi.WsEventANSWERREADY:      (*Client).receiveAnswerReadyEvent,
+	oapi.WsEventANSWERCANCEL:     (*Client).receiveAnswerCancelEvent,
+	oapi.WsEventANSWERSEND:       (*Client).receiveAnswerSendEvent,
+	oapi.WsEventSHOWNEXT:         (*Client).receiveShowNextEvent,
+	oapi.WsEventRETURNROOM:       (*Client).receiveReturnRoomEvent,
 }
 
 // Receive event handlers
-func (c *Client) roomSetOption(body interface{}) error {
+func (c *Client) receiveRoomSetOptionEvent(body interface{}) error {
 	if body == nil {
 		return errors.New("body is nil")
 	}
@@ -54,7 +54,7 @@ func (c *Client) roomSetOption(body interface{}) error {
 	return nil
 }
 
-func (c *Client) requestGameStart(_ interface{}) error {
+func (c *Client) receiveRequestGameStartEvent(_ interface{}) error {
 	room, err := c.hub.repo.GetRoomFromUserId(c.userId)
 	if err != nil {
 		return err
@@ -64,22 +64,22 @@ func (c *Client) requestGameStart(_ interface{}) error {
 		return errors.New("unauthorized")
 	}
 
-	if err := c.GameStart(); err != nil {
+	if err := c.sendGameStartEvent(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *Client) odaiReady(_ interface{}) error {
+func (c *Client) receiveOdaiReadyEvent(_ interface{}) error {
 	return nil
 }
 
-func (c *Client) odaiCancel(_ interface{}) error {
+func (c *Client) receiveOdaiCancelEvent(_ interface{}) error {
 	return nil
 }
 
-func (c *Client) odaiSend(body interface{}) error {
+func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 	if body == nil {
 		return errors.New("body is nil")
 	}
@@ -92,15 +92,15 @@ func (c *Client) odaiSend(body interface{}) error {
 	return nil
 }
 
-func (c *Client) drawReady(_ interface{}) error {
+func (c *Client) receiveDrawReadyEvent(_ interface{}) error {
 	return nil
 }
 
-func (c *Client) drawCancel(_ interface{}) error {
+func (c *Client) receiveDrawCancelEvent(_ interface{}) error {
 	return nil
 }
 
-func (c *Client) drawSend(body interface{}) error {
+func (c *Client) receiveDrawSendEvent(body interface{}) error {
 	if body == nil {
 		return errors.New("body is nil")
 	}
@@ -113,15 +113,15 @@ func (c *Client) drawSend(body interface{}) error {
 	return nil
 }
 
-func (c *Client) answerReady(_ interface{}) error {
+func (c *Client) receiveAnswerReadyEvent(_ interface{}) error {
 	return nil
 }
 
-func (c *Client) answerCancel(_ interface{}) error {
+func (c *Client) receiveAnswerCancelEvent(_ interface{}) error {
 	return nil
 }
 
-func (c *Client) answerSend(body interface{}) error {
+func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 	if body == nil {
 		return errors.New("body is nil")
 	}
@@ -134,24 +134,24 @@ func (c *Client) answerSend(body interface{}) error {
 	return nil
 }
 
-func (c *Client) showNext(_ interface{}) error {
+func (c *Client) receiveShowNextEvent(_ interface{}) error {
 	return nil
 }
 
-func (c *Client) returnRoom(_ interface{}) error {
+func (c *Client) receiveReturnRoomEvent(_ interface{}) error {
 	return nil
 }
 
 // // Send event handlers
-// func (c *Client) RoomNewMember(body interface{}) error {
+// func (c *Client) sendRoomNewMemberEvent(body interface{}) error {
 // 	return nil
 // }
 
-// func (c *Client) RoomUpdateOption(body interface{}) error {
+// func (c *Client) sendRoomUpdateOptionEvent(body interface{}) error {
 // 	return nil
 // }
 
-func (c *Client) GameStart() error {
+func (c *Client) sendGameStartEvent() error {
 	buf, err := json.Marshal(&oapi.WsGameStartEventBody{
 		// TODO: 埋める
 		// OdaiHint: random.OdaiExample(),
@@ -166,50 +166,50 @@ func (c *Client) GameStart() error {
 	return nil
 }
 
-// func (c *Client) OdaiFinish(body interface{}) error {
+// func (c *Client) sendOdaiFinishEvent(body interface{}) error {
 // 	return nil
 // }
 
-// func (c *Client) DrawStart(body interface{}) error {
+// func (c *Client) sendDrawStartEvent(body interface{}) error {
 // 	return nil
 // }
 
-// func (c *Client) DrawFinish(body interface{}) error {
+// func (c *Client) sendDrawFinishEvent(body interface{}) error {
 // 	return nil
 // }
 
-// func (c *Client) AnswerStart(body interface{}) error {
+// func (c *Client) sendAnswerStartEvent(body interface{}) error {
 // 	return nil
 // }
 
-// func (c *Client) AnswerFinish(body interface{}) error {
+// func (c *Client) sendAnswerFinishEvent(body interface{}) error {
 // 	return nil
 // }
 
-// func (c *Client) ShowStart(body interface{}) error {
+// func (c *Client) sendShowStartEvent(body interface{}) error {
 // 	return nil
 // }
 
-// func (c *Client) ShowOdai(body interface{}) error {
+// func (c *Client) sendShowOdaiEvent(body interface{}) error {
 // 	return nil
 // }
 
-// func (c *Client) ShowCanvas(body interface{}) error {
+// func (c *Client) sendShowCanvasEvent(body interface{}) error {
 // 	return nil
 // }
 
-// func (c *Client) ShowAnswer(body interface{}) error {
+// func (c *Client) sendShowAnswerEvent(body interface{}) error {
 // 	return nil
 // }
 
-// func (c *Client) NextRoom(body interface{}) error {
+// func (c *Client) sendNextRoomEvent(body interface{}) error {
 // 	return nil
 // }
 
-// func (c *Client) ChangeHost(body interface{}) error {
+// func (c *Client) sendChangeHostEvent(body interface{}) error {
 // 	return nil
 // }
 
-// func (c *Client) BreakRoom(body interface{}) error {
+// func (c *Client) sendBreakRoomEvent(body interface{}) error {
 // 	return nil
 // }
