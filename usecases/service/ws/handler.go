@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"encoding/json"
 	"errors"
 
 	"github.com/21hack02win/nascalay-backend/oapi"
@@ -54,6 +55,17 @@ func (c *Client) roomSetOption(body interface{}) error {
 }
 
 func (c *Client) requestGameStart(_ interface{}) error {
+	buf, err := json.Marshal(&oapi.WsGameStartEventBody{
+		// TODO: 埋める
+		// OdaiHint: random.OdaiExample(),
+		// TimeLimit: 40,
+	})
+	if err != nil {
+		return err
+	}
+
+	go c.sendToEachClientInRoom(buf)
+
 	return nil
 }
 
