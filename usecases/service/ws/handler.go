@@ -205,13 +205,13 @@ func (c *Client) receiveReturnRoomEvent(_ interface{}) error {
 // 	return nil
 // }
 
-func (c *Client) sendRoomUpdateOptionEvent(body interface{}) error {
-	if !c.room.GameStatusIs(model.GameStatusRoom) {
-		return errWrongPhase
-	}
+// func (c *Client) sendRoomUpdateOptionEvent(body interface{}) error {
+// 	if !c.room.GameStatusIs(model.GameStatusRoom) {
+// 		return errWrongPhase
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func (c *Client) sendGameStartEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusRoom) {
