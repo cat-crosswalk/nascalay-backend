@@ -127,16 +127,24 @@ func (c *Client) readPump() {
 }
 
 func (c *Client) sendToEachClientInRoom(msg []byte) {
-	clientsInRoom, ok := c.hub.userIdToClients[c.userId]
-	if !ok {
-		log.Printf("userId %s is not in any room", c.userId)
+	room, err := c.hub.repo.GetRoomFromUserId(c.userId)
+	if err != nil {
+		log.Println("Error:", err.Error())
+		return
 	}
 
-	for cc := range clientsInRoom {
-		select {
-		case cc.send <- msg:
-		default:
-			c.hub.unregister(cc)
+	for _, m := range room.Members {
+		clientsInRoom, ok := c.hub.userIdToClients[m.Id]
+		if !ok {
+			log.Printf("userId %s is not in any room", c.userId)
+		}
+
+		for cc := range clientsInRoom {
+			select {
+			case cc.send <- msg:
+			default:
+				c.hub.unregister(cc)
+			}
 		}
 	}
 }
