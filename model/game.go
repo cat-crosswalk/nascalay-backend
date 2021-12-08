@@ -41,3 +41,7 @@ const (
 func (g *Game) AddReady(uid UserId) {
 	g.Ready[uid] = struct{}{}
 }
+
+func (g *Game) CancelReady(uid UserId) {
+	delete(g.Ready, uid)
+}

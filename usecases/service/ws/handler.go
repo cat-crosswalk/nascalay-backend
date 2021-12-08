@@ -84,6 +84,13 @@ func (c *Client) receiveOdaiReadyEvent(_ interface{}) error {
 }
 
 func (c *Client) receiveOdaiCancelEvent(_ interface{}) error {
+	room, err := c.hub.repo.GetRoomFromUserId(c.userId)
+	if err != nil {
+		return err
+	}
+
+	room.Game.CancelReady(c.userId)
+
 	return nil
 }
 
