@@ -31,7 +31,6 @@ type Client struct {
 	userId model.UserId
 	conn   *websocket.Conn
 	send   chan []byte
-	rcv    chan []byte
 }
 
 func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn) *Client {
@@ -40,7 +39,6 @@ func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn) *Client {
 		userId: userId,
 		conn:   conn,
 		send:   make(chan []byte, 256),
-		rcv:    make(chan []byte, 256),
 	}
 }
 
@@ -118,7 +116,5 @@ func (c *Client) readPump() {
 			log.Println("Error:", err.Error())
 			continue
 		}
-
-		// c.rcv <- m // TODO:消す？
 	}
 }
