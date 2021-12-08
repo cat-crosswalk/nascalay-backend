@@ -134,17 +134,15 @@ func (c *Client) sendToEachClientInRoom(msg []byte) {
 	}
 
 	for _, m := range room.Members {
-		clientsInRoom, ok := c.hub.userIdToClients[m.Id]
+		cc, ok := c.hub.userIdToClient[m.Id]
 		if !ok {
 			log.Printf("userId %s is not in any room", c.userId)
 		}
 
-		for cc := range clientsInRoom {
-			select {
-			case cc.send <- msg:
-			default:
-				c.hub.unregister(cc)
-			}
+		select {
+		case cc.send <- msg:
+		default:
+			c.hub.unregister(cc)
 		}
 	}
 }

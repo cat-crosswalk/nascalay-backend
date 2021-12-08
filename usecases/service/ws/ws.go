@@ -57,10 +57,9 @@ func (s *streamer) ServeWS(w http.ResponseWriter, r *http.Request, userId model.
 }
 
 func (s *streamer) JoinNewRoomMember(room *model.Room) error {
-	for c := range s.hub.userIdToClients[room.HostId] {
-		if err := c.sendRoomNewMemberEvent(room); err != nil {
-			return err
-		}
+	cli := s.hub.userIdToClient[room.HostId]
+	if err := cli.sendRoomNewMemberEvent(room); err != nil {
+		return err
 	}
 
 	return nil
@@ -74,12 +73,10 @@ func (s *streamer) addNewClient(userId model.UserId, conn *websocket.Conn) (*Cli
 
 	s.hub.Register(cli)
 
-	m, ok := s.hub.userIdToClients[userId]
+	c, ok := s.hub.userIdToClient[userId]
 	if !ok {
-		m = make(clientMap)
-		s.hub.userIdToClients[userId] = m
+		s.hub.userIdToClient[userId] = c
 	}
-	m[cli] = struct{}{}
 
 	return cli, nil
 }

@@ -6,20 +6,18 @@ import (
 )
 
 type Hub struct {
-	repo            repository.Repository
-	userIdToClients map[model.UserId]clientMap
-	registerCh      chan *Client
-	unregisterCh    chan *Client
+	repo           repository.Repository
+	userIdToClient map[model.UserId]*Client
+	registerCh     chan *Client
+	unregisterCh   chan *Client
 }
-
-type clientMap map[*Client]struct{}
 
 func NewHub(repo repository.Repository) *Hub {
 	return &Hub{
-		repo:            repo,
-		userIdToClients: make(map[model.UserId]clientMap),
-		registerCh:      make(chan *Client),
-		unregisterCh:    make(chan *Client),
+		repo:           repo,
+		userIdToClient: make(map[model.UserId]*Client),
+		registerCh:     make(chan *Client),
+		unregisterCh:   make(chan *Client),
 	}
 }
 
@@ -42,10 +40,10 @@ func (h *Hub) Run() {
 }
 
 func (h *Hub) register(cli *Client) {
-	h.userIdToClients[cli.userId] = clientMap{cli: {}}
+	h.userIdToClient[cli.userId] = cli
 }
 
 func (h *Hub) unregister(cli *Client) {
 	close(cli.send)
-	delete(h.userIdToClients[cli.userId], cli)
+	delete(h.userIdToClient, cli.userId)
 }
