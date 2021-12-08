@@ -266,6 +266,7 @@ components:
         hostId:
           type: string
           format: uuid
+          x-go-type: uuid.UUID
         members:
           type: array
           items:

@@ -146,9 +146,9 @@ type Room struct {
 
 // 部屋に追加のメンバーが来たことを通知する (サーバー -> ルーム全員)
 type RoomNewMemberEvent struct {
-	Capacity int    `json:"capacity"`
-	HostId   string `json:"hostId"`
-	Members  []User `json:"members"`
+	Capacity int       `json:"capacity"`
+	HostId   uuid.UUID `json:"hostId"`
+	Members  []User    `json:"members"`
 }
 
 // ゲームのオプションを設定する (ホスト -> サーバー)
