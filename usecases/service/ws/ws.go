@@ -13,20 +13,18 @@ type Streamer interface {
 }
 
 type streamer struct {
-	hub             *Hub
-	upgrader        websocket.Upgrader
-	userIdToClients map[model.UserId]map[*Client]bool
+	hub      *Hub
+	upgrader websocket.Upgrader
 }
 
-func NewStreamer() Streamer {
+func NewStreamer(hub *Hub) Streamer {
 	stream := &streamer{
-		hub: NewHub(),
+		hub: hub,
 		upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
 				return true
 			},
 		},
-		userIdToClients: make(map[model.UserId]map[*Client]bool),
 	}
 	stream.Run()
 	return stream
@@ -57,12 +55,12 @@ func (s *streamer) addNewClient(userId model.UserId, conn *websocket.Conn) *Clie
 	cli := NewClient(s.hub, userId, conn)
 	s.hub.Register(cli)
 
-	m, ok := s.userIdToClients[userId]
+	m, ok := s.hub.userIdToClients[userId]
 	if !ok {
-		m = make(map[*Client]bool)
-		s.userIdToClients[userId] = m
+		m = make(clientMap)
+		s.hub.userIdToClients[userId] = m
 	}
-	m[cli] = true
+	m[cli] = struct{}{}
 
 	return cli
 }

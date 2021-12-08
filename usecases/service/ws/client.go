@@ -2,6 +2,7 @@
 package ws
 
 import (
+	"errors"
 	"log"
 	"time"
 
@@ -117,4 +118,22 @@ func (c *Client) readPump() {
 			continue
 		}
 	}
+}
+
+//nolint handler書くときに消す
+func (c *Client) sendToEachClientInRoom(msg []byte) error {
+	clientsInRoom, ok := c.hub.userIdToClients[c.userId]
+	if !ok {
+		return errors.New("no room clients")
+	}
+
+	for cc := range clientsInRoom {
+		select {
+		case cc.send <- msg:
+		default:
+			c.hub.unregister(cc)
+		}
+	}
+
+	return nil
 }

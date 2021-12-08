@@ -19,6 +19,7 @@ func injectServer() oapi.ServerInterface {
 		service.NewService,
 		repository.NewRepository,
 		ws.NewStreamer,
+		ws.NewHub,
 	)
 
 	return nil
