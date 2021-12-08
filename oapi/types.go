@@ -75,6 +75,12 @@ const (
 	WsNextShowStatusOdai WsNextShowStatus = "odai"
 )
 
+// ユーザーが描画するキャンバスの分割情報・描画位置
+type Canvas struct {
+	AreaId    int    `json:"areaId"`
+	BoardName string `json:"boardName"`
+}
+
 // 新規ルーム作成リクエスト
 type CreateRoomRequest struct {
 	Avatar   int    `json:"avatar"`
@@ -131,10 +137,13 @@ type WsDrawSendEventBody struct {
 // キャンバス情報とお題を送信する (サーバー -> ルーム各員)
 type WsDrawStartEventBody struct {
 	AllDrawPhaseNum float32 `json:"allDrawPhaseNum"`
-	DrawPhaseNum    int     `json:"drawPhaseNum"`
-	Img             string  `json:"img"`
-	Odai            string  `json:"odai"`
-	TimeLimit       int     `json:"timeLimit"`
+
+	// ユーザーが描画するキャンバスの分割情報・描画位置
+	Canvas       Canvas `json:"canvas"`
+	DrawPhaseNum int    `json:"drawPhaseNum"`
+	Img          string `json:"img"`
+	Odai         string `json:"odai"`
+	TimeLimit    int    `json:"timeLimit"`
 }
 
 // Websocketイベントのリスト
