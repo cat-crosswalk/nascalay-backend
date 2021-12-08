@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/oapi"
 	"github.com/mitchellh/mapstructure"
 )
@@ -50,14 +51,11 @@ func (c *Client) receiveRoomSetOptionEvent(body interface{}) error {
 }
 
 func (c *Client) receiveRequestGameStartEvent(_ interface{}) error {
-	room, err := c.hub.repo.GetRoomFromUserId(c.userId)
-	if err != nil {
-		return err
-	}
-
-	if c.userId != room.HostId {
+	if c.userId != c.room.HostId {
 		return errors.New("unauthorized")
 	}
+
+	c.room.Game.Status = model.GameStatusOdai
 
 	if err := c.sendGameStartEvent(); err != nil {
 		return err
@@ -67,14 +65,9 @@ func (c *Client) receiveRequestGameStartEvent(_ interface{}) error {
 }
 
 func (c *Client) receiveOdaiReadyEvent(_ interface{}) error {
-	room, err := c.hub.repo.GetRoomFromUserId(c.userId)
-	if err != nil {
-		return err
-	}
+	c.room.Game.AddReady(c.userId)
 
-	room.Game.AddReady(c.userId)
-
-	if room.AllMembersAreReady() {
+	if c.room.AllMembersAreReady() {
 		if err := c.sendOdaiFinishEvent(); err != nil {
 			return err
 		}
@@ -84,12 +77,7 @@ func (c *Client) receiveOdaiReadyEvent(_ interface{}) error {
 }
 
 func (c *Client) receiveOdaiCancelEvent(_ interface{}) error {
-	room, err := c.hub.repo.GetRoomFromUserId(c.userId)
-	if err != nil {
-		return err
-	}
-
-	room.Game.CancelReady(c.userId)
+	c.room.Game.CancelReady(c.userId)
 
 	return nil
 }

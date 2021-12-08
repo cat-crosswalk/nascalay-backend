@@ -29,17 +29,24 @@ var newline = []byte{'\n'}
 type Client struct {
 	hub    *Hub
 	userId model.UserId
+	room   *model.Room
 	conn   *websocket.Conn
 	send   chan []byte
 }
 
-func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn) *Client {
+func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn) (*Client, error) {
+	room, err := hub.repo.GetRoomFromUserId(userId)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Client{
 		hub:    hub,
 		userId: userId,
+		room:   room,
 		conn:   conn,
 		send:   make(chan []byte, 256),
-	}
+	}, nil
 }
 
 // writePump pumps messages from the hub to the websocket connection.
