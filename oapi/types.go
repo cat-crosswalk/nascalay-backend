@@ -87,7 +87,14 @@ type AnswerSendEvent struct {
 
 // 絵が飛んできて，回答する (サーバー -> ルーム各員)
 type AnswerStartEvent struct {
-	Img string `json:"img"`
+	Img       string `json:"img"`
+	TimeLimit int    `json:"timeLimit"`
+}
+
+// ユーザーが描画するキャンバスの分割情報・描画位置
+type Canvas struct {
+	AreaId    int    `json:"areaId"`
+	BoardName string `json:"boardName"`
 }
 
 // 最後の回答を受信する (サーバー -> ルーム全員)
@@ -112,10 +119,13 @@ type DrawSendEvent struct {
 // キャンバス情報とお題を送信する (サーバー -> ルーム各員)
 type DrawStartEvent struct {
 	AllDrawPhaseNum float32 `json:"allDrawPhaseNum"`
-	DrawPhaseNum    int     `json:"drawPhaseNum"`
-	Img             string  `json:"img"`
-	Odai            string  `json:"odai"`
-	TimeLimit       int     `json:"timeLimit"`
+
+	// ユーザーが描画するキャンバスの分割情報・描画位置
+	Canvas       Canvas `json:"canvas"`
+	DrawPhaseNum int    `json:"drawPhaseNum"`
+	Img          string `json:"img"`
+	Odai         string `json:"odai"`
+	TimeLimit    int    `json:"timeLimit"`
 }
 
 // ゲームの開始を通知する (サーバー -> ルーム全員)
