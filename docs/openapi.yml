@@ -493,7 +493,7 @@ components:
       schema:
         type: string
         description: ルームID
-        pattern: '^[A-Za-z0-9]{10}'
+        pattern: '^[A-Za-z0-9]{10}$'
       description: ルームID
     userIdInQuery:
       name: user
