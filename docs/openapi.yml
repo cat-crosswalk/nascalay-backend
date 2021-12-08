@@ -147,18 +147,23 @@ components:
         roomId:
           type: string
           pattern: '^[A-Za-z0-9]{10}$'
+          description: ルームID
         capacity:
           type: integer
+          description: ルームの最大収容人数
         userId:
           type: string
           format: uuid
           x-go-type: uuid.UUID
+          description: ユーザーUUID
         hostId:
           type: string
           format: uuid
           x-go-type: uuid.UUID
+          description: ホストのユーザーUUID
         members:
           type: array
+          description: 現在ルームにいるメンバーの情報
           items:
             $ref: '#/components/schemas/User'
       required:
@@ -180,10 +185,13 @@ components:
           type: string
           format: uuid
           x-go-type: uuid.UUID
+          description: ユーザーUUID
         username:
           type: string
+          description: ユーザー名
         avatar:
           type: integer
+          description: アバターの種類
       required:
         - userId
         - username
@@ -199,10 +207,13 @@ components:
       properties:
         username:
           type: string
+          description: ユーザー名
         avatar:
           type: integer
+          description: アバターの種類
         capacity:
           type: integer
+          description: ルームの最大収容人数
       required:
         - username
         - avatar
@@ -219,10 +230,13 @@ components:
         roomId:
           type: string
           pattern: '^[A-Za-z0-9]{10}$'
+          description: ルームID
         username:
           type: string
+          description: ユーザー名
         avatar:
           type: integer
+          description: アバターの種類
       required:
         - roomId
         - username
@@ -237,8 +251,10 @@ components:
       properties:
         boardName:
           type: string
+          description: ボード名
         areaId:
           type: integer
+          description: ボードの座標ID
       required:
         - boardName
         - areaId
@@ -298,12 +314,15 @@ components:
       properties:
         capacity:
           type: integer
+          description: ルームの最大収容人数
         hostId:
           type: string
           format: uuid
           x-go-type: uuid.UUID
+          description: ホストのユーザーUUID
         members:
           type: array
+          description: 現在ルームにいるメンバーの情報
           items:
             $ref: '#/components/schemas/User'
       required:
@@ -319,6 +338,7 @@ components:
       properties:
         something:
           type: string
+          description: 何か
       required:
         - something
     WsRoomUpdateOptionEventBody:
@@ -327,8 +347,10 @@ components:
       properties:
         something:
           type: string
+          description: 何か
       required:
         - something
+      description: ゲームの設定を更新する (サーバー -> ルーム全員)
     WsGameStartEventBody:
       title: WsGameStartEventBody
       type: object
@@ -339,8 +361,10 @@ components:
       properties:
         odaiHint:
           type: string
+          description: お題のサジェスト
         timeLimit:
           type: integer
+          description: 制限時間
       required:
         - odaiHint
         - timeLimit
@@ -353,6 +377,7 @@ components:
       properties:
         odai:
           type: string
+          description: お題
       required:
         - odai
     WsDrawStartEventBody:
@@ -371,16 +396,21 @@ components:
       properties:
         timeLimit:
           type: integer
+          description: 制限時間
         canvas:
           $ref: '#/components/schemas/Canvas'
         img:
           type: string
+          description: 画像ID
         odai:
           type: string
+          description: お題
         drawPhaseNum:
           type: integer
+          description: 現在のDRAWフェーズの番号
         allDrawPhaseNum:
           type: number
+          description: 全DRAWフェーズ数
       required:
         - timeLimit
         - canvas
@@ -400,6 +430,7 @@ components:
       properties:
         img:
           type: string
+          description: 画像ID
       required:
         - img
     WsAnswerStartEventBody:
@@ -412,8 +443,10 @@ components:
       properties:
         timeLimit:
           type: integer
+          description: 制限時間
         img:
           type: string
+          description: 画像ID
       required:
         - timeLimit
         - img
@@ -426,6 +459,7 @@ components:
       properties:
         answer:
           type: string
+          description: 回答
       required:
         - answer
     WsShowOdaiEventBody:
@@ -438,6 +472,7 @@ components:
       properties:
         odai:
           type: string
+          description: お題
         next:
           $ref: '#/components/schemas/WsNextShowStatus'
       required:
@@ -453,6 +488,7 @@ components:
       properties:
         img:
           type: string
+          description: 画像ID
         next:
           $ref: '#/components/schemas/WsNextShowStatus'
       required:
@@ -468,6 +504,7 @@ components:
       properties:
         answer:
           type: string
+          description: 回答
         next:
           $ref: '#/components/schemas/WsNextShowStatus'
       required:
@@ -483,6 +520,7 @@ components:
         hostId:
           type: string
           format: uuid
+          description: ホストのユーザーUUID
       required:
         - hostId
   parameters:
@@ -492,8 +530,8 @@ components:
       required: true
       schema:
         type: string
-        description: ルームID
         pattern: '^[A-Za-z0-9]{10}$'
+        description: ルームID
       description: ルームID
     userIdInQuery:
       name: user
