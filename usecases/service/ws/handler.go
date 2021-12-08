@@ -1,3 +1,4 @@
+//nolint:unused // TODO: 実装したら消す
 package ws
 
 import (
@@ -35,7 +36,10 @@ var receivedEventMap = map[oapi.WsEvent]eventHandler{
 	oapi.WsEventRETURNROOM:       (*Client).receiveReturnRoomEvent,
 }
 
-// Receive event handlers
+// --- Receive event handlers ---
+
+// ROOM_SET_OPTION
+// ゲームのオプションを設定する (ホスト -> サーバー)
 func (c *Client) receiveRoomSetOptionEvent(body interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
@@ -53,6 +57,8 @@ func (c *Client) receiveRoomSetOptionEvent(body interface{}) error {
 	return nil
 }
 
+// REQUEST_GAME_START
+// ゲームを開始する (ホスト -> サーバー)
 func (c *Client) receiveRequestGameStartEvent(_ interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
@@ -71,6 +77,8 @@ func (c *Client) receiveRequestGameStartEvent(_ interface{}) error {
 	return nil
 }
 
+// ODAI_READY
+// お題の入力が完了していることを通知する (ルームの各員 -> サーバー)
 func (c *Client) receiveOdaiReadyEvent(_ interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusOdai) {
 		return errWrongPhase
@@ -87,6 +95,8 @@ func (c *Client) receiveOdaiReadyEvent(_ interface{}) error {
 	return nil
 }
 
+// ODAI_CANCEL
+// お題の入力の完了を解除する (ルームの各員 -> サーバー)
 func (c *Client) receiveOdaiCancelEvent(_ interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusOdai) {
 		return errWrongPhase
@@ -97,6 +107,8 @@ func (c *Client) receiveOdaiCancelEvent(_ interface{}) error {
 	return nil
 }
 
+// ODAI_SEND
+// お題を送信する (ルームの各員 -> サーバー)
 func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusOdai) {
 		return errWrongPhase
@@ -114,6 +126,8 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 	return nil
 }
 
+// DRAW_READY
+// 絵が書き終わっていることを通知する (ルームの各員 -> サーバー)
 func (c *Client) receiveDrawReadyEvent(_ interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusDraw) {
 		return errWrongPhase
@@ -122,6 +136,8 @@ func (c *Client) receiveDrawReadyEvent(_ interface{}) error {
 	return nil
 }
 
+// DRAW_CANCEL
+// 絵が書き終わっている通知を解除する (ルームの各員 -> サーバー)
 func (c *Client) receiveDrawCancelEvent(_ interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusDraw) {
 		return errWrongPhase
@@ -130,6 +146,9 @@ func (c *Client) receiveDrawCancelEvent(_ interface{}) error {
 	return nil
 }
 
+// DRAW_SEND
+// 絵を送信する (ルームの各員 -> サーバー)
+// -> (DRAWフェーズが終わってなかったら) また，DRAW_START が飛んでくる
 func (c *Client) receiveDrawSendEvent(body interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusDraw) {
 		return errWrongPhase
@@ -147,6 +166,8 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 	return nil
 }
 
+// ANSWER_READY
+// 回答の入力が完了していることを通知する (ルームの各員 -> サーバー)
 func (c *Client) receiveAnswerReadyEvent(_ interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusAnswer) {
 		return errWrongPhase
@@ -155,6 +176,8 @@ func (c *Client) receiveAnswerReadyEvent(_ interface{}) error {
 	return nil
 }
 
+// ANSWER_CANCEL
+// 回答の入力の完了を解除する (ルームの各員 -> サーバー)
 func (c *Client) receiveAnswerCancelEvent(_ interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusAnswer) {
 		return errWrongPhase
@@ -163,6 +186,8 @@ func (c *Client) receiveAnswerCancelEvent(_ interface{}) error {
 	return nil
 }
 
+// ANSWER_SEND
+// 回答を送信する (ルームの各員 -> サーバー)
 func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusAnswer) {
 		return errWrongPhase
@@ -180,6 +205,8 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 	return nil
 }
 
+// SHOW_NEXT
+// つぎの結果表示を要求する (ホスト -> サーバー)
 func (c *Client) receiveShowNextEvent(_ interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
@@ -188,6 +215,9 @@ func (c *Client) receiveShowNextEvent(_ interface{}) error {
 	return nil
 }
 
+// RETURN_ROOM
+// ルーム(新規加入待機状態) に戻る (ホスト -> サーバー)
+// このタイミングでサーバーは保持しているゲームデータを削除
 func (c *Client) receiveReturnRoomEvent(_ interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusAnswer) {
 		return errWrongPhase
@@ -196,23 +226,31 @@ func (c *Client) receiveReturnRoomEvent(_ interface{}) error {
 	return nil
 }
 
-// // Send event handlers
-// func (c *Client) sendRoomNewMemberEvent(body interface{}) error {
-// 	if !c.room.GameStatusIs(model.GameStatusRoom) {
-// 		return errWrongPhase
-// 	}
+// --- Send event handlers ---
 
-// 	return nil
-// }
+// ROOM_NEW_MEMBER
+// 部屋に追加のメンバーが来たことを通知する (サーバー -> ルーム全員)
+func (c *Client) sendRoomNewMemberEvent(body interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusRoom) {
+		return errWrongPhase
+	}
 
-// func (c *Client) sendRoomUpdateOptionEvent(body interface{}) error {
-// 	if !c.room.GameStatusIs(model.GameStatusRoom) {
-// 		return errWrongPhase
-// 	}
+	return nil
+}
 
-// 	return nil
-// }
+// ROOM_UPDATE_OPTION
+// ゲームの設定を更新する (サーバー -> ルーム全員)
+func (c *Client) sendRoomUpdateOptionEvent(body interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusRoom) {
+		return errWrongPhase
+	}
 
+	return nil
+}
+
+// GAME_START
+// ゲームの開始を通知する (サーバー -> ルーム全員)
+// ODAIフェーズを開始する
 func (c *Client) sendGameStartEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
@@ -237,6 +275,9 @@ func (c *Client) sendGameStartEvent() error {
 	return nil
 }
 
+// ODAI_FINISH
+// 全員がお題の入力を完了したことor制限時間が来たことを通知する (サーバー -> ルーム全員)
+// クライアントはお題を送信する
 func (c *Client) sendOdaiFinishEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusOdai) {
 		return errWrongPhase
@@ -256,82 +297,108 @@ func (c *Client) sendOdaiFinishEvent() error {
 	return nil
 }
 
-// func (c *Client) sendDrawStartEvent(body interface{}) error {
-// 	if !c.room.GameStatusIs(model.GameStatusDraw) {
-// 		return errWrongPhase
-// 	}
+// DRAW_START
+// キャンバス情報とお題を送信する (サーバー -> ルーム各員)
+func (c *Client) sendDrawStartEvent(body interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusDraw) {
+		return errWrongPhase
+	}
 
-// 	return nil
-// }
+	return nil
+}
 
-// func (c *Client) sendDrawFinishEvent(body interface{}) error {
-// 	if !c.room.GameStatusIs(model.GameStatusDraw) {
-// 		return errWrongPhase
-// 	}
+// DRAW_FINISH
+// 全員が絵を完了したことor制限時間が来たことを通知する (サーバー -> ルーム全員)
+// クライアントは絵を送信する
+func (c *Client) sendDrawFinishEvent(body interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusDraw) {
+		return errWrongPhase
+	}
 
-// 	return nil
-// }
+	return nil
+}
 
-// func (c *Client) sendAnswerStartEvent(body interface{}) error {
-// 	if !c.room.GameStatusIs(model.GameStatusAnswer) {
-// 		return errWrongPhase
-// 	}
+// ANSWER_START
+// 絵が飛んできて，回答する (サーバー -> ルーム各員)
+func (c *Client) sendAnswerStartEvent(body interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusAnswer) {
+		return errWrongPhase
+	}
 
-// 	return nil
-// }
+	return nil
+}
 
-// func (c *Client) sendAnswerFinishEvent(body interface{}) error {
-// 	if !c.room.GameStatusIs(model.GameStatusAnswer) {
-// 		return errWrongPhase
-// 	}
+// ANSWER_FINISH
+// 全員が回答の入力を完了したことor制限時間が来たことを通知する (サーバー -> ルーム全員)
+// クライアントは回答を送信する
+func (c *Client) sendAnswerFinishEvent(body interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusAnswer) {
+		return errWrongPhase
+	}
 
-// 	return nil
-// }
+	return nil
+}
 
-// func (c *Client) sendShowStartEvent(body interface{}) error {
-// 	if !c.room.GameStatusIs(model.GameStatusShow) {
-// 		return errWrongPhase
-// 	}
+// SHOW_START
+// 結果表示フェーズが始まったことを通知する (サーバー -> ルーム全員)
+func (c *Client) sendShowStartEvent(body interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusShow) {
+		return errWrongPhase
+	}
 
-// 	return nil
-// }
+	return nil
+}
 
-// func (c *Client) sendShowOdaiEvent(body interface{}) error {
-// 	if !c.room.GameStatusIs(model.GameStatusShow) {
-// 		return errWrongPhase
-// 	}
+// SHOW_ODAI
+// 最初のお題を受信する (サーバー -> ルーム全員)
+func (c *Client) sendShowOdaiEvent(body interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusShow) {
+		return errWrongPhase
+	}
 
-// 	return nil
-// }
+	return nil
+}
 
-// func (c *Client) sendShowCanvasEvent(body interface{}) error {
-// 	if !c.room.GameStatusIs(model.GameStatusShow) {
-// 		return errWrongPhase
-// 	}
+// SHOW_CANVAS
+// 次のキャンバスを受信する (サーバー -> ルーム全員)
+func (c *Client) sendShowCanvasEvent(body interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusShow) {
+		return errWrongPhase
+	}
 
-// 	return nil
-// }
+	return nil
+}
 
-// func (c *Client) sendShowAnswerEvent(body interface{}) error {
-// 	if !c.room.GameStatusIs(model.GameStatusShow) {
-// 		return errWrongPhase
-// 	}
+// SHOW_ANSWER
+// 最後の回答を受信する (サーバー -> ルーム全員)
+func (c *Client) sendShowAnswerEvent(body interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusShow) {
+		return errWrongPhase
+	}
 
-// 	return nil
-// }
+	return nil
+}
 
-// func (c *Client) sendNextRoomEvent(body interface{}) error {
-// 	if !c.room.GameStatusIs(model.GameStatusShow) {
-// 		return errWrongPhase
-// 	}
+// NEXT_ROOM
+// ルームの表示に遷移する (サーバー -> ルーム全員)
+func (c *Client) sendNextRoomEvent(body interface{}) error {
+	if !c.room.GameStatusIs(model.GameStatusShow) {
+		return errWrongPhase
+	}
 
-// 	return nil
-// }
+	return nil
+}
 
-// func (c *Client) sendChangeHostEvent(body interface{}) error {
-// 	return nil
-// }
+// CHANGE_HOST
+// ホストが落ちた時に飛んできて，ホスト役を変更する (サーバー -> ルーム全員)
+func (c *Client) sendChangeHostEvent(body interface{}) error {
+	return nil
+}
 
-// func (c *Client) sendBreakRoomEvent(body interface{}) error {
-// 	return nil
-// }
+// BREAK_ROOM
+// 部屋が破壊されたときに通知する (サーバー -> ルーム全員)
+// 部屋が立ってからゲーム開始まで15分以上経過している場合，部屋を閉じる
+// このタイミングでサーバーは保持しているルームに関わる全データを削除
+func (c *Client) sendBreakRoomEvent(body interface{}) error {
+	return nil
+}
