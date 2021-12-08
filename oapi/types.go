@@ -167,13 +167,13 @@ type WsDrawSendEventBody struct {
 	Img string `json:"img"`
 }
 
-// キャンバス情報とお題を送信する (サーバー -> ルーム各員)
+// WsDrawStartEventBody defines model for WsDrawStartEventBody.
 type WsDrawStartEventBody struct {
+	// Embedded struct due to allOf(#/components/schemas/Canvas)
+	Canvas `yaml:",inline"`
+	// Embedded fields due to inline allOf schema
 	// 全DRAWフェーズ数
 	AllDrawPhaseNum float32 `json:"allDrawPhaseNum"`
-
-	// ユーザーが描画するキャンバスの分割情報・描画位置
-	Canvas Canvas `json:"canvas"`
 
 	// 現在のDRAWフェーズの番号
 	DrawPhaseNum int `json:"drawPhaseNum"`

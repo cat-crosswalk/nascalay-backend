@@ -382,7 +382,6 @@ components:
         - odai
     WsDrawStartEventBody:
       title: WsDrawStartEventBody
-      type: object
       example:
         timeLimit: 40
         canvas:
@@ -393,31 +392,31 @@ components:
         drawPhaseNum: 3
         allDrawPhaseNum: 10
       description: キャンバス情報とお題を送信する (サーバー -> ルーム各員)
-      properties:
-        timeLimit:
-          type: integer
-          description: 制限時間
-        canvas:
-          $ref: '#/components/schemas/Canvas'
-        img:
-          type: string
-          description: 画像ID
-        odai:
-          type: string
-          description: お題
-        drawPhaseNum:
-          type: integer
-          description: 現在のDRAWフェーズの番号
-        allDrawPhaseNum:
-          type: number
-          description: 全DRAWフェーズ数
-      required:
-        - timeLimit
-        - canvas
-        - img
-        - odai
-        - drawPhaseNum
-        - allDrawPhaseNum
+      allOf:
+        - $ref: '#/components/schemas/Canvas'
+        - type: object
+          properties:
+            timeLimit:
+              type: integer
+              description: 制限時間
+            img:
+              type: string
+              description: 画像ID
+            odai:
+              type: string
+              description: お題
+            drawPhaseNum:
+              type: integer
+              description: 現在のDRAWフェーズの番号
+            allDrawPhaseNum:
+              type: number
+              description: 全DRAWフェーズ数
+          required:
+            - timeLimit
+            - img
+            - odai
+            - drawPhaseNum
+            - allDrawPhaseNum
     WsDrawSendEventBody:
       title: WsDrawSendEventBody
       type: object
