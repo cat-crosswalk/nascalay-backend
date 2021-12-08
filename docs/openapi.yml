@@ -84,19 +84,19 @@ paths:
                   $ref: '#/components/schemas/WsEvent'
                 body:
                   oneOf:
-                    - $ref: '#/components/schemas/RoomNewMemberEvent'
-                    - $ref: '#/components/schemas/RoomSetOptionEvent'
-                    - $ref: '#/components/schemas/RoomUpdateOptionEvent'
-                    - $ref: '#/components/schemas/GameStartEvent'
-                    - $ref: '#/components/schemas/OdaiSendEvent'
-                    - $ref: '#/components/schemas/DrawStartEvent'
-                    - $ref: '#/components/schemas/DrawSendEvent'
-                    - $ref: '#/components/schemas/AnswerStartEvent'
-                    - $ref: '#/components/schemas/AnswerSendEvent'
-                    - $ref: '#/components/schemas/ShowOdaiEvent'
-                    - $ref: '#/components/schemas/ShowCanvasEvent'
-                    - $ref: '#/components/schemas/ShowAnswerEvent'
-                    - $ref: '#/components/schemas/ChangeHostEvent'
+                    - $ref: '#/components/schemas/WsRoomNewMemberEventBody'
+                    - $ref: '#/components/schemas/WsRoomSetOptionEventBody'
+                    - $ref: '#/components/schemas/WsRoomUpdateOptionEventBody'
+                    - $ref: '#/components/schemas/WsGameStartEventBody'
+                    - $ref: '#/components/schemas/WsOdaiSendEventBody'
+                    - $ref: '#/components/schemas/WsDrawStartEventBody'
+                    - $ref: '#/components/schemas/WsDrawSendEventBody'
+                    - $ref: '#/components/schemas/WsAnswerStartEventBody'
+                    - $ref: '#/components/schemas/WsAnswerSendEventBody'
+                    - $ref: '#/components/schemas/WsShowOdaiEventBody'
+                    - $ref: '#/components/schemas/WsShowCanvasEventBody'
+                    - $ref: '#/components/schemas/WsShowAnswerEventBody'
+                    - $ref: '#/components/schemas/WsChangeHostEventBody'
               required:
                 - type
       description: |-
@@ -240,8 +240,8 @@ components:
         - NEXT_ROOM
         - CHANGE_HOST
         - BREAK_ROOM
-    NextShowStatus:
-      title: NextWsEvent
+    WsNextShowStatus:
+      title: WsNextWsEvent
       type: string
       description: 次のWebsocketイベントのリスト
       enum:
@@ -249,8 +249,8 @@ components:
         - canvas
         - answer
         - end
-    RoomNewMemberEvent:
-      title: RoomNewMemberEvent
+    WsRoomNewMemberEventBody:
+      title: WsRoomNewMemberEventBody
       type: object
       description: 部屋に追加のメンバーが来たことを通知する (サーバー -> ルーム全員)
       example:
@@ -275,8 +275,8 @@ components:
         - capacity
         - hostId
         - members
-    RoomSetOptionEvent:
-      title: RoomSetOptionEvent
+    WsRoomSetOptionEventBody:
+      title: WsRoomSetOptionEventBody
       type: object
       description: ゲームのオプションを設定する (ホスト -> サーバー)
       example:
@@ -286,16 +286,16 @@ components:
           type: string
       required:
         - something
-    RoomUpdateOptionEvent:
-      title: RoomUpdateOptionEvent
+    WsRoomUpdateOptionEventBody:
+      title: WsRoomUpdateOptionEventBody
       type: object
       properties:
         something:
           type: string
       required:
         - something
-    GameStartEvent:
-      title: GameStartEvent
+    WsGameStartEventBody:
+      title: WsGameStartEventBody
       type: object
       description: ゲームの開始を通知する (サーバー -> ルーム全員)
       example:
@@ -309,8 +309,8 @@ components:
       required:
         - odaiHint
         - timeLimit
-    OdaiSendEvent:
-      title: OdaiSendEvent
+    WsOdaiSendEventBody:
+      title: WsOdaiSendEventBody
       type: object
       example:
         odai: ねこのおばけ
@@ -320,8 +320,8 @@ components:
           type: string
       required:
         - odai
-    DrawStartEvent:
-      title: DrawStartEvent
+    WsDrawStartEventBody:
+      title: WsDrawStartEventBody
       type: object
       example:
         timeLimit: 40
@@ -347,8 +347,8 @@ components:
         - odai
         - drawPhaseNum
         - allDrawPhaseNum
-    DrawSendEvent:
-      title: DrawSendEvent
+    WsDrawSendEventBody:
+      title: WsDrawSendEventBody
       type: object
       example:
         img: iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKAQAAAAClSfIQAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgA...
@@ -361,8 +361,8 @@ components:
           type: string
       required:
         - img
-    AnswerStartEvent:
-      title: AnswerStartEvent
+    WsAnswerStartEventBody:
+      title: WsAnswerStartEventBody
       type: object
       description: 絵が飛んできて，回答する (サーバー -> ルーム各員)
       example:
@@ -376,8 +376,8 @@ components:
       required:
         - timeLimit
         - img
-    AnswerSendEvent:
-      title: AnswerSendEvent
+    WsAnswerSendEventBody:
+      title: WsAnswerSendEventBody
       type: object
       description: 回答を送信する (ルームの各員 -> サーバー)
       example:
@@ -387,8 +387,8 @@ components:
           type: string
       required:
         - answer
-    ShowOdaiEvent:
-      title: ShowOdaiEvent
+    WsShowOdaiEventBody:
+      title: WsShowOdaiEventBody
       type: object
       description: 最初のお題を受信する (サーバー -> ルーム全員)
       example:
@@ -398,12 +398,12 @@ components:
         odai:
           type: string
         next:
-          $ref: '#/components/schemas/NextShowStatus'
+          $ref: '#/components/schemas/WsNextShowStatus'
       required:
         - odai
         - next
-    ShowCanvasEvent:
-      title: ShowCanvasEvent
+    WsShowCanvasEventBody:
+      title: WsShowCanvasEventBody
       type: object
       example:
         img: iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKAQAAAAClSfIQAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgA...
@@ -413,12 +413,12 @@ components:
         img:
           type: string
         next:
-          $ref: '#/components/schemas/NextShowStatus'
+          $ref: '#/components/schemas/WsNextShowStatus'
       required:
         - img
         - next
-    ShowAnswerEvent:
-      title: ShowAnswerEvent
+    WsShowAnswerEventBody:
+      title: WsShowAnswerEventBody
       type: object
       description: 最後の回答を受信する (サーバー -> ルーム全員)
       example:
@@ -428,12 +428,12 @@ components:
         answer:
           type: string
         next:
-          $ref: '#/components/schemas/NextShowStatus'
+          $ref: '#/components/schemas/WsNextShowStatus'
       required:
         - answer
         - next
-    ChangeHostEvent:
-      title: ShowAnswerEvent
+    WsChangeHostEventBody:
+      title: WsChangeHostEventBody
       type: object
       description: 最後の回答を受信する (サーバー -> ルーム全員)
       example:

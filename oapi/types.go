@@ -5,17 +5,6 @@ package oapi
 
 import "github.com/gofrs/uuid"
 
-// Defines values for NextShowStatus.
-const (
-	NextShowStatusAnswer NextShowStatus = "answer"
-
-	NextShowStatusCanvas NextShowStatus = "canvas"
-
-	NextShowStatusEnd NextShowStatus = "end"
-
-	NextShowStatusOdai NextShowStatus = "odai"
-)
-
 // Defines values for WsEvent.
 const (
 	WsEventANSWERCANCEL WsEvent = "ANSWER_CANCEL"
@@ -75,21 +64,16 @@ const (
 	WsEventSHOWSTART WsEvent = "SHOW_START"
 )
 
-// 回答を送信する (ルームの各員 -> サーバー)
-type AnswerSendEvent struct {
-	Answer string `json:"answer"`
-}
+// Defines values for WsNextShowStatus.
+const (
+	WsNextShowStatusAnswer WsNextShowStatus = "answer"
 
-// 絵が飛んできて，回答する (サーバー -> ルーム各員)
-type AnswerStartEvent struct {
-	Img       string `json:"img"`
-	TimeLimit int    `json:"timeLimit"`
-}
+	WsNextShowStatusCanvas WsNextShowStatus = "canvas"
 
-// 最後の回答を受信する (サーバー -> ルーム全員)
-type ChangeHostEvent struct {
-	HostId string `json:"hostId"`
-}
+	WsNextShowStatusEnd WsNextShowStatus = "end"
+
+	WsNextShowStatusOdai WsNextShowStatus = "odai"
+)
 
 // 新規ルーム作成リクエスト
 type CreateRoomRequest struct {
@@ -98,41 +82,11 @@ type CreateRoomRequest struct {
 	Username string `json:"username"`
 }
 
-// 絵を送信する (ルームの各員 -> サーバー)
-//
-// -> (DRAWフェーズが終わってなかったら) また，DRAW_START が飛んでくる
-type DrawSendEvent struct {
-	Img string `json:"img"`
-}
-
-// キャンバス情報とお題を送信する (サーバー -> ルーム各員)
-type DrawStartEvent struct {
-	AllDrawPhaseNum float32 `json:"allDrawPhaseNum"`
-	DrawPhaseNum    int     `json:"drawPhaseNum"`
-	Img             string  `json:"img"`
-	Odai            string  `json:"odai"`
-	TimeLimit       int     `json:"timeLimit"`
-}
-
-// ゲームの開始を通知する (サーバー -> ルーム全員)
-type GameStartEvent struct {
-	OdaiHint  string `json:"odaiHint"`
-	TimeLimit int    `json:"timeLimit"`
-}
-
 // ルーム参加リクエスト
 type JoinRoomRequest struct {
 	Avatar   int    `json:"avatar"`
 	RoomId   string `json:"roomId"`
 	Username string `json:"username"`
-}
-
-// 次のWebsocketイベントのリスト
-type NextShowStatus string
-
-// お題を送信する (ルームの各員 -> サーバー)
-type OdaiSendEvent struct {
-	Odai string `json:"odai"`
 }
 
 // ルーム情報
@@ -144,46 +98,6 @@ type Room struct {
 	UserId   uuid.UUID `json:"userId"`
 }
 
-// 部屋に追加のメンバーが来たことを通知する (サーバー -> ルーム全員)
-type RoomNewMemberEvent struct {
-	Capacity int       `json:"capacity"`
-	HostId   uuid.UUID `json:"hostId"`
-	Members  []User    `json:"members"`
-}
-
-// ゲームのオプションを設定する (ホスト -> サーバー)
-type RoomSetOptionEvent struct {
-	Something string `json:"something"`
-}
-
-// RoomUpdateOptionEvent defines model for RoomUpdateOptionEvent.
-type RoomUpdateOptionEvent struct {
-	Something string `json:"something"`
-}
-
-// 最後の回答を受信する (サーバー -> ルーム全員)
-type ShowAnswerEvent struct {
-	Answer string `json:"answer"`
-
-	// 次のWebsocketイベントのリスト
-	Next NextShowStatus `json:"next"`
-}
-
-// 次のキャンバスを受信する (サーバー -> ルーム全員)
-type ShowCanvasEvent struct {
-	Img string `json:"img"`
-
-	// 次のWebsocketイベントのリスト
-	Next NextShowStatus `json:"next"`
-}
-
-// 最初のお題を受信する (サーバー -> ルーム全員)
-type ShowOdaiEvent struct {
-	// 次のWebsocketイベントのリスト
-	Next NextShowStatus `json:"next"`
-	Odai string         `json:"odai"`
-}
-
 // ユーザー情報
 type User struct {
 	Avatar   int       `json:"avatar"`
@@ -191,8 +105,94 @@ type User struct {
 	Username string    `json:"username"`
 }
 
+// 回答を送信する (ルームの各員 -> サーバー)
+type WsAnswerSendEventBody struct {
+	Answer string `json:"answer"`
+}
+
+// 絵が飛んできて，回答する (サーバー -> ルーム各員)
+type WsAnswerStartEventBody struct {
+	Img       string `json:"img"`
+	TimeLimit int    `json:"timeLimit"`
+}
+
+// 最後の回答を受信する (サーバー -> ルーム全員)
+type WsChangeHostEventBody struct {
+	HostId string `json:"hostId"`
+}
+
+// 絵を送信する (ルームの各員 -> サーバー)
+//
+// -> (DRAWフェーズが終わってなかったら) また，DRAW_START が飛んでくる
+type WsDrawSendEventBody struct {
+	Img string `json:"img"`
+}
+
+// キャンバス情報とお題を送信する (サーバー -> ルーム各員)
+type WsDrawStartEventBody struct {
+	AllDrawPhaseNum float32 `json:"allDrawPhaseNum"`
+	DrawPhaseNum    int     `json:"drawPhaseNum"`
+	Img             string  `json:"img"`
+	Odai            string  `json:"odai"`
+	TimeLimit       int     `json:"timeLimit"`
+}
+
 // Websocketイベントのリスト
 type WsEvent string
+
+// ゲームの開始を通知する (サーバー -> ルーム全員)
+type WsGameStartEventBody struct {
+	OdaiHint  string `json:"odaiHint"`
+	TimeLimit int    `json:"timeLimit"`
+}
+
+// 次のWebsocketイベントのリスト
+type WsNextShowStatus string
+
+// お題を送信する (ルームの各員 -> サーバー)
+type WsOdaiSendEventBody struct {
+	Odai string `json:"odai"`
+}
+
+// 部屋に追加のメンバーが来たことを通知する (サーバー -> ルーム全員)
+type WsRoomNewMemberEventBody struct {
+	Capacity int       `json:"capacity"`
+	HostId   uuid.UUID `json:"hostId"`
+	Members  []User    `json:"members"`
+}
+
+// ゲームのオプションを設定する (ホスト -> サーバー)
+type WsRoomSetOptionEventBody struct {
+	Something string `json:"something"`
+}
+
+// WsRoomUpdateOptionEventBody defines model for WsRoomUpdateOptionEventBody.
+type WsRoomUpdateOptionEventBody struct {
+	Something string `json:"something"`
+}
+
+// 最後の回答を受信する (サーバー -> ルーム全員)
+type WsShowAnswerEventBody struct {
+	Answer string `json:"answer"`
+
+	// 次のWebsocketイベントのリスト
+	Next WsNextShowStatus `json:"next"`
+}
+
+// 次のキャンバスを受信する (サーバー -> ルーム全員)
+type WsShowCanvasEventBody struct {
+	Img string `json:"img"`
+
+	// 次のWebsocketイベントのリスト
+	Next WsNextShowStatus `json:"next"`
+}
+
+// 最初のお題を受信する (サーバー -> ルーム全員)
+type WsShowOdaiEventBody struct {
+	// 次のWebsocketイベントのリスト
+	Next WsNextShowStatus `json:"next"`
+	Odai string           `json:"odai"`
+}
 
 // ルームID
 type RoomIdInPath string
