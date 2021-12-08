@@ -2,7 +2,6 @@ package ws
 
 import (
 	"encoding/json"
-	"errors"
 
 	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/oapi"
@@ -12,7 +11,7 @@ import (
 func (c *Client) callEventHandler(req *oapi.WsJSONRequestBody) error {
 	h, ok := receivedEventMap[req.Type]
 	if !ok {
-		return errors.New("unknown event type")
+		return errUnknownEventType
 	}
 
 	return h(c, req.Body)
@@ -39,12 +38,12 @@ var receivedEventMap = map[oapi.WsEvent]eventHandler{
 // Receive event handlers
 func (c *Client) receiveRoomSetOptionEvent(body interface{}) error {
 	if body == nil {
-		return errors.New("body is nil")
+		return errNilBody
 	}
 
 	e := new(oapi.WsRoomSetOptionEventBody)
 	if err := mapstructure.Decode(body, e); err != nil {
-		return errors.New("invalid body")
+		return err
 	}
 
 	return nil
@@ -52,7 +51,7 @@ func (c *Client) receiveRoomSetOptionEvent(body interface{}) error {
 
 func (c *Client) receiveRequestGameStartEvent(_ interface{}) error {
 	if c.userId != c.room.HostId {
-		return errors.New("unauthorized")
+		return errUnAuthorized
 	}
 
 	c.room.Game.Status = model.GameStatusOdai
@@ -84,7 +83,7 @@ func (c *Client) receiveOdaiCancelEvent(_ interface{}) error {
 
 func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 	if body == nil {
-		return errors.New("body is nil")
+		return errNilBody
 	}
 
 	e := new(oapi.WsOdaiSendEventBody)
@@ -105,12 +104,12 @@ func (c *Client) receiveDrawCancelEvent(_ interface{}) error {
 
 func (c *Client) receiveDrawSendEvent(body interface{}) error {
 	if body == nil {
-		return errors.New("body is nil")
+		return errNilBody
 	}
 
 	e := new(oapi.WsDrawSendEventBody)
 	if err := mapstructure.Decode(body, e); err != nil {
-		return errors.New("invalid body")
+		return err
 	}
 
 	return nil
@@ -126,12 +125,12 @@ func (c *Client) receiveAnswerCancelEvent(_ interface{}) error {
 
 func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 	if body == nil {
-		return errors.New("body is nil")
+		return errNilBody
 	}
 
 	e := new(oapi.WsAnswerSendEventBody)
 	if err := mapstructure.Decode(body, e); err != nil {
-		return errors.New("invalid body")
+		return err
 	}
 
 	return nil
