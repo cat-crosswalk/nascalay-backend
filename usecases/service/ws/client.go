@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/21hack02win/nascalay-backend/model"
+	"github.com/21hack02win/nascalay-backend/oapi"
 	"github.com/gorilla/websocket"
 )
 
@@ -23,9 +24,7 @@ const (
 	maxMessageSize = 512
 )
 
-var (
-	newline = []byte{'\n'}
-)
+var newline = []byte{'\n'}
 
 type Client struct {
 	hub    *Hub
@@ -107,10 +106,19 @@ func (c *Client) readPump() {
 	c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
-		_, m, err := c.conn.ReadMessage()
-		if err != nil {
+		req := new(oapi.WsJSONRequestBody)
+		if err := c.conn.ReadJSON(req); err != nil {
+			if !websocket.IsCloseError(err) && !websocket.IsUnexpectedCloseError(err) {
+				log.Println("Error:", err.Error())
+			}
 			break
 		}
-		c.rcv <- m
+
+		if err := c.callEventHandler(req); err != nil {
+			log.Println("Error:", err.Error())
+			continue
+		}
+
+		// c.rcv <- m // TODO:消す？
 	}
 }
