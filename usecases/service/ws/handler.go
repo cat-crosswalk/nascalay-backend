@@ -14,12 +14,7 @@ func (c *Client) callEventHandler(req *oapi.WsJSONRequestBody) error {
 		return errors.New("unknown event type")
 	}
 
-	var reqBody interface{}
-	if req.Body != nil {
-		reqBody = *req.Body
-	}
-
-	return h(c, reqBody)
+	return h(c, req.Body)
 }
 
 type eventHandler func(c *Client, body interface{}) error
@@ -152,11 +147,16 @@ func (c *Client) receiveReturnRoomEvent(_ interface{}) error {
 // }
 
 func (c *Client) sendGameStartEvent() error {
-	buf, err := json.Marshal(&oapi.WsGameStartEventBody{
-		// TODO: 埋める
-		// OdaiHint: random.OdaiExample(),
-		// TimeLimit: 40,
-	})
+	buf, err := json.Marshal(
+		&oapi.WsJSONBody{
+			Type: oapi.WsEventGAMESTART,
+			Body: &oapi.WsGameStartEventBody{
+				// TODO: 埋める
+				// OdaiHint: random.OdaiExample(),
+				// TimeLimit: 40,
+			},
+		},
+	)
 	if err != nil {
 		return err
 	}

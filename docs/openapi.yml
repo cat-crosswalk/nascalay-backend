@@ -89,6 +89,7 @@ paths:
                           - type: object
                     required:
                       - type
+                      - body
                 type: object
       operationId: ws
       requestBody:
@@ -113,6 +114,7 @@ paths:
                         - type: object
                   required:
                     - type
+                    - body
               type: object
         description: ''
       description: |-
