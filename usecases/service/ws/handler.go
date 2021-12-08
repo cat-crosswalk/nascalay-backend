@@ -133,6 +133,9 @@ func (c *Client) sendGameStartEvent() error {
 		return err
 	}
 
+	// ODAIフェーズに移行
+	c.room.Game.Status = model.GameStatusOdai
+
 	go c.sendToEachClientInRoom(buf)
 
 	return nil
