@@ -342,7 +342,7 @@ func (c *Client) sendDrawFinishEvent() error {
 		return err
 	}
 
-	go c.sendToEachClientInRoom(buf)
+	go c.sendMsgToEachClientInRoom(buf)
 
 	return nil
 }
