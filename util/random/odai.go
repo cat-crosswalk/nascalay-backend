@@ -1,6 +1,9 @@
 package random
 
-import "math/rand"
+import (
+	"math/rand"
+	"time"
+)
 
 var (
 	prefixData = [...]string{
@@ -12,6 +15,10 @@ var (
 		"爆弾",
 	}
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 //nolint:unused,deadcode
 func odaiExample() string {
