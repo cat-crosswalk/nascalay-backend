@@ -227,6 +227,7 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 	}
 
 	if len(room.Game.Odais) == len(room.Members) {
+		c.room.Game.Ready = make(map[model.UserId]struct{})
 		c.room.Game.Status = model.GameStatusDraw
 	}
 
@@ -294,7 +295,6 @@ func (c *Client) sendDrawStartEvent() error {
 	return nil
 }
 
-// TODO: 実装する
 // DRAW_READY
 // 絵が書き終わっていることを通知する (ルームの各員 -> サーバー)
 func (c *Client) receiveDrawReadyEvent(_ interface{}) error {
@@ -302,10 +302,17 @@ func (c *Client) receiveDrawReadyEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
+	c.room.Game.AddReady(c.userId)
+
+	if c.room.AllMembersAreReady() {
+		if err := c.sendDrawFinishEvent(); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
-// TODO: 実装する
 // DRAW_CANCEL
 // 絵が書き終わっている通知を解除する (ルームの各員 -> サーバー)
 func (c *Client) receiveDrawCancelEvent(_ interface{}) error {
@@ -313,17 +320,29 @@ func (c *Client) receiveDrawCancelEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
+	c.room.Game.CancelReady(c.userId)
+
 	return nil
 }
 
-// TODO: 実装する
 // DRAW_FINISH
 // 全員が絵を完了したことor制限時間が来たことを通知する (サーバー -> ルーム全員)
 // クライアントは絵を送信する
-func (c *Client) sendDrawFinishEvent(body interface{}) error {
+func (c *Client) sendDrawFinishEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusDraw) {
 		return errWrongPhase
 	}
+
+	buf, err := json.Marshal(
+		&oapi.WsJSONBody{
+			Type: oapi.WsEventDRAWFINISH,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	go c.sendToEachClientInRoom(buf)
 
 	return nil
 }
