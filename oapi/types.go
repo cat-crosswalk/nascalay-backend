@@ -170,7 +170,7 @@ type WsDrawSendEventBody struct {
 // キャンバス情報とお題を送信する (サーバー -> ルーム各員)
 type WsDrawStartEventBody struct {
 	// 全DRAWフェーズ数
-	AllDrawPhaseNum float32 `json:"allDrawPhaseNum"`
+	AllDrawPhaseNum int `json:"allDrawPhaseNum"`
 
 	// ユーザーが描画するキャンバスの分割情報・描画位置
 	Canvas Canvas `json:"canvas"`
