@@ -212,10 +212,10 @@ type WsOdaiSendEventBody struct {
 // WsReceiveMessage defines model for WsReceiveMessage.
 type WsReceiveMessage struct {
 	// Embedded fields due to inline allOf schema
-	Body *interface{} `json:"body,omitempty"`
+	Body interface{} `json:"body"`
 
 	// Websocketイベントのリスト
-	Type *WsEvent `json:"type,omitempty"`
+	Type WsEvent `json:"type"`
 }
 
 // 部屋に追加のメンバーが来たことを通知する (サーバー -> ルーム全員)
@@ -245,10 +245,10 @@ type WsRoomUpdateOptionEventBody struct {
 // WsSendMessage defines model for WsSendMessage.
 type WsSendMessage struct {
 	// Embedded fields due to inline allOf schema
-	Body *interface{} `json:"body,omitempty"`
+	Body interface{} `json:"body"`
 
 	// Websocketイベントのリスト
-	Type *WsEvent `json:"type,omitempty"`
+	Type WsEvent `json:"type"`
 }
 
 // 最後の回答を受信する (サーバー -> ルーム全員)

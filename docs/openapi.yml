@@ -99,10 +99,6 @@ components:
   schemas:
     WsSendMessage:
       title: WsSendMessage
-      type: object
-      required:
-        - type
-        - body
       allOf:
         - properties:
             type:
@@ -114,12 +110,13 @@ components:
                 - $ref: "#/components/schemas/WsDrawSendEventBody"
                 - $ref: "#/components/schemas/WsAnswerSendEventBody"
                 - type: object
+          required:
+            - type
+            - body
+      type: object
     WsReceiveMessage:
       title: WsReceiveMessage
       type: object
-      required:
-        - type
-        - body
       allOf:
         - properties:
             type:
@@ -136,6 +133,9 @@ components:
                 - $ref: "#/components/schemas/WsShowAnswerEventBody"
                 - $ref: "#/components/schemas/WsChangeHostEventBody"
                 - type: object
+          required:
+            - type
+            - body
     Room:
       title: Room
       type: object
