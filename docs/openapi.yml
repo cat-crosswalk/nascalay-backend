@@ -135,7 +135,7 @@ components:
       type: object
       description: ルーム情報
       example:
-        roomId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        roomId: Nao340bzc0
         capacity: 0
         userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
         hostId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
@@ -146,18 +146,24 @@ components:
       properties:
         roomId:
           type: string
+          pattern: '^[A-Za-z0-9]{10}$'
+          description: ルームID
         capacity:
           type: integer
+          description: ルームの最大収容人数
         userId:
           type: string
           format: uuid
           x-go-type: uuid.UUID
+          description: ユーザーUUID
         hostId:
           type: string
           format: uuid
           x-go-type: uuid.UUID
+          description: ホストのユーザーUUID
         members:
           type: array
+          description: 現在ルームにいるメンバーの情報
           items:
             $ref: '#/components/schemas/User'
       required:
@@ -179,10 +185,13 @@ components:
           type: string
           format: uuid
           x-go-type: uuid.UUID
+          description: ユーザーUUID
         username:
           type: string
+          description: ユーザー名
         avatar:
           type: integer
+          description: アバターの種類
       required:
         - userId
         - username
@@ -198,10 +207,13 @@ components:
       properties:
         username:
           type: string
+          description: ユーザー名
         avatar:
           type: integer
+          description: アバターの種類
         capacity:
           type: integer
+          description: ルームの最大収容人数
       required:
         - username
         - avatar
@@ -211,16 +223,20 @@ components:
       type: object
       description: ルーム参加リクエスト
       example:
-        roomId: Nao340bzc0b23
+        roomId: Nao340bzc0
         username: John
         avatar: 5
       properties:
         roomId:
           type: string
+          pattern: '^[A-Za-z0-9]{10}$'
+          description: ルームID
         username:
           type: string
+          description: ユーザー名
         avatar:
           type: integer
+          description: アバターの種類
       required:
         - roomId
         - username
@@ -230,13 +246,15 @@ components:
       type: object
       description: ユーザーが描画するキャンバスの分割情報・描画位置
       example:
-        boardName: "5×5"
+        boardName: 5×5
         areaId: 5
       properties:
         boardName:
           type: string
+          description: ボード名
         areaId:
           type: integer
+          description: ボードの座標ID
       required:
         - boardName
         - areaId
@@ -296,12 +314,15 @@ components:
       properties:
         capacity:
           type: integer
+          description: ルームの最大収容人数
         hostId:
           type: string
           format: uuid
           x-go-type: uuid.UUID
+          description: ホストのユーザーUUID
         members:
           type: array
+          description: 現在ルームにいるメンバーの情報
           items:
             $ref: '#/components/schemas/User'
       required:
@@ -317,6 +338,7 @@ components:
       properties:
         something:
           type: string
+          description: 何か
       required:
         - something
     WsRoomUpdateOptionEventBody:
@@ -325,8 +347,10 @@ components:
       properties:
         something:
           type: string
+          description: 何か
       required:
         - something
+      description: ゲームの設定を更新する (サーバー -> ルーム全員)
     WsGameStartEventBody:
       title: WsGameStartEventBody
       type: object
@@ -337,8 +361,10 @@ components:
       properties:
         odaiHint:
           type: string
+          description: お題のサジェスト
         timeLimit:
           type: integer
+          description: 制限時間
       required:
         - odaiHint
         - timeLimit
@@ -351,6 +377,7 @@ components:
       properties:
         odai:
           type: string
+          description: お題
       required:
         - odai
     WsDrawStartEventBody:
@@ -359,7 +386,7 @@ components:
       example:
         timeLimit: 40
         canvas:
-          boardName: "5×5"
+          boardName: 5×5
           areaId: 5
         img: iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKAQAAAAClSfIQAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgA...
         odai: ねこのおばけ
@@ -369,16 +396,21 @@ components:
       properties:
         timeLimit:
           type: integer
+          description: 制限時間
         canvas:
           $ref: '#/components/schemas/Canvas'
         img:
           type: string
+          description: 画像ID
         odai:
           type: string
+          description: お題
         drawPhaseNum:
           type: integer
+          description: 現在のDRAWフェーズの番号
         allDrawPhaseNum:
           type: number
+          description: 全DRAWフェーズ数
       required:
         - timeLimit
         - canvas
@@ -398,6 +430,7 @@ components:
       properties:
         img:
           type: string
+          description: 画像ID
       required:
         - img
     WsAnswerStartEventBody:
@@ -410,8 +443,10 @@ components:
       properties:
         timeLimit:
           type: integer
+          description: 制限時間
         img:
           type: string
+          description: 画像ID
       required:
         - timeLimit
         - img
@@ -424,6 +459,7 @@ components:
       properties:
         answer:
           type: string
+          description: 回答
       required:
         - answer
     WsShowOdaiEventBody:
@@ -436,6 +472,7 @@ components:
       properties:
         odai:
           type: string
+          description: お題
         next:
           $ref: '#/components/schemas/WsNextShowStatus'
       required:
@@ -451,6 +488,7 @@ components:
       properties:
         img:
           type: string
+          description: 画像ID
         next:
           $ref: '#/components/schemas/WsNextShowStatus'
       required:
@@ -466,6 +504,7 @@ components:
       properties:
         answer:
           type: string
+          description: 回答
         next:
           $ref: '#/components/schemas/WsNextShowStatus'
       required:
@@ -481,6 +520,7 @@ components:
         hostId:
           type: string
           format: uuid
+          description: ホストのユーザーUUID
       required:
         - hostId
   parameters:
@@ -490,6 +530,7 @@ components:
       required: true
       schema:
         type: string
+        pattern: '^[A-Za-z0-9]{10}$'
         description: ルームID
       description: ルームID
     userIdInQuery:
