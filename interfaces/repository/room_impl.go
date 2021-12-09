@@ -50,6 +50,7 @@ func (r *storeRepository) CreateRoom(cr *repository.CreateRoomArgs) (*model.Room
 			// TODO: ちゃんと書く
 			Status:  0,
 			Ready:   make(map[model.UserId]struct{}),
+			Odais:   make(map[model.UserId]model.Odai),
 			Timeout: 0,
 			Timer: model.Timer{
 				C: make(<-chan time.Time),

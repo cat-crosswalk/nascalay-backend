@@ -104,8 +104,6 @@ func (c *Client) receiveRequestGameStartEvent(_ interface{}) error {
 		return errUnAuthorized
 	}
 
-	c.room.Game.Status = model.GameStatusOdai
-
 	if err := c.sendGameStartEvent(); err != nil {
 		return err
 	}
@@ -195,7 +193,6 @@ func (c *Client) sendOdaiFinishEvent() error {
 	return nil
 }
 
-// TODO: 実装する
 // ODAI_SEND
 // お題を送信する (ルームの各員 -> サーバー)
 // DRAWフェーズを開始する
@@ -213,8 +210,17 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 		return err
 	}
 
-	// // DRAWフェーズに移行
-	// c.room.Game.Status = model.GameStatusDraw
+	c.room.Game.AddOdai(c.userId, model.Odai(e.Odai))
+
+	// 全員のお題送信が完了したらDRAWフェーズに移行
+	room, err := c.hub.repo.GetRoomFromUserId(c.userId)
+	if err != nil {
+		return err
+	}
+
+	if len(room.Game.Odais) == len(room.Members) {
+		c.room.Game.Status = model.GameStatusDraw
+	}
 
 	return nil
 }
