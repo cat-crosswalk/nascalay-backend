@@ -210,7 +210,14 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 		return err
 	}
 
-	c.room.Game.AddOdai(c.userId, model.Odai(e.Odai))
+	// 存在チェック
+	for _, v := range c.room.Game.Odais {
+		if v.SenderId == c.userId || v.Title == model.OdaiTitle(e.Odai) {
+			return errAlreadyExists
+		}
+	}
+
+	c.room.Game.AddOdai(c.userId, model.OdaiTitle(e.Odai))
 
 	// 全員のお題送信が完了したらDRAWフェーズに移行
 	room, err := c.hub.repo.GetRoomFromUserId(c.userId)
