@@ -259,7 +259,7 @@ components:
         - CHANGE_HOST
         - BREAK_ROOM
     WsReceiveMessage:
-      title: WsSendMessage
+      title: WsReceiveMessage
       description: WebSocketで クライアントからサーバーへ送信する情報
       allOf:
         - properties:
@@ -277,7 +277,7 @@ components:
             - body
       type: object
     WsSendMessage:
-      title: WsReceiveMessage
+      title: WsSendMessage
       description: WebSocketで サーバーからクライアントへ送信する情報
       allOf:
         - properties:
