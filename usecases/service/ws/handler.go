@@ -3,6 +3,7 @@ package ws
 
 import (
 	"encoding/json"
+	"log"
 
 	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/oapi"
@@ -57,7 +58,7 @@ func (c *Client) sendRoomNewMemberEvent(room *model.Room) error {
 		return err
 	}
 
-	c.sendToEachClientInRoom(buf)
+	c.sendMsgToEachClientInRoom(buf)
 
 	return nil
 }
@@ -136,7 +137,7 @@ func (c *Client) sendGameStartEvent() error {
 	// ODAIフェーズに移行
 	c.room.Game.Status = model.GameStatusOdai
 
-	go c.sendToEachClientInRoom(buf)
+	go c.sendMsgToEachClientInRoom(buf)
 
 	return nil
 }
@@ -188,7 +189,7 @@ func (c *Client) sendOdaiFinishEvent() error {
 		return err
 	}
 
-	go c.sendToEachClientInRoom(buf)
+	go c.sendMsgToEachClientInRoom(buf)
 
 	return nil
 }
@@ -229,16 +230,66 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 		c.room.Game.Status = model.GameStatusDraw
 	}
 
+	c.bloadcast(func(cc *Client) {
+		if err := cc.sendDrawStartEvent(); err != nil { // TODO: エラーハンドリングうまくする
+			log.Println(err)
+		}
+	})
+
 	return nil
 }
 
-// TODO: 実装する
 // DRAW_START
 // キャンバス情報とお題を送信する (サーバー -> ルーム各員)
-func (c *Client) sendDrawStartEvent(body interface{}) error {
+func (c *Client) sendDrawStartEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusDraw) {
 		return errWrongPhase
 	}
+
+	var (
+		game      = c.room.Game
+		drawCount = game.DrawCount
+		odai      *model.Odai
+		drawer    *model.Drawer
+	)
+
+	for _, v := range game.Odais {
+		if v.DrawerSeq[drawCount].UserId == c.userId {
+			odai = &v
+			drawer = &v.DrawerSeq[drawCount]
+			break
+		}
+	}
+
+	if odai == nil {
+		return errNotFound
+	}
+
+	if drawer == nil {
+		return errUnAuthorized
+	}
+
+	buf, err := json.Marshal(
+		&oapi.WsJSONBody{
+			Type: oapi.WsEventDRAWSTART,
+			Body: oapi.WsDrawStartEventBody{
+				AllDrawPhaseNum: game.AllDrawPhase(),
+				Canvas: oapi.Canvas{
+					AreaId:    drawer.Index.Int(),
+					BoardName: "", // TODO: ボード名入れる
+				},
+				DrawPhaseNum: game.DrawCount.Int(),
+				Img:          "", // TODO: イメージID入れる
+				Odai:         odai.Title.String(),
+				TimeLimit:    int(game.TimeLimit),
+			},
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	c.send <- buf
 
 	return nil
 }
