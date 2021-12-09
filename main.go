@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"strconv"
@@ -10,8 +11,12 @@ import (
 )
 
 func main() {
+	var endpoint string
+	flag.StringVar(&endpoint, "endpoint", "", "Custom endpoint .e.g \"/api\"")
+	flag.Parse()
+
 	e := echo.New()
-	infrastructure.Setup(e)
+	infrastructure.Setup(e, endpoint)
 
 	e.Logger.Fatal(e.Start(port()))
 }

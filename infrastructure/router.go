@@ -6,10 +6,10 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func Setup(e *echo.Echo) {
+func Setup(e *echo.Echo, endpoint string) {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
 	s := injectServer()
-	oapi.RegisterHandlers(e, s)
+	oapi.RegisterHandlersWithBaseURL(e, s, endpoint)
 }
