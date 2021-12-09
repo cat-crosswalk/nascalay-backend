@@ -93,23 +93,3 @@ func (g *Game) AddOdai(uid UserId, title OdaiTitle) {
 func (g *Game) AllDrawPhase() int {
 	return len(g.Odais)
 }
-
-func (g *Game) GetOdaiFromSenderId(sid UserId) *Odai {
-	for _, o := range g.Odais {
-		if o.SenderId == sid {
-			return &o
-		}
-	}
-
-	return nil
-}
-
-func (g *Odai) GetDrawer(uid UserId) *Drawer {
-	for _, d := range g.DrawerSeq {
-		if d.UserId == uid {
-			return &d
-		}
-	}
-
-	return nil
-}
