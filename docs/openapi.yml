@@ -76,22 +76,14 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - properties:
-                      type:
-                        $ref: "#/components/schemas/WsEvent"
-                      body:
-                        anyOf:
-                          - $ref: "#/components/schemas/WsRoomSetOptionEventBody"
-                          - $ref: "#/components/schemas/WsOdaiSendEventBody"
-                          - $ref: "#/components/schemas/WsDrawSendEventBody"
-                          - $ref: "#/components/schemas/WsAnswerSendEventBody"
-                          - type: object
-                    required:
-                      - type
-                      - body
-                type: object
+                $ref: "#/components/schemas/WsSendMessage"
       operationId: ws
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WsReceiveMessage"
+        description: ""
       description: |-
         Websocketを送受信する
 
@@ -105,6 +97,45 @@ paths:
         - $ref: "#/components/parameters/userIdInQuery"
 components:
   schemas:
+    WsSendMessage:
+      title: WsSendMessage
+      type: object
+      required:
+        - type
+        - body
+      allOf:
+        - properties:
+            type:
+              $ref: "#/components/schemas/WsEvent"
+            body:
+              anyOf:
+                - $ref: "#/components/schemas/WsRoomSetOptionEventBody"
+                - $ref: "#/components/schemas/WsOdaiSendEventBody"
+                - $ref: "#/components/schemas/WsDrawSendEventBody"
+                - $ref: "#/components/schemas/WsAnswerSendEventBody"
+                - type: object
+    WsReceiveMessage:
+      title: WsReceiveMessage
+      type: object
+      required:
+        - type
+        - body
+      allOf:
+        - properties:
+            type:
+              $ref: "#/components/schemas/WsEvent"
+            body:
+              oneOf:
+                - $ref: "#/components/schemas/WsRoomNewMemberEventBody"
+                - $ref: "#/components/schemas/WsRoomUpdateOptionEventBody"
+                - $ref: "#/components/schemas/WsGameStartEventBody"
+                - $ref: "#/components/schemas/WsDrawStartEventBody"
+                - $ref: "#/components/schemas/WsAnswerStartEventBody"
+                - $ref: "#/components/schemas/WsShowOdaiEventBody"
+                - $ref: "#/components/schemas/WsShowCanvasEventBody"
+                - $ref: "#/components/schemas/WsShowAnswerEventBody"
+                - $ref: "#/components/schemas/WsChangeHostEventBody"
+                - type: object
     Room:
       title: Room
       type: object

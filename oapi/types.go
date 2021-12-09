@@ -209,6 +209,15 @@ type WsOdaiSendEventBody struct {
 	Odai string `json:"odai"`
 }
 
+// WsReceiveMessage defines model for WsReceiveMessage.
+type WsReceiveMessage struct {
+	// Embedded fields due to inline allOf schema
+	Body *interface{} `json:"body,omitempty"`
+
+	// Websocketイベントのリスト
+	Type *WsEvent `json:"type,omitempty"`
+}
+
 // 部屋に追加のメンバーが来たことを通知する (サーバー -> ルーム全員)
 type WsRoomNewMemberEventBody struct {
 	// ルームの最大収容人数
@@ -231,6 +240,15 @@ type WsRoomSetOptionEventBody struct {
 type WsRoomUpdateOptionEventBody struct {
 	// 何か
 	Something string `json:"something"`
+}
+
+// WsSendMessage defines model for WsSendMessage.
+type WsSendMessage struct {
+	// Embedded fields due to inline allOf schema
+	Body *interface{} `json:"body,omitempty"`
+
+	// Websocketイベントのリスト
+	Type *WsEvent `json:"type,omitempty"`
 }
 
 // 最後の回答を受信する (サーバー -> ルーム全員)
@@ -273,13 +291,7 @@ type JoinRoomJSONBody JoinRoomRequest
 type CreateRoomJSONBody CreateRoomRequest
 
 // WsJSONBody defines parameters for Ws.
-type WsJSONBody struct {
-	// Embedded fields due to inline allOf schema
-	Body interface{} `json:"body"`
-
-	// Websocketイベントのリスト
-	Type WsEvent `json:"type"`
-}
+type WsJSONBody WsReceiveMessage
 
 // WsParams defines parameters for Ws.
 type WsParams struct {
