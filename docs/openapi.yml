@@ -76,13 +76,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WsSendMessage"
+                $ref: "#/components/schemas/WsReceiveMessage"
       operationId: ws
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/WsReceiveMessage"
+              $ref: "#/components/schemas/WsSendMessage"
         description: ""
       description: |-
         Websocketを送受信する
@@ -258,7 +258,7 @@ components:
         - NEXT_ROOM
         - CHANGE_HOST
         - BREAK_ROOM
-    WsSendMessage:
+    WsReceiveMessage:
       title: WsSendMessage
       description: WebSocketで クライアントからサーバーへ送信する情報
       allOf:
@@ -276,7 +276,7 @@ components:
             - type
             - body
       type: object
-    WsReceiveMessage:
+    WsSendMessage:
       title: WsReceiveMessage
       description: WebSocketで サーバーからクライアントへ送信する情報
       allOf:
