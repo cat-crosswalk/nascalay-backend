@@ -21,7 +21,7 @@ func init() {
 }
 
 //nolint:unused,deadcode
-func odaiExample() string {
+func OdaiExample() string {
 	prefix := prefixData[rand.Intn(len(prefixData))]
 	suffix := suffixData[rand.Intn(len(suffixData))]
 	return prefix + suffix
