@@ -1,6 +1,8 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type Game struct {
 	Status    GameStatus
@@ -24,11 +26,23 @@ const (
 )
 
 type Odai struct {
-	Title    OdaiTitle
-	SenderId UserId
+	Title     OdaiTitle
+	SenderId  UserId
+	DrawerSeq []Drawer
 }
 
 type OdaiTitle string
+
+type Drawer struct {
+	UserId UserId
+	Index  Index
+}
+
+type Index int
+
+func (g *Game) SetupDrawerSeq(members []UserId) {
+	// TODO: DrawerSeqを埋める
+}
 
 type Timeout int
 
