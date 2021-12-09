@@ -1,25 +1,25 @@
 openapi: 3.0.3
 info:
   title: nascalay
-  version: '1.0'
+  version: "1.0"
   description: nascalay v1 API
   contact:
     name: 21hack02win
-    url: 'https://github.com/21hack02win'
+    url: "https://github.com/21hack02win"
 servers:
-  - url: 'https://api.nascalay.trasta.dev'
+  - url: "https://api.nascalay.trasta.dev"
 paths:
   /rooms/new:
     post:
       summary: createRoom
       responses:
-        '200':
+        "200":
           description: OK
           headers: {}
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Room'
+                $ref: "#/components/schemas/Room"
       operationId: createRoom
       parameters: []
       description: 新規ルーム作成
@@ -27,7 +27,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateRoomRequest'
+              $ref: "#/components/schemas/CreateRoomRequest"
       tags:
         - room
   /rooms/join:
@@ -35,32 +35,32 @@ paths:
       summary: joinRoom
       operationId: joinRoom
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Room'
+                $ref: "#/components/schemas/Room"
       description: ルームに参加
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/JoinRoomRequest'
+              $ref: "#/components/schemas/JoinRoomRequest"
       tags:
         - room
-  '/rooms/{roomId}':
+  "/rooms/{roomId}":
     parameters:
-      - $ref: '#/components/parameters/roomIdInPath'
+      - $ref: "#/components/parameters/roomIdInPath"
     get:
       summary: getRoom
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Room'
+                $ref: "#/components/schemas/Room"
       operationId: getRoom
       description: ルーム情報を取得
       tags:
@@ -71,7 +71,7 @@ paths:
       tags:
         - ws
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
@@ -79,13 +79,13 @@ paths:
                 allOf:
                   - properties:
                       type:
-                        $ref: '#/components/schemas/WsEvent'
+                        $ref: "#/components/schemas/WsEvent"
                       body:
                         anyOf:
-                          - $ref: '#/components/schemas/WsRoomSetOptionEventBody'
-                          - $ref: '#/components/schemas/WsOdaiSendEventBody'
-                          - $ref: '#/components/schemas/WsDrawSendEventBody'
-                          - $ref: '#/components/schemas/WsAnswerSendEventBody'
+                          - $ref: "#/components/schemas/WsRoomSetOptionEventBody"
+                          - $ref: "#/components/schemas/WsOdaiSendEventBody"
+                          - $ref: "#/components/schemas/WsDrawSendEventBody"
+                          - $ref: "#/components/schemas/WsAnswerSendEventBody"
                           - type: object
                     required:
                       - type
@@ -99,24 +99,24 @@ paths:
               allOf:
                 - properties:
                     type:
-                      $ref: '#/components/schemas/WsEvent'
+                      $ref: "#/components/schemas/WsEvent"
                     body:
                       oneOf:
-                        - $ref: '#/components/schemas/WsRoomNewMemberEventBody'
-                        - $ref: '#/components/schemas/WsRoomUpdateOptionEventBody'
-                        - $ref: '#/components/schemas/WsGameStartEventBody'
-                        - $ref: '#/components/schemas/WsDrawStartEventBody'
-                        - $ref: '#/components/schemas/WsAnswerStartEventBody'
-                        - $ref: '#/components/schemas/WsShowOdaiEventBody'
-                        - $ref: '#/components/schemas/WsShowCanvasEventBody'
-                        - $ref: '#/components/schemas/WsShowAnswerEventBody'
-                        - $ref: '#/components/schemas/WsChangeHostEventBody'
+                        - $ref: "#/components/schemas/WsRoomNewMemberEventBody"
+                        - $ref: "#/components/schemas/WsRoomUpdateOptionEventBody"
+                        - $ref: "#/components/schemas/WsGameStartEventBody"
+                        - $ref: "#/components/schemas/WsDrawStartEventBody"
+                        - $ref: "#/components/schemas/WsAnswerStartEventBody"
+                        - $ref: "#/components/schemas/WsShowOdaiEventBody"
+                        - $ref: "#/components/schemas/WsShowCanvasEventBody"
+                        - $ref: "#/components/schemas/WsShowAnswerEventBody"
+                        - $ref: "#/components/schemas/WsChangeHostEventBody"
                         - type: object
                   required:
                     - type
                     - body
               type: object
-        description: ''
+        description: ""
       description: |-
         Websocketを送受信する
 
@@ -127,7 +127,7 @@ paths:
             }
         }
       parameters:
-        - $ref: '#/components/parameters/userIdInQuery'
+        - $ref: "#/components/parameters/userIdInQuery"
 components:
   schemas:
     Room:
@@ -146,7 +146,7 @@ components:
       properties:
         roomId:
           type: string
-          pattern: '^[A-Za-z0-9]{10}$'
+          pattern: "^[A-Za-z0-9]{10}$"
           description: ルームID
         capacity:
           type: integer
@@ -165,7 +165,7 @@ components:
           type: array
           description: 現在ルームにいるメンバーの情報
           items:
-            $ref: '#/components/schemas/User'
+            $ref: "#/components/schemas/User"
       required:
         - roomId
         - capacity
@@ -229,7 +229,7 @@ components:
       properties:
         roomId:
           type: string
-          pattern: '^[A-Za-z0-9]{10}$'
+          pattern: "^[A-Za-z0-9]{10}$"
           description: ルームID
         username:
           type: string
@@ -324,7 +324,7 @@ components:
           type: array
           description: 現在ルームにいるメンバーの情報
           items:
-            $ref: '#/components/schemas/User'
+            $ref: "#/components/schemas/User"
       required:
         - capacity
         - hostId
@@ -398,7 +398,7 @@ components:
           type: integer
           description: 制限時間
         canvas:
-          $ref: '#/components/schemas/Canvas'
+          $ref: "#/components/schemas/Canvas"
         img:
           type: string
           description: 画像ID
@@ -409,7 +409,7 @@ components:
           type: integer
           description: 現在のDRAWフェーズの番号
         allDrawPhaseNum:
-          type: number
+          type: integer
           description: 全DRAWフェーズ数
       required:
         - timeLimit
@@ -474,7 +474,7 @@ components:
           type: string
           description: お題
         next:
-          $ref: '#/components/schemas/WsNextShowStatus'
+          $ref: "#/components/schemas/WsNextShowStatus"
       required:
         - odai
         - next
@@ -490,7 +490,7 @@ components:
           type: string
           description: 画像ID
         next:
-          $ref: '#/components/schemas/WsNextShowStatus'
+          $ref: "#/components/schemas/WsNextShowStatus"
       required:
         - img
         - next
@@ -506,7 +506,7 @@ components:
           type: string
           description: 回答
         next:
-          $ref: '#/components/schemas/WsNextShowStatus'
+          $ref: "#/components/schemas/WsNextShowStatus"
       required:
         - answer
         - next
@@ -530,7 +530,7 @@ components:
       required: true
       schema:
         type: string
-        pattern: '^[A-Za-z0-9]{10}$'
+        pattern: "^[A-Za-z0-9]{10}$"
         description: ルームID
       description: ルームID
     userIdInQuery:
