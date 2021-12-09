@@ -127,7 +127,7 @@ func (c *Client) readPump() {
 	}
 }
 
-func (c *Client) sendToEachClientInRoom(msg []byte) {
+func (c *Client) bloadcast(next func(c *Client)) {
 	room, err := c.hub.repo.GetRoomFromUserId(c.userId)
 	if err != nil {
 		log.Println("Error:", err.Error())
@@ -140,10 +140,16 @@ func (c *Client) sendToEachClientInRoom(msg []byte) {
 			continue
 		}
 
+		next(cc)
+	}
+}
+
+func (c *Client) sendMsgToEachClientInRoom(msg []byte) {
+	c.bloadcast(func(cc *Client) {
 		select {
 		case cc.send <- msg:
 		default:
 			c.hub.unregister(cc)
 		}
-	}
+	})
 }
