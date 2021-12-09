@@ -116,7 +116,6 @@ components:
       type: object
     WsReceiveMessage:
       title: WsReceiveMessage
-      type: object
       allOf:
         - properties:
             type:
@@ -136,6 +135,7 @@ components:
           required:
             - type
             - body
+      type: object
     Room:
       title: Room
       type: object
