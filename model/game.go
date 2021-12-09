@@ -5,6 +5,7 @@ import "time"
 type Game struct {
 	Status    GameStatus
 	Ready     map[UserId]struct{}
+	Odais     map[UserId]Odai
 	Timeout   Timeout
 	Timer     Timer
 	DrawCount DrawCount
@@ -21,6 +22,8 @@ const (
 	GameStatusAnswer
 	GameStatusShow
 )
+
+type Odai string
 
 type Timeout int
 
@@ -44,4 +47,8 @@ func (g *Game) AddReady(uid UserId) {
 
 func (g *Game) CancelReady(uid UserId) {
 	delete(g.Ready, uid)
+}
+
+func (g *Game) AddOdai(uid UserId, odai Odai) {
+	g.Odais[uid] = odai
 }
