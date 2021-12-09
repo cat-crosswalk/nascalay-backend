@@ -1,11 +1,13 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type Game struct {
 	Status    GameStatus
 	Ready     map[UserId]struct{}
-	Odais     map[UserId]Odai
+	Odais     []Odai
 	Timeout   Timeout
 	Timer     Timer
 	DrawCount DrawCount
@@ -23,7 +25,24 @@ const (
 	GameStatusShow
 )
 
-type Odai string
+type Odai struct {
+	Title     OdaiTitle
+	SenderId  UserId
+	DrawerSeq []Drawer
+}
+
+type OdaiTitle string
+
+type Drawer struct {
+	UserId UserId
+	Index  Index
+}
+
+type Index int
+
+func (g *Game) SetupDrawerSeq(members []UserId) {
+	// TODO: DrawerSeqを埋める
+}
 
 type Timeout int
 
@@ -49,6 +68,9 @@ func (g *Game) CancelReady(uid UserId) {
 	delete(g.Ready, uid)
 }
 
-func (g *Game) AddOdai(uid UserId, odai Odai) {
-	g.Odais[uid] = odai
+func (g *Game) AddOdai(uid UserId, title OdaiTitle) {
+	g.Odais = append(g.Odais, Odai{
+		Title:    title,
+		SenderId: uid,
+	})
 }
