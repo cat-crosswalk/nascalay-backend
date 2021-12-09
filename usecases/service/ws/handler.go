@@ -62,6 +62,7 @@ func (c *Client) sendRoomNewMemberEvent(room *model.Room) error {
 	return nil
 }
 
+// TODO: 実装する
 // ROOM_SET_OPTION
 // ゲームのオプションを設定する (ホスト -> サーバー)
 func (c *Client) receiveRoomSetOptionEvent(body interface{}) error {
@@ -81,6 +82,7 @@ func (c *Client) receiveRoomSetOptionEvent(body interface{}) error {
 	return nil
 }
 
+// TODO: 実装する
 // ROOM_UPDATE_OPTION
 // ゲームの設定を更新する (サーバー -> ルーム全員)
 func (c *Client) sendRoomUpdateOptionEvent(body interface{}) error {
@@ -193,6 +195,7 @@ func (c *Client) sendOdaiFinishEvent() error {
 	return nil
 }
 
+// TODO: 実装する
 // ODAI_SEND
 // お題を送信する (ルームの各員 -> サーバー)
 // DRAWフェーズを開始する
@@ -216,6 +219,7 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 	return nil
 }
 
+// TODO: 実装する
 // DRAW_START
 // キャンバス情報とお題を送信する (サーバー -> ルーム各員)
 func (c *Client) sendDrawStartEvent(body interface{}) error {
@@ -226,6 +230,7 @@ func (c *Client) sendDrawStartEvent(body interface{}) error {
 	return nil
 }
 
+// TODO: 実装する
 // DRAW_READY
 // 絵が書き終わっていることを通知する (ルームの各員 -> サーバー)
 func (c *Client) receiveDrawReadyEvent(_ interface{}) error {
@@ -236,6 +241,7 @@ func (c *Client) receiveDrawReadyEvent(_ interface{}) error {
 	return nil
 }
 
+// TODO: 実装する
 // DRAW_CANCEL
 // 絵が書き終わっている通知を解除する (ルームの各員 -> サーバー)
 func (c *Client) receiveDrawCancelEvent(_ interface{}) error {
@@ -246,6 +252,7 @@ func (c *Client) receiveDrawCancelEvent(_ interface{}) error {
 	return nil
 }
 
+// TODO: 実装する
 // DRAW_FINISH
 // 全員が絵を完了したことor制限時間が来たことを通知する (サーバー -> ルーム全員)
 // クライアントは絵を送信する
@@ -257,6 +264,7 @@ func (c *Client) sendDrawFinishEvent(body interface{}) error {
 	return nil
 }
 
+// TODO: 実装する
 // DRAW_SEND
 // 絵を送信する (ルームの各員 -> サーバー)
 // お題が残っていたら再度DRAW_START が送信される
@@ -281,6 +289,7 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 	return nil
 }
 
+// TODO: 実装する
 // ANSWER_START
 // 絵が飛んできて，回答する (サーバー -> ルーム各員)
 func (c *Client) sendAnswerStartEvent(body interface{}) error {
@@ -291,6 +300,7 @@ func (c *Client) sendAnswerStartEvent(body interface{}) error {
 	return nil
 }
 
+// TODO: 実装する
 // ANSWER_READY
 // 回答の入力が完了していることを通知する (ルームの各員 -> サーバー)
 func (c *Client) receiveAnswerReadyEvent(_ interface{}) error {
@@ -301,6 +311,7 @@ func (c *Client) receiveAnswerReadyEvent(_ interface{}) error {
 	return nil
 }
 
+// TODO: 実装する
 // ANSWER_CANCEL
 // 回答の入力の完了を解除する (ルームの各員 -> サーバー)
 func (c *Client) receiveAnswerCancelEvent(_ interface{}) error {
@@ -311,6 +322,7 @@ func (c *Client) receiveAnswerCancelEvent(_ interface{}) error {
 	return nil
 }
 
+// TODO: 実装する
 // ANSWER_FINISH
 // 全員が回答の入力を完了したことor制限時間が来たことを通知する (サーバー -> ルーム全員)
 // クライアントは回答を送信する
@@ -322,6 +334,7 @@ func (c *Client) sendAnswerFinishEvent(body interface{}) error {
 	return nil
 }
 
+// TODO: 実装する
 // ANSWER_SEND
 // 回答を送信する (ルームの各員 -> サーバー)
 // SHOWフェーズを開始する
@@ -345,6 +358,7 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 	return nil
 }
 
+// TODO: 実装する
 // SHOW_START
 // 結果表示フェーズが始まったことを通知する (サーバー -> ルーム全員)
 func (c *Client) sendShowStartEvent(body interface{}) error {
@@ -355,6 +369,7 @@ func (c *Client) sendShowStartEvent(body interface{}) error {
 	return nil
 }
 
+// TODO: 実装する
 // SHOW_NEXT
 // つぎの結果表示を要求する (ホスト -> サーバー)
 func (c *Client) receiveShowNextEvent(_ interface{}) error {
@@ -365,6 +380,7 @@ func (c *Client) receiveShowNextEvent(_ interface{}) error {
 	return nil
 }
 
+// TODO: 実装する
 // SHOW_ODAI
 // 最初のお題を受信する (サーバー -> ルーム全員)
 func (c *Client) sendShowOdaiEvent(body interface{}) error {
@@ -375,6 +391,7 @@ func (c *Client) sendShowOdaiEvent(body interface{}) error {
 	return nil
 }
 
+// TODO: 実装する
 // SHOW_CANVAS
 // 次のキャンバスを受信する (サーバー -> ルーム全員)
 func (c *Client) sendShowCanvasEvent(body interface{}) error {
@@ -385,6 +402,7 @@ func (c *Client) sendShowCanvasEvent(body interface{}) error {
 	return nil
 }
 
+// TODO: 実装する
 // SHOW_ANSWER
 // 最後の回答を受信する (サーバー -> ルーム全員)
 func (c *Client) sendShowAnswerEvent(body interface{}) error {
@@ -395,6 +413,7 @@ func (c *Client) sendShowAnswerEvent(body interface{}) error {
 	return nil
 }
 
+// TODO: 実装する
 // RETURN_ROOM
 // ルーム(新規加入待機状態) に戻る (ホスト -> サーバー)
 // このタイミングでサーバーは保持しているゲームデータを削除
@@ -406,6 +425,7 @@ func (c *Client) receiveReturnRoomEvent(_ interface{}) error {
 	return nil
 }
 
+// TODO: 実装する
 // NEXT_ROOM
 // ルームの表示に遷移する (サーバー -> ルーム全員)
 func (c *Client) sendNextRoomEvent(body interface{}) error {
@@ -416,12 +436,14 @@ func (c *Client) sendNextRoomEvent(body interface{}) error {
 	return nil
 }
 
+// TODO: 実装する
 // CHANGE_HOST
 // ホストが落ちた時に飛んできて，ホスト役を変更する (サーバー -> ルーム全員)
 func (c *Client) sendChangeHostEvent(body interface{}) error {
 	return nil
 }
 
+// TODO: 実装する
 // BREAK_ROOM
 // 部屋が破壊されたときに通知する (サーバー -> ルーム全員)
 // 部屋が立ってからゲーム開始まで15分以上経過している場合，部屋を閉じる
