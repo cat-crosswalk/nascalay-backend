@@ -104,8 +104,6 @@ func (c *Client) receiveRequestGameStartEvent(_ interface{}) error {
 		return errUnAuthorized
 	}
 
-	c.room.Game.Status = model.GameStatusOdai
-
 	if err := c.sendGameStartEvent(); err != nil {
 		return err
 	}
