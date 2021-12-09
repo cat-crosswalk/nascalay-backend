@@ -92,31 +92,6 @@ paths:
                       - body
                 type: object
       operationId: ws
-      requestBody:
-        content:
-          application/json:
-            schema:
-              allOf:
-                - properties:
-                    type:
-                      $ref: "#/components/schemas/WsEvent"
-                    body:
-                      oneOf:
-                        - $ref: "#/components/schemas/WsRoomNewMemberEventBody"
-                        - $ref: "#/components/schemas/WsRoomUpdateOptionEventBody"
-                        - $ref: "#/components/schemas/WsGameStartEventBody"
-                        - $ref: "#/components/schemas/WsDrawStartEventBody"
-                        - $ref: "#/components/schemas/WsAnswerStartEventBody"
-                        - $ref: "#/components/schemas/WsShowOdaiEventBody"
-                        - $ref: "#/components/schemas/WsShowCanvasEventBody"
-                        - $ref: "#/components/schemas/WsShowAnswerEventBody"
-                        - $ref: "#/components/schemas/WsChangeHostEventBody"
-                        - type: object
-                  required:
-                    - type
-                    - body
-              type: object
-        description: ""
       description: |-
         Websocketを送受信する
 
