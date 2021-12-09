@@ -97,45 +97,6 @@ paths:
         - $ref: "#/components/parameters/userIdInQuery"
 components:
   schemas:
-    WsSendMessage:
-      title: WsSendMessage
-      allOf:
-        - properties:
-            type:
-              $ref: "#/components/schemas/WsEvent"
-            body:
-              anyOf:
-                - $ref: "#/components/schemas/WsRoomSetOptionEventBody"
-                - $ref: "#/components/schemas/WsOdaiSendEventBody"
-                - $ref: "#/components/schemas/WsDrawSendEventBody"
-                - $ref: "#/components/schemas/WsAnswerSendEventBody"
-                - type: object
-          required:
-            - type
-            - body
-      type: object
-    WsReceiveMessage:
-      title: WsReceiveMessage
-      allOf:
-        - properties:
-            type:
-              $ref: "#/components/schemas/WsEvent"
-            body:
-              oneOf:
-                - $ref: "#/components/schemas/WsRoomNewMemberEventBody"
-                - $ref: "#/components/schemas/WsRoomUpdateOptionEventBody"
-                - $ref: "#/components/schemas/WsGameStartEventBody"
-                - $ref: "#/components/schemas/WsDrawStartEventBody"
-                - $ref: "#/components/schemas/WsAnswerStartEventBody"
-                - $ref: "#/components/schemas/WsShowOdaiEventBody"
-                - $ref: "#/components/schemas/WsShowCanvasEventBody"
-                - $ref: "#/components/schemas/WsShowAnswerEventBody"
-                - $ref: "#/components/schemas/WsChangeHostEventBody"
-                - type: object
-          required:
-            - type
-            - body
-      type: object
     Room:
       title: Room
       type: object
@@ -297,6 +258,47 @@ components:
         - NEXT_ROOM
         - CHANGE_HOST
         - BREAK_ROOM
+    WsSendMessage:
+      title: WsSendMessage
+      description: WebSocketで クライアントからサーバーへ送信する情報
+      allOf:
+        - properties:
+            type:
+              $ref: "#/components/schemas/WsEvent"
+            body:
+              anyOf:
+                - $ref: "#/components/schemas/WsRoomSetOptionEventBody"
+                - $ref: "#/components/schemas/WsOdaiSendEventBody"
+                - $ref: "#/components/schemas/WsDrawSendEventBody"
+                - $ref: "#/components/schemas/WsAnswerSendEventBody"
+                - type: object
+          required:
+            - type
+            - body
+      type: object
+    WsReceiveMessage:
+      title: WsReceiveMessage
+      description: WebSocketで サーバーからクライアントへ送信する情報
+      allOf:
+        - properties:
+            type:
+              $ref: "#/components/schemas/WsEvent"
+            body:
+              oneOf:
+                - $ref: "#/components/schemas/WsRoomNewMemberEventBody"
+                - $ref: "#/components/schemas/WsRoomUpdateOptionEventBody"
+                - $ref: "#/components/schemas/WsGameStartEventBody"
+                - $ref: "#/components/schemas/WsDrawStartEventBody"
+                - $ref: "#/components/schemas/WsAnswerStartEventBody"
+                - $ref: "#/components/schemas/WsShowOdaiEventBody"
+                - $ref: "#/components/schemas/WsShowCanvasEventBody"
+                - $ref: "#/components/schemas/WsShowAnswerEventBody"
+                - $ref: "#/components/schemas/WsChangeHostEventBody"
+                - type: object
+          required:
+            - type
+            - body
+      type: object
     WsNextShowStatus:
       title: WsNextWsEvent
       type: string
