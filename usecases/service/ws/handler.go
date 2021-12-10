@@ -275,7 +275,7 @@ func (c *Client) sendDrawStartEvent() error {
 		&oapi.WsJSONBody{
 			Type: oapi.WsEventDRAWSTART,
 			Body: oapi.WsDrawStartEventBody{
-				AllDrawPhaseNum: game.AllDrawPhase(),
+				AllDrawPhaseNum: c.room.AllDrawPhase(),
 				Canvas: oapi.Canvas{
 					AreaId:    drawer.AreaId.Int(),
 					BoardName: game.Canvas.BoardName,
@@ -395,7 +395,7 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 	game := c.room.Game
 	if allImgUpdated {
 		game.ResetReady()
-		if game.DrawCount.Int()+1 < game.AllDrawPhase() {
+		if game.DrawCount.Int()+1 < c.room.AllDrawPhase() {
 			game.DrawCount++
 
 			game.ResetImgUpdated()
