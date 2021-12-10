@@ -20,8 +20,11 @@ func (uid UserId) UUID() uuid.UUID {
 
 func UserIdFromString(str string) (UserId, error) {
 	uid, err := uuid.FromString(str)
+	if err != nil {
+		return UserId{}, fmt.Errorf("failed to convert UserId: %w", err)
+	}
 
-	return UserId(uid), fmt.Errorf("failed to convert UserId: %w", err)
+	return UserId(uid), nil
 }
 
 type Username string
