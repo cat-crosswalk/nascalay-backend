@@ -397,11 +397,9 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 		} else {
 			game.Status = model.GameStatusAnswer
 
-			c.bloadcast(func(cc *Client) {
-				if err := cc.sendAnswerStartEvent(); err != nil { // TODO: エラーハンドリングうまくする
-					log.Println(err)
-				}
-			})
+			if err := c.sendAnswerStartEvent(); err != nil {
+				return err
+			}
 		}
 	}
 
