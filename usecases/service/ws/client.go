@@ -128,13 +128,7 @@ func (c *Client) readPump() {
 }
 
 func (c *Client) bloadcast(next func(c *Client)) {
-	room, err := c.hub.repo.GetRoomFromUserId(c.userId)
-	if err != nil {
-		log.Println("Error:", err.Error())
-		return
-	}
-
-	for _, m := range room.Members {
+	for _, m := range c.room.Members {
 		cc, ok := c.hub.userIdToClient[m.Id]
 		if !ok {
 			continue
