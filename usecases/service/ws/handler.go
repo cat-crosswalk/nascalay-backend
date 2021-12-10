@@ -398,9 +398,7 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 		if game.DrawCount.Int()+1 < game.AllDrawPhase() {
 			game.DrawCount++
 
-			for _, v := range c.room.Game.Odais {
-				v.ImgUpdated = false
-			}
+			game.ResetImgUpdated()
 
 			c.bloadcast(func(cc *Client) {
 				if err := cc.sendDrawStartEvent(); err != nil { // TODO: エラーハンドリングうまくする

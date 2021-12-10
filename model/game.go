@@ -107,3 +107,9 @@ func (g *Game) AllDrawPhase() int {
 func (g *Game) ResetReady() {
 	g.Ready = make(map[UserId]struct{})
 }
+
+func (g *Game) ResetImgUpdated() {
+	for _, v := range g.Odais {
+		v.ImgUpdated = false
+	}
+}
