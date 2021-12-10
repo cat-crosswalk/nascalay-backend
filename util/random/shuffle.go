@@ -73,7 +73,7 @@ func SetupMemberRoles(g *model.Game, members []model.UserId) {
 		for {
 			for j := 0; j < n-1; j++ {
 				if k == g.Canvas.AllArea {
-					g.Odais[i].AnswerId = members[answers[i]]
+					g.Odais[i].AnswererId = members[answers[i]]
 					f = true
 					break
 				}

@@ -29,7 +29,7 @@ const (
 type Odai struct {
 	Title     OdaiTitle
 	SenderId  UserId
-	AnswerId  UserId
+	AnswererId  UserId
 	DrawerSeq []Drawer
 	Img       []byte
 }
