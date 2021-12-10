@@ -413,15 +413,35 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 	return nil
 }
 
-// TODO: 実装する
 // ANSWER_START
 // 絵が飛んできて，回答する (サーバー -> ルーム各員)
 func (c *Client) sendAnswerStartEvent() error {
+	// NOTE: 最後にお題を送信した人のクライアントで行う
 	if !c.room.GameStatusIs(model.GameStatusAnswer) {
 		return errWrongPhase
 	}
 
-	c.send <- []byte(`{"type":"ANSWER_START"}`) // TODO: 後で消す
+	for _, v := range c.room.Game.Odais {
+		ac, ok := c.hub.userIdToClient[v.AnswererId]
+		if !ok {
+			return errNotFound
+		}
+
+		buf, err := json.Marshal(
+			&oapi.WsJSONBody{
+				Type: oapi.WsEventANSWERSTART,
+				Body: oapi.WsAnswerStartEventBody{
+					// Img:       v.Img,
+					TimeLimit: int(c.room.Game.TimeLimit), // TODO: 調整する
+				},
+			},
+		)
+		if err != nil {
+			return err
+		}
+
+		ac.send <- buf
+	}
 
 	return nil
 }
