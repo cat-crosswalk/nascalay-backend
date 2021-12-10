@@ -660,7 +660,7 @@ func (c *Client) sendNextRoomEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
-	
+
 	buf, err := json.Marshal(
 		&oapi.WsJSONBody{
 			Type: oapi.WsEventNEXTROOM,
