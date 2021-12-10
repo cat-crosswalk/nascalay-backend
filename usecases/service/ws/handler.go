@@ -635,13 +635,35 @@ func (c *Client) sendShowOdaiEvent() error {
 	return nil
 }
 
-// TODO: 実装する
 // SHOW_CANVAS
 // 次のキャンバスを受信する (サーバー -> ルーム全員)
 func (c *Client) sendShowCanvasEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
+
+	var (
+		game      = c.room.Game
+		showCount = game.ShowCount
+	)
+	if len(game.Odais) < showCount.Int()+1 {
+		return errNotFound
+	}
+
+	buf, err := json.Marshal(
+		&oapi.WsJSONBody{
+			Type: oapi.WsEventSHOWCANVAS,
+			Body: &oapi.WsShowCanvasEventBody{
+				Next: oapi.WsNextShowStatus("answer"),
+				Img:  game.Odais[showCount.Int()].Img.String(),
+			},
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to encode as JSON: %w", err)
+	}
+
+	c.send <- buf
 
 	return nil
 }
