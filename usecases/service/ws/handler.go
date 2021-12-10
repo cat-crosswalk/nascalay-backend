@@ -443,7 +443,6 @@ func (c *Client) sendAnswerStartEvent() error {
 	return nil
 }
 
-// TODO: 実装する
 // ANSWER_READY
 // 回答の入力が完了していることを通知する (ルームの各員 -> サーバー)
 func (c *Client) receiveAnswerReadyEvent(_ interface{}) error {
@@ -462,7 +461,6 @@ func (c *Client) receiveAnswerReadyEvent(_ interface{}) error {
 	return nil
 }
 
-// TODO: 実装する
 // ANSWER_CANCEL
 // 回答の入力の完了を解除する (ルームの各員 -> サーバー)
 func (c *Client) receiveAnswerCancelEvent(_ interface{}) error {
@@ -475,7 +473,6 @@ func (c *Client) receiveAnswerCancelEvent(_ interface{}) error {
 	return nil
 }
 
-// TODO: 実装する
 // ANSWER_FINISH
 // 全員が回答の入力を完了したことor制限時間が来たことを通知する (サーバー -> ルーム全員)
 // クライアントは回答を送信する
