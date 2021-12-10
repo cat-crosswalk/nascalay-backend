@@ -254,7 +254,6 @@ func (c *Client) sendDrawStartEvent() error {
 	random.SetupMemberRoles(game, c.room.Members)
 
 	for _, v := range game.Odais {
-
 		if v.DrawerSeq[drawCount].UserId == c.userId {
 			odai = v
 			drawer = &v.DrawerSeq[drawCount]
