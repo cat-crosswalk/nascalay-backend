@@ -103,3 +103,7 @@ func (g *Game) AddOdai(uid UserId, title OdaiTitle) {
 func (g *Game) AllDrawPhase() int {
 	return len(g.Odais)
 }
+
+func (g *Game) ResetReady() {
+	g.Ready = make(map[UserId]struct{})
+}

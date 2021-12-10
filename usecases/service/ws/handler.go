@@ -227,7 +227,7 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 	}
 
 	if len(room.Game.Odais) == len(room.Members) {
-		c.room.Game.Ready = make(map[model.UserId]struct{})
+		c.room.Game.ResetReady()
 		c.room.Game.Status = model.GameStatusDraw
 	}
 
@@ -394,7 +394,7 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 
 	game := c.room.Game
 	if allImgUpdated {
-		game.Ready = make(map[model.UserId]struct{})
+		game.ResetReady()
 		if game.DrawCount.Int()+1 < game.AllDrawPhase() {
 			game.DrawCount++
 
