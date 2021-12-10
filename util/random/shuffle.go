@@ -103,10 +103,7 @@ func RandIntArray(n int) []int {
 	for i := 0; i < n; i++ {
 		arr[i] = i
 	}
-	for i := 0; i < n; i++ {
-		j := rand.Intn(n)
-		arr[i], arr[j] = arr[j], arr[i]
-	}
+	rand.Shuffle(len(arr), func(i, j int) { arr[i], arr[j] = arr[j], arr[i] })
 	return arr
 }
 
