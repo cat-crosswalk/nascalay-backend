@@ -571,7 +571,6 @@ func (c *Client) sendShowStartEvent() error {
 	return nil
 }
 
-// TODO: 実装する
 // SHOW_NEXT
 // つぎの結果表示を要求する (ホスト -> サーバー)
 func (c *Client) receiveShowNextEvent(_ interface{}) error {
@@ -604,13 +603,34 @@ func (c *Client) receiveShowNextEvent(_ interface{}) error {
 	return nil
 }
 
-// TODO: 実装する
 // SHOW_ODAI
 // 最初のお題を受信する (サーバー -> ルーム全員)
 func (c *Client) sendShowOdaiEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
+	var (
+		game      = c.room.Game
+		showCount = game.ShowCount
+	)
+	if len(game.Odais) < showCount.Int()+1 {
+		return errNotFound
+	}
+
+	buf, err := json.Marshal(
+		&oapi.WsJSONBody{
+			Type: oapi.WsEventSHOWODAI,
+			Body: &oapi.WsShowOdaiEventBody{
+				Next: oapi.WsNextShowStatus("canvas"),
+				Odai: game.Odais[showCount.Int()].Title.String(),
+			},
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to encode as JSON: %w", err)
+	}
+
+	c.send <- buf
 
 	return nil
 }

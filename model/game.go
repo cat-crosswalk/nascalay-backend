@@ -82,6 +82,10 @@ func (d DrawCount) Int() int {
 
 type ShowCount int
 
+func (s ShowCount) Int() int {
+	return int(s)
+}
+
 type GameNextShowPhase int
 
 const (
