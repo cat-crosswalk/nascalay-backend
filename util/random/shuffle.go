@@ -111,14 +111,10 @@ func RandIntArray(n int) []int {
 }
 
 func RandIntArrayAllMove(n int) []int {
-	org := make([]int, n)
-	for i := 0; i < n; i++ {
-		org[i] = i
-	}
 	res := make([]int, n)
 	inx := RandIntArray(n)
 	for i := 0; i < n; i++ {
-		res[inx[i]] = org[inx[(i+1)%n]]
+		res[inx[i]] = inx[(i+1)%n]
 	}
 	return res
 }
