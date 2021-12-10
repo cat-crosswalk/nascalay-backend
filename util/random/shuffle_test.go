@@ -21,7 +21,7 @@ func TestSetupMemberRoles(t *testing.T) {
 			name: "setup roles",
 			args: args{
 				g: &model.Game{
-					Odais: []model.Odai{
+					Odais: []*model.Odai{
 						{
 							Title:      "odai1",
 							SenderId:   model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001")),
