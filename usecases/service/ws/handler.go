@@ -540,13 +540,23 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 	return nil
 }
 
-// TODO: 実装する
 // SHOW_START
 // 結果表示フェーズが始まったことを通知する (サーバー -> ルーム全員)
 func (c *Client) sendShowStartEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
+
+	buf, err := json.Marshal(
+		&oapi.WsJSONBody{
+			Type: oapi.WsEventSHOWSTART,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to encode as JSON: %w", err)
+	}
+
+	c.send <- buf
 
 	return nil
 }
