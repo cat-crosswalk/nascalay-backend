@@ -630,7 +630,7 @@ func (c *Client) sendShowOdaiEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.send <- buf
+	c.sendOrUnregister(c, buf)
 
 	return nil
 }
@@ -662,7 +662,7 @@ func (c *Client) sendShowCanvasEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.send <- buf
+	c.sendOrUnregister(c, buf)
 
 	return nil
 }
@@ -699,7 +699,7 @@ func (c *Client) sendShowAnswerEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.send <- buf
+	c.sendOrUnregister(c, buf)
 
 	return nil
 }
