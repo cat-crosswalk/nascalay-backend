@@ -491,7 +491,6 @@ func (c *Client) sendAnswerFinishEvent() error {
 	return nil
 }
 
-// TODO: 実装する
 // ANSWER_SEND
 // 回答を送信する (ルームの各員 -> サーバー)
 // SHOWフェーズを開始する
@@ -509,8 +508,33 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 		return err
 	}
 
-	// // SHOWフェーズに移行
-	// c.room.Game.Status = model.GameStatusShow
+	game := c.room.Game
+
+	for _, v := range game.Odais {
+		if v.AnswererId == c.userId {
+			v.Answer = model.OdaiAnswer(e.Answer)
+			break
+		}
+	}
+
+	// 全員の回答が送信されたらSHOWフェーズに移行
+	allAnswerReceived := true
+	for _, v := range game.Odais {
+		if v.Answer == "" {
+			allAnswerReceived = false
+			break
+		}
+	}
+
+	if allAnswerReceived {
+		game.Status = model.GameStatusShow
+
+		c.bloadcast(func(cc *Client) {
+			if err := cc.sendShowStartEvent(); err != nil { // TODO: エラーハンドリングうまくする
+				log.Println(err)
+			}
+		})
+	}
 
 	return nil
 }
@@ -518,7 +542,7 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 // TODO: 実装する
 // SHOW_START
 // 結果表示フェーズが始まったことを通知する (サーバー -> ルーム全員)
-func (c *Client) sendShowStartEvent(body interface{}) error {
+func (c *Client) sendShowStartEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
