@@ -376,7 +376,7 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 	}
 
 	for _, v := range c.room.Game.Odais {
-		if v.SenderId == c.userId {
+		if v.DrawerSeq[c.room.Game.DrawCount].UserId == c.userId {
 			v.Img = model.Img(e.Img)
 			v.ImgUpdated = true
 			break
