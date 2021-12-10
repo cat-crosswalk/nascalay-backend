@@ -93,6 +93,20 @@ type Canvas struct {
 	AllArea   int
 }
 
+func InitGame(timeLimit int) *Game {
+	return &Game{
+		Status:    GameStatusRoom,
+		Ready:     make(map[UserId]struct{}),
+		Odais:     make([]*Odai, 0, 100),
+		TimeLimit: TimeLimit(timeLimit),
+		Timeout:   0,
+		Timer:     NewTimer(time.Second * time.Duration(TimeLimit(timeLimit))),
+		DrawCount: 0,
+		ShowCount: 0,
+		ShowPhase: 0,
+	}
+}
+
 func (g *Game) AddReady(uid UserId) {
 	g.Ready[uid] = struct{}{}
 }
