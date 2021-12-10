@@ -275,7 +275,7 @@ func (c *Client) sendDrawStartEvent() error {
 		&oapi.WsJSONBody{
 			Type: oapi.WsEventDRAWSTART,
 			Body: oapi.WsDrawStartEventBody{
-				AllDrawPhaseNum: game.AllDrawPhase(),
+				AllDrawPhaseNum: c.room.AllDrawPhase(),
 				Canvas: oapi.Canvas{
 					AreaId:    drawer.AreaId.Int(),
 					BoardName: game.Canvas.BoardName,
@@ -395,7 +395,7 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 	game := c.room.Game
 	if allImgUpdated {
 		game.ResetReady()
-		if game.DrawCount.Int()+1 < game.AllDrawPhase() {
+		if game.DrawCount.Int()+1 < c.room.AllDrawPhase() {
 			game.DrawCount++
 
 			game.ResetImgUpdated()
@@ -745,7 +745,7 @@ func (c *Client) sendNextRoomEvent() error {
 // TODO: 実装する
 // CHANGE_HOST
 // ホストが落ちた時に飛んできて，ホスト役を変更する (サーバー -> ルーム全員)
-func (c *Client) sendChangeHostEvent(body interface{}) error {
+func (c *Client) sendChangeHostEvent() error {
 	return nil
 }
 

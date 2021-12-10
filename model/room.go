@@ -20,6 +20,10 @@ func (c Capacity) Int() int {
 	return int(c)
 }
 
+func (r *Room) AllDrawPhase() int {
+	return r.Game.Canvas.AllArea * len(r.Game.Odais) / len(r.Members)
+}
+
 func (r *Room) GameStatusIs(status GameStatus) bool {
 	return r.Game.Status == status
 }
