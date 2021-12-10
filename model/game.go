@@ -81,7 +81,6 @@ const (
 	GameShowPhaseAnswer
 )
 
-// TODO: GAME_START で設定する
 type Canvas struct {
 	BoardName string // TODO: なんならenum 優先度低
 	AllArea   int
