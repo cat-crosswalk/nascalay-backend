@@ -142,9 +142,12 @@ func (c *Client) bloadcast(next func(c *Client)) {
 
 func (c *Client) sendOrUnregister(cc *Client, msg []byte) {
 	select {
-	case c.send <- msg:
+	case cc.send <- msg:
 	default:
 		c.hub.unregister(cc)
+		if cc.userId == c.room.HostId {
+			c.sendChangeHostEvent()
+		}
 	}
 }
 

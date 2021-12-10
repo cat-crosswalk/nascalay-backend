@@ -745,7 +745,7 @@ func (c *Client) sendNextRoomEvent() error {
 // TODO: 実装する
 // CHANGE_HOST
 // ホストが落ちた時に飛んできて，ホスト役を変更する (サーバー -> ルーム全員)
-func (c *Client) sendChangeHostEvent(body interface{}) error {
+func (c *Client) sendChangeHostEvent() error {
 	return nil
 }
 
