@@ -28,11 +28,11 @@ const (
 )
 
 type Odai struct {
-	Title     OdaiTitle
-	SenderId  UserId
-	AnswererId  UserId
-	DrawerSeq []Drawer
-	Img       []byte
+	Title      OdaiTitle
+	SenderId   UserId
+	AnswererId UserId
+	DrawerSeq  []Drawer
+	Img        []byte
 }
 
 type OdaiTitle string
