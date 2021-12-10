@@ -690,7 +690,7 @@ func (c *Client) sendShowAnswerEvent() error {
 		&oapi.WsJSONBody{
 			Type: oapi.WsEventSHOWANSWER,
 			Body: &oapi.WsShowAnswerEventBody{
-				Next: next,
+				Next:   next,
 				Answer: game.Odais[showCount.Int()].Answer.String(),
 			},
 		},
