@@ -7,6 +7,7 @@ import (
 
 	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/oapi"
+	"github.com/21hack02win/nascalay-backend/util/random"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -254,16 +255,9 @@ func (c *Client) sendDrawStartEvent() error {
 		drawer    *model.Drawer
 	)
 
+	random.SetupMemberRoles(game, c.room.Members)
+
 	for _, v := range game.Odais {
-		// TODO: 実装されたら消す
-		if len(v.DrawerSeq) == 0 {
-			v.DrawerSeq = []model.Drawer{
-				{
-					UserId: c.userId,
-					Index:  0,
-				},
-			}
-		}
 
 		if v.DrawerSeq[drawCount].UserId == c.userId {
 			odai = v

@@ -13,7 +13,7 @@ func init() {
 
 // AnswerId, DrawerSeqを埋める
 // 計算量削れなかったので15人までしか実行できません
-func SetupMemberRoles(g *model.Game, members []model.UserId) {
+func SetupMemberRoles(g *model.Game, members []model.User) {
 	// n = メンバーの数 = お題の数
 	n := len(members)
 	// n * n の行列を作る
@@ -73,12 +73,12 @@ func SetupMemberRoles(g *model.Game, members []model.UserId) {
 		for {
 			for j := 0; j < n-1; j++ {
 				if k == g.Canvas.AllArea {
-					g.Odais[i].AnswererId = members[answers[i]]
+					g.Odais[i].AnswererId = members[answers[i]].Id
 					f = true
 					break
 				}
 				g.Odais[i].DrawerSeq = append(g.Odais[i].DrawerSeq, model.Drawer{
-					UserId: members[rect[i][j]],
+					UserId: members[rect[i][j]].Id,
 					Index:  model.Index(ra[k]),
 				})
 				k += 1
