@@ -104,14 +104,9 @@ func (g *Game) CancelReady(uid UserId) {
 
 func (g *Game) AddOdai(uid UserId, title OdaiTitle) {
 	g.Odais = append(g.Odais, &Odai{
-		Title:    title,
-		SenderId: uid,
-		DrawerSeq: []Drawer{
-			{
-				UserId: uid,
-				AreaId: 0, // TODO
-			},
-		},
+		Title:     title,
+		SenderId:  uid,
+		DrawerSeq: []Drawer{},
 	})
 }
 
