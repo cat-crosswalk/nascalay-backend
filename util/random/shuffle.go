@@ -79,7 +79,7 @@ func SetupMemberRoles(g *model.Game, members []model.User) {
 				}
 				g.Odais[i].DrawerSeq = append(g.Odais[i].DrawerSeq, model.Drawer{
 					UserId: members[rect[i][j]].Id,
-					AreaId:  model.AreaId(ra[k]),
+					AreaId: model.AreaId(ra[k]),
 				})
 				k += 1
 			}
