@@ -5,16 +5,16 @@ import (
 )
 
 type Game struct {
-	Status    GameStatus
-	Ready     map[UserId]struct{}
-	Odais     []*Odai
-	TimeLimit TimeLimit
-	Timeout   Timeout
-	Timer     *Timer
-	DrawCount DrawCount
-	ShowCount ShowCount
-	ShowPhase GameShowPhase
-	Canvas    Canvas
+	Status        GameStatus
+	Ready         map[UserId]struct{}
+	Odais         []*Odai
+	TimeLimit     TimeLimit
+	Timeout       Timeout
+	Timer         *Timer
+	DrawCount     DrawCount
+	ShowCount     ShowCount
+	NextShowPhase GameNextShowPhase
+	Canvas        Canvas
 }
 
 type GameStatus int
@@ -80,12 +80,13 @@ func (d DrawCount) Int() int {
 
 type ShowCount int
 
-type GameShowPhase int
+type GameNextShowPhase int
 
 const (
-	GameShowPhaseOdai GameShowPhase = iota
+	GameShowPhaseOdai GameNextShowPhase = iota
 	GameShowPhaseCanvas
 	GameShowPhaseAnswer
+	GameShowPhaseEnd
 )
 
 type Canvas struct {

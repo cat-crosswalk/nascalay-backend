@@ -9,4 +9,5 @@ var (
 	errWrongPhase       = errors.New("wrong phase")
 	errNotFound         = errors.New("not found")
 	errAlreadyExists    = errors.New("already exists")
+	errUnknownPhase     = errors.New("unknown phase")
 )
