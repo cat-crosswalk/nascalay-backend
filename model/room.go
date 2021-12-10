@@ -20,16 +20,6 @@ func (c Capacity) Int() int {
 	return int(c)
 }
 
-func (r *Room) AllMembersAreReady() bool {
-	for _, m := range r.Members {
-		if _, ok := r.Game.Ready[m.Id]; !ok {
-			return false
-		}
-	}
-
-	return true
-}
-
 func (r *Room) AllDrawPhase() int {
 	return r.Game.Canvas.AllArea * len(r.Game.Odais) / len(r.Members)
 }
