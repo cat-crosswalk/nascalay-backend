@@ -56,7 +56,7 @@ func (r *storeRepository) CreateRoom(cr *repository.CreateRoomArgs) (*model.Room
 			Timer:     model.NewTimer(time.Second * time.Duration(timeLimit)),
 			DrawCount: 0,
 			ShowCount: 0,
-			ShowPhase: 0,
+			NextShowPhase: 0,
 		},
 	}
 

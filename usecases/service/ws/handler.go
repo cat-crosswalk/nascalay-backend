@@ -569,13 +569,35 @@ func (c *Client) receiveShowNextEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
+	if c.userId != c.room.HostId {
+		return errUnAuthorized
+	}
+
+	switch c.room.Game.NextShowPhase {
+	case model.GameShowPhaseOdai:
+		if err := c.sendShowOdaiEvent(); err != nil {
+			return fmt.Errorf("failed to send SHOW_ODAI event: %w", err)
+		}
+	case model.GameShowPhaseCanvas:
+		if err := c.sendShowCanvasEvent(); err != nil {
+			return fmt.Errorf("failed to send SHOW_CANVAS event: %w", err)
+		}
+	case model.GameShowPhaseAnswer:
+		if err := c.sendShowAnswerEvent(); err != nil {
+			return fmt.Errorf("failed to send SHOW_ANSWER event: %w", err)
+		}
+	case model.GameShowPhaseEnd:
+	default:
+		return errUnknownPhase
+	}
+
 	return nil
 }
 
 // TODO: 実装する
 // SHOW_ODAI
 // 最初のお題を受信する (サーバー -> ルーム全員)
-func (c *Client) sendShowOdaiEvent(body interface{}) error {
+func (c *Client) sendShowOdaiEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
@@ -586,7 +608,7 @@ func (c *Client) sendShowOdaiEvent(body interface{}) error {
 // TODO: 実装する
 // SHOW_CANVAS
 // 次のキャンバスを受信する (サーバー -> ルーム全員)
-func (c *Client) sendShowCanvasEvent(body interface{}) error {
+func (c *Client) sendShowCanvasEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
@@ -597,7 +619,7 @@ func (c *Client) sendShowCanvasEvent(body interface{}) error {
 // TODO: 実装する
 // SHOW_ANSWER
 // 最後の回答を受信する (サーバー -> ルーム全員)
-func (c *Client) sendShowAnswerEvent(body interface{}) error {
+func (c *Client) sendShowAnswerEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
