@@ -222,14 +222,11 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 	c.room.Game.AddOdai(c.userId, model.OdaiTitle(e.Odai))
 
 	// 全員のお題送信が完了したらDRAWフェーズに移行
-	room, err := c.hub.repo.GetRoomFromUserId(c.userId) // TODO: いる？
-	if err != nil {
-		return err
-	}
-
-	if len(room.Game.Odais) == len(room.Members) {
-		c.room.Game.ResetReady()
-		c.room.Game.Status = model.GameStatusDraw
+	members := c.room.Members
+	game := c.room.Game
+	if len(game.Odais) == len(members) {
+		game.ResetReady()
+		game.Status = model.GameStatusDraw
 	}
 
 	c.bloadcast(func(cc *Client) {
