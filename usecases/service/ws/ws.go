@@ -52,7 +52,9 @@ func (s *streamer) ServeWS(w http.ResponseWriter, r *http.Request, userId model.
 	go cli.writePump()
 	go cli.readPump()
 
-	cli.send <- []byte("Welcome to nascalay-backend!")
+	if err := cli.sendNewClientEvent("Welcome to nascalay-backend!"); err != nil {
+		return fmt.Errorf("failed to send NEW_CLIENT event: %w", err)
+	}
 
 	return nil
 }

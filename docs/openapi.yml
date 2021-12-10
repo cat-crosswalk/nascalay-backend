@@ -230,6 +230,7 @@ components:
       type: string
       description: Websocketイベントのリスト
       enum:
+        - NEW_CLIENT
         - ROOM_NEW_MEMBER
         - ROOM_SET_OPTION
         - ROOM_UPDATE_OPTION
@@ -285,6 +286,7 @@ components:
               $ref: '#/components/schemas/WsEvent'
             body:
               oneOf:
+                - $ref: '#/components/schemas/WsNewClientEventBody'
                 - $ref: '#/components/schemas/WsRoomNewMemberEventBody'
                 - $ref: '#/components/schemas/WsRoomUpdateOptionEventBody'
                 - $ref: '#/components/schemas/WsGameStartEventBody'
@@ -308,6 +310,17 @@ components:
         - canvas
         - answer
         - end
+    WsNewClientEventBody:
+      title: WsClientEventBody
+      type: object
+      description: 新規クライアントが追加されたことを通知する (サーバー -> 新規ユーザー)
+      example:
+        message: Welcome to nascalay-backend!
+      properties:
+        message:
+          type: string
+      required:
+        - message
     WsRoomNewMemberEventBody:
       title: WsRoomNewMemberEventBody
       type: object

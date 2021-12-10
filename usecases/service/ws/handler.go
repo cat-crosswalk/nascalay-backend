@@ -40,6 +40,30 @@ var receivedEventMap = map[oapi.WsEvent]eventHandler{
 	oapi.WsEventRETURNROOM:       (*Client).receiveReturnRoomEvent,
 }
 
+// NEW_CLIENT
+// 新規クライアントが追加されたことを通知する (サーバー -> 新規ユーザー)
+func (c *Client) sendNewClientEvent(msg string) error {
+	buf, err := json.Marshal(
+		&oapi.WsJSONBody{
+			Type: oapi.WsEventNEWCLIENT,
+			Body: &oapi.WsNewClientEventBody{
+				Message: msg,
+			},
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to encode as JSON: %w", err)
+	}
+
+	select {
+	case c.send <- buf:
+	default:
+		c.hub.unregister(c)
+	}
+
+	return nil
+}
+
 // ROOM_NEW_MEMBER
 // 部屋に追加のメンバーが来たことを通知する (サーバー -> ルーム全員)
 func (c *Client) sendRoomNewMemberEvent(room *model.Room) error {

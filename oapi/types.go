@@ -33,6 +33,8 @@ const (
 
 	WsEventGAMESTART WsEvent = "GAME_START"
 
+	WsEventNEWCLIENT WsEvent = "NEW_CLIENT"
+
 	WsEventNEXTROOM WsEvent = "NEXT_ROOM"
 
 	WsEventODAICANCEL WsEvent = "ODAI_CANCEL"
@@ -198,6 +200,11 @@ type WsGameStartEventBody struct {
 
 	// 制限時間
 	TimeLimit int `json:"timeLimit"`
+}
+
+// 新規クライアントが追加されたことを通知する (サーバー -> 新規ユーザー)
+type WsNewClientEventBody struct {
+	Message string `json:"message"`
 }
 
 // 次のWebsocketイベントのリスト
