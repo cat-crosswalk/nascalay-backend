@@ -10,7 +10,7 @@ type Game struct {
 	Odais     []*Odai
 	TimeLimit TimeLimit
 	Timeout   Timeout
-	Timer     Timer
+	Timer     *Timer
 	DrawCount DrawCount
 	ShowCount ShowCount
 	ShowPhase GameShowPhase
@@ -46,17 +46,13 @@ type Img []byte
 
 type Drawer struct {
 	UserId UserId
-	Index  Index // TODO: マージしてからAreaIdにする
+	AreaId AreaId
 }
 
-type Index int
+type AreaId int
 
-func (i Index) Int() int {
+func (i AreaId) Int() int {
 	return int(i)
-}
-
-func (g *Game) SetupDrawerSeq(members []UserId) {
-	// TODO: DrawerSeqを埋める
 }
 
 type TimeLimit int
@@ -64,6 +60,10 @@ type TimeLimit int
 type Timeout int
 
 type Timer time.Timer
+
+func NewTimer(duration time.Duration) *Timer {
+	return (*Timer)(time.NewTimer(duration))
+}
 
 type DrawCount int
 
@@ -81,7 +81,6 @@ const (
 	GameShowPhaseAnswer
 )
 
-// TODO: GAME_START で設定する
 type Canvas struct {
 	BoardName string // TODO: なんならenum 優先度低
 	AllArea   int
@@ -102,7 +101,7 @@ func (g *Game) AddOdai(uid UserId, title OdaiTitle) {
 		DrawerSeq: []Drawer{
 			{
 				UserId: uid,
-				Index:  0, // TODO
+				AreaId: 0, // TODO
 			},
 		},
 	})
