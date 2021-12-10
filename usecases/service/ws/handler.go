@@ -605,7 +605,6 @@ func (c *Client) sendShowAnswerEvent(body interface{}) error {
 	return nil
 }
 
-// TODO: 実装する
 // RETURN_ROOM
 // ルーム(新規加入待機状態) に戻る (ホスト -> サーバー)
 // このタイミングでサーバーは保持しているゲームデータを削除
@@ -613,14 +612,20 @@ func (c *Client) receiveReturnRoomEvent(_ interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
+	c.room.ResetGame()
 
+	c.bloadcast(func(cc *Client) {
+		if err := cc.sendNextRoomEvent(); err != nil {
+			log.Println("failed to send NEXT_ROOM event:", err)
+		}
+	})
 	return nil
 }
 
 // TODO: 実装する
 // NEXT_ROOM
 // ルームの表示に遷移する (サーバー -> ルーム全員)
-func (c *Client) sendNextRoomEvent(body interface{}) error {
+func (c *Client) sendNextRoomEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
