@@ -125,9 +125,8 @@ func (c *Client) sendGameStartEvent() error {
 		&oapi.WsJSONBody{
 			Type: oapi.WsEventGAMESTART,
 			Body: &oapi.WsGameStartEventBody{
-				// TODO: 埋める
-				// OdaiHint: random.OdaiExample(),
-				// TimeLimit: 40,
+				OdaiExample: random.OdaiExample(),
+				TimeLimit:   int(c.room.Game.TimeLimit),
 			},
 		},
 	)
@@ -278,10 +277,10 @@ func (c *Client) sendDrawStartEvent() error {
 				AllDrawPhaseNum: game.AllDrawPhase(),
 				Canvas: oapi.Canvas{
 					AreaId:    drawer.Index.Int(),
-					BoardName: "", // TODO: ボード名入れる
+					BoardName: game.Canvas.BoardName,
 				},
 				DrawPhaseNum: game.DrawCount.Int(),
-				Img:          "", // TODO: イメージID入れる
+				Img:          string(odai.Img),
 				Odai:         odai.Title.String(),
 				TimeLimit:    int(game.TimeLimit),
 			},
@@ -428,8 +427,8 @@ func (c *Client) sendAnswerStartEvent() error {
 			&oapi.WsJSONBody{
 				Type: oapi.WsEventANSWERSTART,
 				Body: oapi.WsAnswerStartEventBody{
-					// Img:       v.Img,
-					TimeLimit: int(c.room.Game.TimeLimit), // TODO: 調整する
+					Img:       string(v.Img),
+					TimeLimit: int(c.room.Game.TimeLimit),
 				},
 			},
 		)
