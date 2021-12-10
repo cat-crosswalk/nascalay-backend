@@ -5,7 +5,7 @@ type Room struct {
 	Capacity Capacity
 	HostId   UserId
 	Members  []User
-	Game     Game
+	Game     *Game
 }
 
 type RoomId string

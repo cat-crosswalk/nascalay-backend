@@ -11,7 +11,7 @@ import (
 func TestSetupMemberRoles(t *testing.T) {
 	type args struct {
 		g       *model.Game
-		members []model.UserId
+		members []model.User
 	}
 	tests := []struct {
 		name string
@@ -21,7 +21,7 @@ func TestSetupMemberRoles(t *testing.T) {
 			name: "setup roles",
 			args: args{
 				g: &model.Game{
-					Odais: []model.Odai{
+					Odais: []*model.Odai{
 						{
 							Title:      "odai1",
 							SenderId:   model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001")),
@@ -130,22 +130,22 @@ func TestSetupMemberRoles(t *testing.T) {
 						AllArea:   25,
 					},
 				},
-				members: []model.UserId{
-					model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001")),
-					model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000002")),
-					model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000003")),
-					model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000004")),
-					model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000005")),
-					model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000006")),
-					model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000007")),
-					model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000008")),
-					model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000009")),
-					model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000010")),
-					model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000011")),
-					model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000012")),
-					model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000013")),
-					model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000014")),
-					model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000015")),
+				members: []model.User{
+					{Id: model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"))},
+					{Id: model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000002"))},
+					{Id: model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000003"))},
+					{Id: model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000004"))},
+					{Id: model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000005"))},
+					{Id: model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000006"))},
+					{Id: model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000007"))},
+					{Id: model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000008"))},
+					{Id: model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000009"))},
+					{Id: model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000010"))},
+					{Id: model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000011"))},
+					{Id: model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000012"))},
+					{Id: model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000013"))},
+					{Id: model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000014"))},
+					{Id: model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000015"))},
 					// model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000016")),
 					// model.UserId(uuid.FromStringOrNil("00000000-0000-0000-0000-000000000017")),
 				},

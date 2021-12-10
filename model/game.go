@@ -7,7 +7,7 @@ import (
 type Game struct {
 	Status    GameStatus
 	Ready     map[UserId]struct{}
-	Odais     []Odai
+	Odais     []*Odai
 	TimeLimit TimeLimit
 	Timeout   Timeout
 	Timer     Timer
@@ -32,7 +32,8 @@ type Odai struct {
 	SenderId   UserId
 	AnswererId UserId
 	DrawerSeq  []Drawer
-	Img        []byte
+	Img        Img
+	ImgUpdated bool
 }
 
 type OdaiTitle string
@@ -40,6 +41,8 @@ type OdaiTitle string
 func (o OdaiTitle) String() string {
 	return string(o)
 }
+
+type Img []byte
 
 type Drawer struct {
 	UserId UserId
@@ -93,12 +96,28 @@ func (g *Game) CancelReady(uid UserId) {
 }
 
 func (g *Game) AddOdai(uid UserId, title OdaiTitle) {
-	g.Odais = append(g.Odais, Odai{
+	g.Odais = append(g.Odais, &Odai{
 		Title:    title,
 		SenderId: uid,
+		DrawerSeq: []Drawer{
+			{
+				UserId: uid,
+				Index:  0, // TODO
+			},
+		},
 	})
 }
 
 func (g *Game) AllDrawPhase() int {
 	return len(g.Odais)
+}
+
+func (g *Game) ResetReady() {
+	g.Ready = make(map[UserId]struct{})
+}
+
+func (g *Game) ResetImgUpdated() {
+	for _, v := range g.Odais {
+		v.ImgUpdated = false
+	}
 }

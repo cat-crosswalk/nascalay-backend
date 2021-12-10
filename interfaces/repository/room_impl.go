@@ -46,11 +46,11 @@ func (r *storeRepository) CreateRoom(cr *repository.CreateRoomArgs) (*model.Room
 				Avatar: cr.Avatar,
 			},
 		},
-		Game: model.Game{
+		Game: &model.Game{
 			// TODO: ちゃんと書く
 			Status:  0,
 			Ready:   make(map[model.UserId]struct{}),
-			Odais:   []model.Odai{},
+			Odais:   []*model.Odai{},
 			Timeout: 0,
 			Timer: model.Timer{
 				C: make(<-chan time.Time),

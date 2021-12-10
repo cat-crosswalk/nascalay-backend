@@ -7,6 +7,7 @@ import (
 
 	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/oapi"
+	"github.com/21hack02win/nascalay-backend/util/random"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -221,13 +222,13 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 	c.room.Game.AddOdai(c.userId, model.OdaiTitle(e.Odai))
 
 	// 全員のお題送信が完了したらDRAWフェーズに移行
-	room, err := c.hub.repo.GetRoomFromUserId(c.userId)
+	room, err := c.hub.repo.GetRoomFromUserId(c.userId) // TODO: いる？
 	if err != nil {
 		return err
 	}
 
 	if len(room.Game.Odais) == len(room.Members) {
-		c.room.Game.Ready = make(map[model.UserId]struct{})
+		c.room.Game.ResetReady()
 		c.room.Game.Status = model.GameStatusDraw
 	}
 
@@ -254,9 +255,12 @@ func (c *Client) sendDrawStartEvent() error {
 		drawer    *model.Drawer
 	)
 
+	random.SetupMemberRoles(game, c.room.Members)
+
 	for _, v := range game.Odais {
+
 		if v.DrawerSeq[drawCount].UserId == c.userId {
-			odai = &v
+			odai = v
 			drawer = &v.DrawerSeq[drawCount]
 			break
 		}
@@ -347,7 +351,6 @@ func (c *Client) sendDrawFinishEvent() error {
 	return nil
 }
 
-// TODO: 実装する
 // DRAW_SEND
 // 絵を送信する (ルームの各員 -> サーバー)
 // お題が残っていたら再度DRAW_START が送信される
@@ -366,8 +369,46 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 		return err
 	}
 
-	// // お題がすべて終わったらANSWERフェーズに移行
-	// c.room.Game.Status = model.GameStatusAnswer
+	for _, v := range c.room.Game.Odais {
+		if v.DrawerSeq[c.room.Game.DrawCount].UserId == c.userId {
+			v.Img = model.Img(e.Img)
+			v.ImgUpdated = true
+			break
+		}
+	}
+
+	// 全員の絵の送信が完了したら再度DRAW_STARTを送信する or ANSWERフェーズに移行
+	allImgUpdated := true
+	for _, v := range c.room.Game.Odais {
+		if !v.ImgUpdated {
+			allImgUpdated = false
+			break
+		}
+	}
+
+	game := c.room.Game
+	if allImgUpdated {
+		game.ResetReady()
+		if game.DrawCount.Int()+1 < game.AllDrawPhase() {
+			game.DrawCount++
+
+			game.ResetImgUpdated()
+
+			c.bloadcast(func(cc *Client) {
+				if err := cc.sendDrawStartEvent(); err != nil { // TODO: エラーハンドリングうまくする
+					log.Println(err)
+				}
+			})
+		} else {
+			game.Status = model.GameStatusAnswer
+
+			c.bloadcast(func(cc *Client) {
+				if err := cc.sendAnswerStartEvent(); err != nil { // TODO: エラーハンドリングうまくする
+					log.Println(err)
+				}
+			})
+		}
+	}
 
 	return nil
 }
@@ -375,10 +416,12 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 // TODO: 実装する
 // ANSWER_START
 // 絵が飛んできて，回答する (サーバー -> ルーム各員)
-func (c *Client) sendAnswerStartEvent(body interface{}) error {
+func (c *Client) sendAnswerStartEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusAnswer) {
 		return errWrongPhase
 	}
+
+	c.send <- []byte(`{"type":"ANSWER_START"}`) // TODO: 後で消す
 
 	return nil
 }
