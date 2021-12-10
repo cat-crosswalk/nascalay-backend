@@ -145,6 +145,9 @@ func (c *Client) sendOrUnregister(cc *Client, msg []byte) {
 	case cc.send <- msg:
 	default:
 		c.hub.unregister(cc)
+		if cc.userId == c.room.HostId {
+			c.sendChangeHostEvent()
+		}
 	}
 }
 
