@@ -140,12 +140,16 @@ func (c *Client) bloadcast(next func(c *Client)) {
 	}
 }
 
+func (c *Client) sendOrUnregister(cc *Client, msg []byte) {
+	select {
+	case c.send <- msg:
+	default:
+		c.hub.unregister(cc)
+	}
+}
+
 func (c *Client) sendMsgToEachClientInRoom(msg []byte) {
 	c.bloadcast(func(cc *Client) {
-		select {
-		case cc.send <- msg:
-		default:
-			c.hub.unregister(cc)
-		}
+		c.sendOrUnregister(cc, msg)
 	})
 }
