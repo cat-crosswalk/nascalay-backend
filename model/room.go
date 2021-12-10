@@ -35,5 +35,5 @@ func (r *Room) GameStatusIs(status GameStatus) bool {
 }
 
 func (r *Room) ResetGame() {
-	r.Game = InitGame(40) // Default time limit is 40 seconds
+	r.Game = InitGame(DefaultTimeLimit)
 }

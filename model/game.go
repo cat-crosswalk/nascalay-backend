@@ -64,6 +64,8 @@ func (i AreaId) Int() int {
 
 type TimeLimit int
 
+const DefaultTimeLimit = TimeLimit(40) // Default time limit is 40 seconds
+
 type Timeout int
 
 type Timer time.Timer
@@ -94,14 +96,14 @@ type Canvas struct {
 	AllArea   int
 }
 
-func InitGame(timeLimit int) *Game {
+func InitGame(timeLimit TimeLimit) *Game {
 	return &Game{
 		Status:        GameStatusRoom,
 		Ready:         make(map[UserId]struct{}),
 		Odais:         make([]*Odai, 0, 100),
-		TimeLimit:     TimeLimit(timeLimit),
+		TimeLimit:     timeLimit,
 		Timeout:       0,
-		Timer:         NewTimer(time.Second * time.Duration(TimeLimit(timeLimit))),
+		Timer:         NewTimer(time.Second * time.Duration(timeLimit)),
 		DrawCount:     0,
 		ShowCount:     0,
 		NextShowPhase: 0,
