@@ -55,10 +55,6 @@ func (i AreaId) Int() int {
 	return int(i)
 }
 
-func (g *Game) SetupDrawerSeq(members []UserId) {
-	// TODO: DrawerSeqを埋める
-}
-
 type TimeLimit int
 
 type Timeout int
