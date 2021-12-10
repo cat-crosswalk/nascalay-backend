@@ -654,13 +654,23 @@ func (c *Client) receiveReturnRoomEvent(_ interface{}) error {
 	return nil
 }
 
-// TODO: 実装する
 // NEXT_ROOM
 // ルームの表示に遷移する (サーバー -> ルーム全員)
 func (c *Client) sendNextRoomEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
+	
+	buf, err := json.Marshal(
+		&oapi.WsJSONBody{
+			Type: oapi.WsEventNEXTROOM,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to encode as JSON: %w", err)
+	}
+
+	c.send <- buf
 
 	return nil
 }
