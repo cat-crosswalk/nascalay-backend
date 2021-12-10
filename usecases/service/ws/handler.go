@@ -641,7 +641,6 @@ func (c *Client) sendShowCanvasEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
-
 	var (
 		game      = c.room.Game
 		showCount = game.ShowCount
@@ -668,13 +667,39 @@ func (c *Client) sendShowCanvasEvent() error {
 	return nil
 }
 
-// TODO: 実装する
 // SHOW_ANSWER
 // 最後の回答を受信する (サーバー -> ルーム全員)
 func (c *Client) sendShowAnswerEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
+	var (
+		game      = c.room.Game
+		showCount = game.ShowCount
+	)
+	if len(game.Odais) < showCount.Int()+1 {
+		return errNotFound
+	}
+
+	next := oapi.WsNextShowStatus("odai")
+	if len(game.Odais) == showCount.Int()+1 {
+		next = oapi.WsNextShowStatus("end")
+	}
+
+	buf, err := json.Marshal(
+		&oapi.WsJSONBody{
+			Type: oapi.WsEventSHOWANSWER,
+			Body: &oapi.WsShowAnswerEventBody{
+				Next: next,
+				Answer: game.Odais[showCount.Int()].Answer.String(),
+			},
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to encode as JSON: %w", err)
+	}
+
+	c.send <- buf
 
 	return nil
 }
