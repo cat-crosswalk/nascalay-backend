@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/21hack02win/nascalay-backend/model"
+	"github.com/21hack02win/nascalay-backend/oapi"
 	"github.com/gorilla/websocket"
 )
 
@@ -23,26 +24,29 @@ const (
 	maxMessageSize = 512
 )
 
-var (
-	newline = []byte{'\n'}
-)
+var newline = []byte{'\n'}
 
 type Client struct {
 	hub    *Hub
 	userId model.UserId
+	room   *model.Room
 	conn   *websocket.Conn
 	send   chan []byte
-	rcv    chan []byte
 }
 
-func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn) *Client {
+func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn) (*Client, error) {
+	room, err := hub.repo.GetRoomFromUserId(userId)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Client{
 		hub:    hub,
 		userId: userId,
+		room:   room,
 		conn:   conn,
 		send:   make(chan []byte, 256),
-		rcv:    make(chan []byte, 256),
-	}
+	}, nil
 }
 
 // writePump pumps messages from the hub to the websocket connection.
@@ -107,10 +111,39 @@ func (c *Client) readPump() {
 	c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
-		_, m, err := c.conn.ReadMessage()
-		if err != nil {
+		req := new(oapi.WsJSONRequestBody)
+		if err := c.conn.ReadJSON(req); err != nil {
+			if !websocket.IsCloseError(err) && !websocket.IsUnexpectedCloseError(err) {
+				log.Println("Error:", err.Error())
+			}
 			break
 		}
-		c.rcv <- m
+
+		if err := c.callEventHandler(req); err != nil {
+			log.Println("Error:", err.Error())
+			c.send <- []byte(err.Error())
+			continue
+		}
 	}
+}
+
+func (c *Client) bloadcast(next func(c *Client)) {
+	for _, m := range c.room.Members {
+		cc, ok := c.hub.userIdToClient[m.Id]
+		if !ok {
+			continue
+		}
+
+		next(cc)
+	}
+}
+
+func (c *Client) sendMsgToEachClientInRoom(msg []byte) {
+	c.bloadcast(func(cc *Client) {
+		select {
+		case cc.send <- msg:
+		default:
+			c.hub.unregister(cc)
+		}
+	})
 }

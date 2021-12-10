@@ -10,23 +10,22 @@ import (
 type Streamer interface {
 	Run()
 	ServeWS(w http.ResponseWriter, r *http.Request, uid model.UserId) error
+	NotifyOfNewRoomMember(room *model.Room) error
 }
 
 type streamer struct {
-	hub             *Hub
-	upgrader        websocket.Upgrader
-	userIdToClients map[model.UserId]map[*Client]bool
+	hub      *Hub
+	upgrader websocket.Upgrader
 }
 
-func NewStreamer() Streamer {
+func NewStreamer(hub *Hub) Streamer {
 	stream := &streamer{
-		hub: NewHub(),
+		hub: hub,
 		upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
 				return true
 			},
 		},
-		userIdToClients: make(map[model.UserId]map[*Client]bool),
 	}
 	stream.Run()
 	return stream
@@ -41,7 +40,11 @@ func (s *streamer) ServeWS(w http.ResponseWriter, r *http.Request, userId model.
 	if err != nil {
 		return err
 	}
-	cli := s.addNewClient(userId, conn)
+
+	cli, err := s.addNewClient(userId, conn)
+	if err != nil {
+		return err
+	}
 
 	// Allow collection of memory referenced by the caller by doing all work in
 	// new goroutines.
@@ -53,16 +56,31 @@ func (s *streamer) ServeWS(w http.ResponseWriter, r *http.Request, userId model.
 	return nil
 }
 
-func (s *streamer) addNewClient(userId model.UserId, conn *websocket.Conn) *Client {
-	cli := NewClient(s.hub, userId, conn)
+func (s *streamer) NotifyOfNewRoomMember(room *model.Room) error {
+	cli, ok := s.hub.userIdToClient[room.HostId]
+	if !ok {
+		return errNotFound
+	}
+
+	if err := cli.sendRoomNewMemberEvent(room); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *streamer) addNewClient(userId model.UserId, conn *websocket.Conn) (*Client, error) {
+	cli, err := NewClient(s.hub, userId, conn)
+	if err != nil {
+		return nil, err
+	}
+
 	s.hub.Register(cli)
 
-	m, ok := s.userIdToClients[userId]
+	c, ok := s.hub.userIdToClient[userId]
 	if !ok {
-		m = make(map[*Client]bool)
-		s.userIdToClients[userId] = m
+		s.hub.userIdToClient[userId] = c
 	}
-	m[cli] = true
 
-	return cli
+	return cli, nil
 }
