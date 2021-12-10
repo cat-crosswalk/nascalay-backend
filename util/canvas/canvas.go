@@ -2,6 +2,7 @@ package canvas
 
 import (
 	"bytes"
+	"fmt"
 	"image"
 	"image/draw"
 	"image/png"
@@ -10,11 +11,11 @@ import (
 func MergeImage(a []byte, b []byte) ([]byte, error) {
 	ai, _, err := image.Decode(bytes.NewReader(a))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to decode image: %w", err)
 	}
 	bi, _, err := image.Decode(bytes.NewReader(b))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to decode image: %w", err)
 	}
 	rect := image.Rectangle{image.Point{0, 0}, ai.Bounds().Size()}
 	rgba := image.NewRGBA(rect)
@@ -23,7 +24,7 @@ func MergeImage(a []byte, b []byte) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	err = png.Encode(buf, rgba)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to encode image: %w", err)
 	}
 	return buf.Bytes(), nil
 }

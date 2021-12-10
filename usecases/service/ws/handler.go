@@ -3,6 +3,7 @@ package ws
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/21hack02win/nascalay-backend/model"
@@ -56,7 +57,7 @@ func (c *Client) sendRoomNewMemberEvent(room *model.Room) error {
 		},
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
 	c.sendMsgToEachClientInRoom(buf)
@@ -78,7 +79,7 @@ func (c *Client) receiveRoomSetOptionEvent(body interface{}) error {
 
 	e := new(oapi.WsRoomSetOptionEventBody)
 	if err := mapstructure.Decode(body, e); err != nil {
-		return err
+		return fmt.Errorf("failed to decode body: %w", err)
 	}
 
 	return nil
@@ -107,7 +108,7 @@ func (c *Client) receiveRequestGameStartEvent(_ interface{}) error {
 	}
 
 	if err := c.sendGameStartEvent(); err != nil {
-		return err
+		return fmt.Errorf("failed to send GAME_START event: %w", err)
 	}
 
 	return nil
@@ -131,7 +132,7 @@ func (c *Client) sendGameStartEvent() error {
 		},
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
 	// ODAIフェーズに移行
@@ -153,7 +154,7 @@ func (c *Client) receiveOdaiReadyEvent(_ interface{}) error {
 
 	if c.room.AllMembersAreReady() {
 		if err := c.sendOdaiFinishEvent(); err != nil {
-			return err
+			return fmt.Errorf("failed to send ODAI_FINISH event: %w", err)
 		}
 	}
 
@@ -186,7 +187,7 @@ func (c *Client) sendOdaiFinishEvent() error {
 		},
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
 	go c.sendMsgToEachClientInRoom(buf)
@@ -208,7 +209,7 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 
 	e := new(oapi.WsOdaiSendEventBody)
 	if err := mapstructure.Decode(body, e); err != nil {
-		return err
+		return fmt.Errorf("failed to decode body: %w", err)
 	}
 
 	// 存在チェック
@@ -286,7 +287,7 @@ func (c *Client) sendDrawStartEvent() error {
 		},
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
 	c.send <- buf
@@ -305,7 +306,7 @@ func (c *Client) receiveDrawReadyEvent(_ interface{}) error {
 
 	if c.room.AllMembersAreReady() {
 		if err := c.sendDrawFinishEvent(); err != nil {
-			return err
+			return fmt.Errorf("failed to send DRAW_FINISH event: %w", err)
 		}
 	}
 
@@ -338,7 +339,7 @@ func (c *Client) sendDrawFinishEvent() error {
 		},
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
 	go c.sendMsgToEachClientInRoom(buf)
@@ -361,7 +362,7 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 
 	e := new(oapi.WsDrawSendEventBody)
 	if err := mapstructure.Decode(body, e); err != nil {
-		return err
+		return fmt.Errorf("failed to decode body: %w", err)
 	}
 
 	for _, v := range c.room.Game.Odais {
@@ -398,7 +399,7 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 			game.Status = model.GameStatusAnswer
 
 			if err := c.sendAnswerStartEvent(); err != nil {
-				return err
+				return fmt.Errorf("failed to send ANSWER_START event: %w", err)
 			}
 		}
 	}
@@ -430,7 +431,7 @@ func (c *Client) sendAnswerStartEvent() error {
 			},
 		)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to encode as JSON: %w", err)
 		}
 
 		ac.send <- buf
@@ -450,7 +451,7 @@ func (c *Client) receiveAnswerReadyEvent(_ interface{}) error {
 
 	if c.room.AllMembersAreReady() {
 		if err := c.sendAnswerFinishEvent(); err != nil {
-			return err
+			return fmt.Errorf("failed to send ANSWER_FINISH event: %w", err)
 		}
 	}
 
@@ -483,7 +484,7 @@ func (c *Client) sendAnswerFinishEvent() error {
 		},
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
 	go c.sendMsgToEachClientInRoom(buf)
@@ -505,7 +506,7 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 
 	e := new(oapi.WsAnswerSendEventBody)
 	if err := mapstructure.Decode(body, e); err != nil {
-		return err
+		return fmt.Errorf("failed to decode body: %w", err)
 	}
 
 	game := c.room.Game

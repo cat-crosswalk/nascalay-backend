@@ -2,6 +2,7 @@
 package ws
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -37,7 +38,7 @@ type Client struct {
 func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn) (*Client, error) {
 	room, err := hub.repo.GetRoomFromUserId(userId)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get room from userId: %w", err)
 	}
 
 	return &Client{
