@@ -153,3 +153,18 @@ func (c *Client) sendMsgToEachClientInRoom(msg []byte) {
 		c.sendOrUnregister(cc, msg)
 	})
 }
+
+func (c *Client) allMembersAreReady() bool {
+	r := c.room
+	for _, m := range r.Members {
+		if _, ok := c.hub.userIdToClient[m.Id]; !ok {
+			continue
+		}
+
+		if _, ok := r.Game.Ready[m.Id]; !ok {
+			return false
+		}
+	}
+
+	return true
+}
