@@ -8,6 +8,7 @@ import (
 
 	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/oapi"
+	"github.com/21hack02win/nascalay-backend/util/canvas"
 	"github.com/21hack02win/nascalay-backend/util/random"
 	"github.com/mitchellh/mapstructure"
 )
@@ -367,7 +368,16 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 
 	for _, v := range c.room.Game.Odais {
 		if v.DrawerSeq[c.room.Game.DrawCount].UserId == c.userId {
-			v.Img = model.Img(e.Img)
+			if len(v.Img) == 0 {
+				newImg, err := canvas.MergeImage(model.Img(v.Img), model.Img(e.Img))
+				if err != nil {
+					v.Img = model.Img(e.Img)
+					return fmt.Errorf("failed to merge image: %w", err)
+				}
+				v.Img = newImg
+			} else {
+				v.Img = model.Img(e.Img)
+			}
 			v.ImgUpdated = true
 			break
 		}
