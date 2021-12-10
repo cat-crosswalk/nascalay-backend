@@ -10,7 +10,7 @@ type Game struct {
 	Odais     []*Odai
 	TimeLimit TimeLimit
 	Timeout   Timeout
-	Timer     Timer
+	Timer     *Timer
 	DrawCount DrawCount
 	ShowCount ShowCount
 	ShowPhase GameShowPhase
@@ -64,6 +64,10 @@ type TimeLimit int
 type Timeout int
 
 type Timer time.Timer
+
+func NewTimer(duration time.Duration) *Timer {
+	return (*Timer)(time.NewTimer(duration))
+}
 
 type DrawCount int
 

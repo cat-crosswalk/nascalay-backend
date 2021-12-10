@@ -35,6 +35,7 @@ func (r *storeRepository) CreateRoom(cr *repository.CreateRoomArgs) (*model.Room
 	uid := random.UserId()
 	r.userIdToRoomId[uid] = rid
 
+	timeLimit := model.TimeLimit(40) // Default time limit is 40 seconds
 	room := model.Room{
 		Id:       rid,
 		Capacity: cr.Capacity,
@@ -47,19 +48,20 @@ func (r *storeRepository) CreateRoom(cr *repository.CreateRoomArgs) (*model.Room
 			},
 		},
 		Game: &model.Game{
-			// TODO: ちゃんと書く
-			Status:  0,
-			Ready:   make(map[model.UserId]struct{}),
-			Odais:   []*model.Odai{},
-			Timeout: 0,
-			Timer: model.Timer{
-				C: make(<-chan time.Time),
-			},
+			Status:    model.GameStatusRoom,
+			Ready:     make(map[model.UserId]struct{}),
+			Odais:     make([]*model.Odai, 0, 100),
+			TimeLimit: timeLimit,
+			Timeout:   0,
+			Timer:     model.NewTimer(time.Second * time.Duration(timeLimit)),
 			DrawCount: 0,
 			ShowCount: 0,
 			ShowPhase: 0,
 		},
 	}
+
+	// TODO: オプション処理
+
 	r.room[rid] = &room
 
 	return &room, nil
