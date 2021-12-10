@@ -45,7 +45,7 @@ func (r *storeRepository) CreateRoom(cr *repository.CreateRoomArgs) (*model.Room
 			},
 		},
 	}
-	room.Game = model.InitGame(model.DefaultTimeLimit)
+	room.Game = model.InitGame()
 
 	// TODO: オプション処理
 

@@ -96,14 +96,14 @@ type Canvas struct {
 	AllArea   int
 }
 
-func InitGame(timeLimit TimeLimit) *Game {
+func InitGame() *Game {
 	return &Game{
 		Status:        GameStatusRoom,
 		Ready:         make(map[UserId]struct{}),
 		Odais:         make([]*Odai, 0, 100),
-		TimeLimit:     timeLimit,
+		TimeLimit:     DefaultTimeLimit,
 		Timeout:       0,
-		Timer:         NewTimer(time.Second * time.Duration(timeLimit)),
+		Timer:         NewTimer(time.Second * time.Duration(DefaultTimeLimit)),
 		DrawCount:     0,
 		ShowCount:     0,
 		NextShowPhase: 0,

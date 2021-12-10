@@ -35,5 +35,5 @@ func (r *Room) GameStatusIs(status GameStatus) bool {
 }
 
 func (r *Room) ResetGame() {
-	r.Game = InitGame(DefaultTimeLimit)
+	r.Game = InitGame()
 }
