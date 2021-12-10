@@ -14,6 +14,7 @@ type Game struct {
 	DrawCount DrawCount
 	ShowCount ShowCount
 	ShowPhase GameShowPhase
+	Canvas    Canvas
 }
 
 type GameStatus int
@@ -29,6 +30,7 @@ const (
 type Odai struct {
 	Title      OdaiTitle
 	SenderId   UserId
+	AnswererId UserId
 	DrawerSeq  []Drawer
 	Img        Img
 	ImgUpdated bool
@@ -78,6 +80,12 @@ const (
 	GameShowPhaseCanvas
 	GameShowPhaseAnswer
 )
+
+// TODO: GAME_START で設定する
+type Canvas struct {
+	BoardName string // TODO: なんならenum 優先度低
+	AllArea   int
+}
 
 func (g *Game) AddReady(uid UserId) {
 	g.Ready[uid] = struct{}{}

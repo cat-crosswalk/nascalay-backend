@@ -76,46 +76,13 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - properties:
-                      type:
-                        $ref: "#/components/schemas/WsEvent"
-                      body:
-                        anyOf:
-                          - $ref: "#/components/schemas/WsRoomSetOptionEventBody"
-                          - $ref: "#/components/schemas/WsOdaiSendEventBody"
-                          - $ref: "#/components/schemas/WsDrawSendEventBody"
-                          - $ref: "#/components/schemas/WsAnswerSendEventBody"
-                          - type: object
-                    required:
-                      - type
-                      - body
-                type: object
+                $ref: "#/components/schemas/WsReceiveMessage"
       operationId: ws
       requestBody:
         content:
           application/json:
             schema:
-              allOf:
-                - properties:
-                    type:
-                      $ref: "#/components/schemas/WsEvent"
-                    body:
-                      oneOf:
-                        - $ref: "#/components/schemas/WsRoomNewMemberEventBody"
-                        - $ref: "#/components/schemas/WsRoomUpdateOptionEventBody"
-                        - $ref: "#/components/schemas/WsGameStartEventBody"
-                        - $ref: "#/components/schemas/WsDrawStartEventBody"
-                        - $ref: "#/components/schemas/WsAnswerStartEventBody"
-                        - $ref: "#/components/schemas/WsShowOdaiEventBody"
-                        - $ref: "#/components/schemas/WsShowCanvasEventBody"
-                        - $ref: "#/components/schemas/WsShowAnswerEventBody"
-                        - $ref: "#/components/schemas/WsChangeHostEventBody"
-                        - type: object
-                  required:
-                    - type
-                    - body
-              type: object
+              $ref: "#/components/schemas/WsSendMessage"
         description: ""
       description: |-
         Websocketを送受信する
@@ -291,6 +258,47 @@ components:
         - NEXT_ROOM
         - CHANGE_HOST
         - BREAK_ROOM
+    WsReceiveMessage:
+      title: WsReceiveMessage
+      description: WebSocketで クライアントからサーバーへ送信する情報
+      allOf:
+        - properties:
+            type:
+              $ref: "#/components/schemas/WsEvent"
+            body:
+              anyOf:
+                - $ref: "#/components/schemas/WsRoomSetOptionEventBody"
+                - $ref: "#/components/schemas/WsOdaiSendEventBody"
+                - $ref: "#/components/schemas/WsDrawSendEventBody"
+                - $ref: "#/components/schemas/WsAnswerSendEventBody"
+                - type: object
+          required:
+            - type
+            - body
+      type: object
+    WsSendMessage:
+      title: WsSendMessage
+      description: WebSocketで サーバーからクライアントへ送信する情報
+      allOf:
+        - properties:
+            type:
+              $ref: "#/components/schemas/WsEvent"
+            body:
+              oneOf:
+                - $ref: "#/components/schemas/WsRoomNewMemberEventBody"
+                - $ref: "#/components/schemas/WsRoomUpdateOptionEventBody"
+                - $ref: "#/components/schemas/WsGameStartEventBody"
+                - $ref: "#/components/schemas/WsDrawStartEventBody"
+                - $ref: "#/components/schemas/WsAnswerStartEventBody"
+                - $ref: "#/components/schemas/WsShowOdaiEventBody"
+                - $ref: "#/components/schemas/WsShowCanvasEventBody"
+                - $ref: "#/components/schemas/WsShowAnswerEventBody"
+                - $ref: "#/components/schemas/WsChangeHostEventBody"
+                - type: object
+          required:
+            - type
+            - body
+      type: object
     WsNextShowStatus:
       title: WsNextWsEvent
       type: string
@@ -386,7 +394,7 @@ components:
       example:
         timeLimit: 40
         canvas:
-          boardName: 5×5
+          boardName: 5x5
           areaId: 5
         img: iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKAQAAAAClSfIQAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgA...
         odai: ねこのおばけ
