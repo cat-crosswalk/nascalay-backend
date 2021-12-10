@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/21hack02win/nascalay-backend/model"
@@ -24,10 +25,9 @@ func (h *handler) JoinRoom(c echo.Context) error {
 		return newEchoHTTPError(err)
 	}
 
-	// TODO: ここでエラーが起きると不整合が起きるのでログだけでいいかも
 	// Notify Other Clients of the new user with WebSocket
 	if err := h.stream.NotifyOfNewRoomMember(room); err != nil {
-		return newEchoHTTPError(err)
+		c.Logger().Error(fmt.Errorf("failed to notify of new member: %w", err))
 	}
 
 	return echo.NewHTTPError(http.StatusOK, refillRoom(room, uid))

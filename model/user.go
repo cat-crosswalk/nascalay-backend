@@ -1,6 +1,10 @@
 package model
 
-import "github.com/gofrs/uuid"
+import (
+	"fmt"
+
+	"github.com/gofrs/uuid"
+)
 
 type User struct {
 	Id     UserId
@@ -17,7 +21,7 @@ func (uid UserId) UUID() uuid.UUID {
 func UserIdFromString(str string) (UserId, error) {
 	uid, err := uuid.FromString(str)
 
-	return UserId(uid), err
+	return UserId(uid), fmt.Errorf("failed to convert UserId: %w", err)
 }
 
 type Username string

@@ -2,6 +2,7 @@
 package ws
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -37,7 +38,7 @@ type Client struct {
 func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn) (*Client, error) {
 	room, err := hub.repo.GetRoomFromUserId(userId)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get room from userId: %w", err)
 	}
 
 	return &Client{
@@ -72,7 +73,7 @@ func (c *Client) writePump() {
 
 			w, err := c.conn.NextWriter(websocket.TextMessage)
 			if err != nil {
-				log.Println("NextWriter error:", err)
+				log.Printf("failed to create next writer: %v", err)
 				return
 			}
 			w.Write(message)
@@ -85,12 +86,13 @@ func (c *Client) writePump() {
 			}
 
 			if err := w.Close(); err != nil {
+				log.Println("failed to close writer:", err.Error())
 				return
 			}
 		case <-ticker.C:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				log.Println("WriteMessage error:", err)
+				log.Println("failed to write message:", err.Error())
 				return
 			}
 		}
@@ -114,13 +116,13 @@ func (c *Client) readPump() {
 		req := new(oapi.WsJSONRequestBody)
 		if err := c.conn.ReadJSON(req); err != nil {
 			if !websocket.IsCloseError(err) && !websocket.IsUnexpectedCloseError(err) {
-				log.Println("Error:", err.Error())
+				log.Println("websocket error occured:", err.Error())
 			}
 			break
 		}
 
 		if err := c.callEventHandler(req); err != nil {
-			log.Println("Error:", err.Error())
+			log.Println("websocket error occured:", err.Error())
 			c.send <- []byte(err.Error())
 			continue
 		}

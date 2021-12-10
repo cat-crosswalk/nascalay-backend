@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/21hack02win/nascalay-backend/model"
@@ -38,12 +39,12 @@ func (s *streamer) Run() {
 func (s *streamer) ServeWS(w http.ResponseWriter, r *http.Request, userId model.UserId) error {
 	conn, err := s.upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to upgrade the HTTP server connection to the WebSocket protocol: %w", err)
 	}
 
 	cli, err := s.addNewClient(userId, conn)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to add new client: %w", err)
 	}
 
 	// Allow collection of memory referenced by the caller by doing all work in
@@ -63,7 +64,7 @@ func (s *streamer) NotifyOfNewRoomMember(room *model.Room) error {
 	}
 
 	if err := cli.sendRoomNewMemberEvent(room); err != nil {
-		return err
+		return fmt.Errorf("failed to send ROOM_NEW_MEMBER event: %w", err)
 	}
 
 	return nil
@@ -72,7 +73,7 @@ func (s *streamer) NotifyOfNewRoomMember(room *model.Room) error {
 func (s *streamer) addNewClient(userId model.UserId, conn *websocket.Conn) (*Client, error) {
 	cli, err := NewClient(s.hub, userId, conn)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create new client: %w", err)
 	}
 
 	s.hub.Register(cli)
