@@ -276,7 +276,7 @@ func (c *Client) sendDrawStartEvent() error {
 			Body: oapi.WsDrawStartEventBody{
 				AllDrawPhaseNum: game.AllDrawPhase(),
 				Canvas: oapi.Canvas{
-					AreaId:    drawer.Index.Int(),
+					AreaId:    drawer.AreaId.Int(),
 					BoardName: game.Canvas.BoardName,
 				},
 				DrawPhaseNum: game.DrawCount.Int(),

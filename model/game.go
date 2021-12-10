@@ -46,12 +46,12 @@ type Img []byte
 
 type Drawer struct {
 	UserId UserId
-	Index  Index // TODO: マージしてからAreaIdにする
+	AreaId AreaId
 }
 
-type Index int
+type AreaId int
 
-func (i Index) Int() int {
+func (i AreaId) Int() int {
 	return int(i)
 }
 
@@ -102,7 +102,7 @@ func (g *Game) AddOdai(uid UserId, title OdaiTitle) {
 		DrawerSeq: []Drawer{
 			{
 				UserId: uid,
-				Index:  0, // TODO
+				AreaId: 0, // TODO
 			},
 		},
 	})
