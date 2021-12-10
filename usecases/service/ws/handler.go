@@ -552,7 +552,7 @@ func (c *Client) sendShowStartEvent() error {
 		},
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
 	c.send <- buf
