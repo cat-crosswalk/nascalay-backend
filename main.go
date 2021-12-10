@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"strconv"
@@ -9,9 +10,14 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+var baseEndpoint string
+
 func main() {
+	flag.StringVar(&baseEndpoint, "b", "", "Custom base endpoint .e.g \"/api\"")
+	flag.Parse()
+
 	e := echo.New()
-	infrastructure.Setup(e)
+	infrastructure.Setup(e, baseEndpoint)
 
 	e.Logger.Fatal(e.Start(port()))
 }
