@@ -51,6 +51,10 @@ func (o OdaiAnswer) String() string {
 
 type Img []byte
 
+func (i Img) String() string {
+	return string(i)
+}
+
 type Drawer struct {
 	UserId UserId
 	AreaId AreaId
@@ -81,6 +85,10 @@ func (d DrawCount) Int() int {
 }
 
 type ShowCount int
+
+func (s ShowCount) Int() int {
+	return int(s)
+}
 
 type GameNextShowPhase int
 
