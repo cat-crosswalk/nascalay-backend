@@ -24,6 +24,7 @@ func (h *handler) JoinRoom(c echo.Context) error {
 		return newEchoHTTPError(err)
 	}
 
+	// TODO: ここでエラーが起きると不整合が起きるのでログだけでいいかも
 	// Notify Other Clients of the new user with WebSocket
 	if err := h.stream.NotifyOfNewRoomMember(room); err != nil {
 		return newEchoHTTPError(err)

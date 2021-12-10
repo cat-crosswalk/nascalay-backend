@@ -29,6 +29,7 @@ const (
 
 type Odai struct {
 	Title      OdaiTitle
+	Answer     OdaiAnswer
 	SenderId   UserId
 	AnswererId UserId
 	DrawerSeq  []Drawer
@@ -39,6 +40,12 @@ type Odai struct {
 type OdaiTitle string
 
 func (o OdaiTitle) String() string {
+	return string(o)
+}
+
+type OdaiAnswer string
+
+func (o OdaiAnswer) String() string {
 	return string(o)
 }
 
