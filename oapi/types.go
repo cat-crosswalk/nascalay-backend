@@ -194,7 +194,7 @@ type WsEvent string
 // ゲームの開始を通知する (サーバー -> ルーム全員)
 type WsGameStartEventBody struct {
 	// お題のサジェスト
-	OdaiHint string `json:"odaiHint"`
+	OdaiExample string `json:"odaiExample"`
 
 	// 制限時間
 	TimeLimit int `json:"timeLimit"`
@@ -291,7 +291,7 @@ type JoinRoomJSONBody JoinRoomRequest
 type CreateRoomJSONBody CreateRoomRequest
 
 // WsJSONBody defines parameters for Ws.
-type WsJSONBody WsReceiveMessage
+type WsJSONBody WsSendMessage
 
 // WsParams defines parameters for Ws.
 type WsParams struct {

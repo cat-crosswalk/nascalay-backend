@@ -364,17 +364,17 @@ components:
       type: object
       description: ゲームの開始を通知する (サーバー -> ルーム全員)
       example:
-        odaiHint: ねこのおばけ
+        odaiExample: ねこのおばけ
         timeLimit: 40
       properties:
-        odaiHint:
+        odaiExample:
           type: string
           description: お題のサジェスト
         timeLimit:
           type: integer
           description: 制限時間
       required:
-        - odaiHint
+        - odaiExample
         - timeLimit
     WsOdaiSendEventBody:
       title: WsOdaiSendEventBody
