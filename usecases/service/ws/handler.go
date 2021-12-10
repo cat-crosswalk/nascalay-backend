@@ -291,7 +291,7 @@ func (c *Client) sendDrawStartEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.send <- buf
+	c.sendOrUnregister(c, buf)
 
 	return nil
 }
@@ -444,7 +444,7 @@ func (c *Client) sendAnswerStartEvent() error {
 			return fmt.Errorf("failed to encode as JSON: %w", err)
 		}
 
-		ac.send <- buf
+		c.sendOrUnregister(ac, buf)
 	}
 
 	return nil
@@ -566,7 +566,7 @@ func (c *Client) sendShowStartEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.send <- buf
+	c.sendOrUnregister(c, buf)
 
 	return nil
 }
@@ -670,7 +670,7 @@ func (c *Client) sendNextRoomEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.send <- buf
+	c.sendOrUnregister(c, buf)
 
 	return nil
 }
