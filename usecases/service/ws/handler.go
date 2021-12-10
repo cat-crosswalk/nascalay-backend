@@ -434,6 +434,14 @@ func (c *Client) receiveAnswerReadyEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
+	c.room.Game.AddReady(c.userId)
+
+	if c.room.AllMembersAreReady() {
+		if err := c.sendAnswerFinishEvent(); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -445,6 +453,8 @@ func (c *Client) receiveAnswerCancelEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
+	c.room.Game.CancelReady(c.userId)
+
 	return nil
 }
 
@@ -452,10 +462,21 @@ func (c *Client) receiveAnswerCancelEvent(_ interface{}) error {
 // ANSWER_FINISH
 // 全員が回答の入力を完了したことor制限時間が来たことを通知する (サーバー -> ルーム全員)
 // クライアントは回答を送信する
-func (c *Client) sendAnswerFinishEvent(body interface{}) error {
+func (c *Client) sendAnswerFinishEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusAnswer) {
 		return errWrongPhase
 	}
+
+	buf, err := json.Marshal(
+		&oapi.WsJSONBody{
+			Type: oapi.WsEventANSWERFINISH,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	go c.sendMsgToEachClientInRoom(buf)
 
 	return nil
 }
