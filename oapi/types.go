@@ -187,6 +187,9 @@ type WsDrawStartEventBody struct {
 	// 現在のDRAWフェーズの番号
 	DrawPhaseNum int `json:"drawPhaseNum"`
 
+	// 埋まっているエリアの一覧
+	DrawnArea []int `json:"drawnArea"`
+
 	// 画像ID
 	Img string `json:"img"`
 
