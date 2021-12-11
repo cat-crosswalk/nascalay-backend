@@ -709,23 +709,27 @@ func (c *Client) receiveShowNextEvent(_ interface{}) error {
 
 	switch c.room.Game.NextShowPhase {
 	case model.GameShowPhaseOdai:
-		if err := c.sendShowOdaiEvent(); err != nil {
-			return fmt.Errorf("failed to send SHOW_ODAI event: %w", err)
-		}
+		c.bloadcast(func(cc *Client) {
+			if err := cc.sendShowOdaiEvent(); err != nil {
+				log.Println("failed to send SHOW_ODAI event:", err.Error())
+			}
+		})
 	case model.GameShowPhaseCanvas:
-		if err := c.sendShowCanvasEvent(); err != nil {
-			return fmt.Errorf("failed to send SHOW_CANVAS event: %w", err)
-		}
+		c.bloadcast(func(cc *Client) {
+			if err := cc.sendShowCanvasEvent(); err != nil {
+				log.Println("failed to send SHOW_CANVAS event:", err.Error())
+			}
+		})
 	case model.GameShowPhaseAnswer:
-		if err := c.sendShowAnswerEvent(); err != nil {
-			return fmt.Errorf("failed to send SHOW_ANSWER event: %w", err)
-		}
+		c.bloadcast(func(cc *Client) {
+			if err := cc.sendShowAnswerEvent(); err != nil {
+				log.Println("failed to send SHOW_ANSWER event:", err.Error())
+			}
+		})
 	case model.GameShowPhaseEnd:
 	default:
 		return errUnknownPhase
 	}
-
-	c.room.Game.ShowCount++
 
 	return nil
 }
@@ -766,7 +770,10 @@ func (c *Client) sendShowOdaiEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.room.Game.NextShowPhase = model.GameShowPhaseCanvas
+	if c.userId == c.room.HostId {
+		c.room.Game.NextShowPhase = model.GameShowPhaseCanvas
+	}
+
 	c.sendMsg(buf)
 
 	return nil
@@ -801,7 +808,10 @@ func (c *Client) sendShowCanvasEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.room.Game.NextShowPhase = model.GameShowPhaseAnswer
+	if c.userId == c.room.HostId {
+		c.room.Game.NextShowPhase = model.GameShowPhaseAnswer
+	}
+
 	c.sendMsg(buf)
 
 	return nil
@@ -823,11 +833,11 @@ func (c *Client) sendShowAnswerEvent() error {
 		return errNotFound
 	}
 
-	next := oapi.WsNextShowStatus("odai")
-	nsp := model.GameShowPhaseOdai
-	if len(game.Odais) == sc+1 {
+	var next oapi.WsNextShowStatus
+	if sc+1 < len(game.Odais) {
+		next = oapi.WsNextShowStatus("odai")
+	} else {
 		next = oapi.WsNextShowStatus("end")
-		nsp = model.GameShowPhaseEnd
 	}
 
 	answerer := oapi.User{}
@@ -852,7 +862,16 @@ func (c *Client) sendShowAnswerEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.room.Game.NextShowPhase = nsp
+	if c.userId == c.room.HostId {
+		if sc+1 < len(game.Odais) {
+			c.room.Game.NextShowPhase = model.GameShowPhaseOdai
+		} else {
+			c.room.Game.NextShowPhase = model.GameShowPhaseEnd
+		}
+
+		c.room.Game.ShowCount++
+	}
+
 	c.sendMsg(buf)
 
 	return nil
