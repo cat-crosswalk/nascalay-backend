@@ -186,9 +186,12 @@ func (c *Client) sendGameStartEvent() error {
 	c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
 
 	go func() {
-		<-c.room.Game.Timer.C
-		if err := c.sendOdaiFinishEvent(); err != nil {
-			log.Println("failed to send ODAI_FINISH event: ", err.Error())
+		select {
+		case <-c.room.Game.Timer.C:
+			if err := c.sendOdaiFinishEvent(); err != nil {
+				log.Println("failed to send ODAI_FINISH event: ", err.Error())
+			}
+		case <-c.room.Game.TimerStopChan:
 		}
 	}()
 
@@ -205,7 +208,9 @@ func (c *Client) receiveOdaiReadyEvent(_ interface{}) error {
 	c.room.Game.AddReady(c.userId)
 
 	if c.allMembersAreReady() {
-		if !c.room.Game.Timer.Stop() {
+		if c.room.Game.Timer.Stop() {
+			c.room.Game.TimerStopChan <- struct{}{}
+		} else {
 			<-c.room.Game.Timer.C
 		}
 		if err := c.sendOdaiFinishEvent(); err != nil {
@@ -294,9 +299,12 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 		c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
 
 		go func() {
-			<-c.room.Game.Timer.C
-			if err := c.sendDrawFinishEvent(); err != nil {
-				log.Println("failed to send DRAW_FINISH event: ", err.Error())
+			select {
+			case <-c.room.Game.Timer.C:
+				if err := c.sendDrawFinishEvent(); err != nil {
+					log.Println("failed to send DRAW_FINISH event: ", err.Error())
+				}
+			case <-c.room.Game.TimerStopChan:
 			}
 		}()
 	}
@@ -380,7 +388,9 @@ func (c *Client) receiveDrawReadyEvent(_ interface{}) error {
 	c.room.Game.AddReady(c.userId)
 
 	if c.allMembersAreReady() {
-		if !c.room.Game.Timer.Stop() {
+		if c.room.Game.Timer.Stop() {
+			c.room.Game.TimerStopChan <- struct{}{}
+		} else {
 			<-c.room.Game.Timer.C
 		}
 		if err := c.sendDrawFinishEvent(); err != nil {
@@ -488,9 +498,12 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 			c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
 
 			go func() {
-				<-c.room.Game.Timer.C
-				if err := c.sendDrawFinishEvent(); err != nil {
-					log.Println("failed to send DRAW_FINISH event: ", err.Error())
+				select {
+				case <-c.room.Game.Timer.C:
+					if err := c.sendDrawFinishEvent(); err != nil {
+						log.Println("failed to send DRAW_FINISH event: ", err.Error())
+					}
+				case <-c.room.Game.TimerStopChan:
 				}
 			}()
 		} else {
@@ -543,9 +556,12 @@ func (c *Client) sendAnswerStartEvent() error {
 	c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
 
 	go func() {
-		<-c.room.Game.Timer.C
-		if err := c.sendAnswerFinishEvent(); err != nil {
-			log.Println("failed to send ANSWER_FINISH event: ", err.Error())
+		select {
+		case <-c.room.Game.Timer.C:
+			if err := c.sendAnswerFinishEvent(); err != nil {
+				log.Println("failed to send ANSWER_FINISH event: ", err.Error())
+			}
+		case <-c.room.Game.TimerStopChan:
 		}
 	}()
 
@@ -562,7 +578,9 @@ func (c *Client) receiveAnswerReadyEvent(_ interface{}) error {
 	c.room.Game.AddReady(c.userId)
 
 	if c.allMembersAreReady() {
-		if !c.room.Game.Timer.Stop() {
+		if c.room.Game.Timer.Stop() {
+			c.room.Game.TimerStopChan <- struct{}{}
+		} else {
 			<-c.room.Game.Timer.C
 		}
 		if err := c.sendAnswerFinishEvent(); err != nil {
