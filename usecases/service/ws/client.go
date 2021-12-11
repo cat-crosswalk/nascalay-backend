@@ -133,9 +133,6 @@ func (c *Client) readPump() {
 
 func (c *Client) bloadcast(next func(c *Client)) {
 	for _, m := range c.room.Members {
-		c.hub.mux.Lock()
-		defer c.hub.mux.Unlock()
-
 		cc, ok := c.hub.userIdToClient[m.Id]
 		if !ok {
 			continue
@@ -161,16 +158,16 @@ func (c *Client) sendMsg(msg []byte) {
 
 func (c *Client) sendMsgToEachClientInRoom(msg []byte) {
 	c.bloadcast(func(cc *Client) {
-		c.sendMsg(msg)
+		cc.sendMsg(msg)
 	})
 }
 
 func (c *Client) allMembersAreReady() bool {
+	c.hub.mux.Lock()
+	defer c.hub.mux.Unlock()
+
 	r := c.room
 	for _, m := range r.Members {
-		c.hub.mux.Lock()
-		defer c.hub.mux.Unlock()
-
 		if _, ok := c.hub.userIdToClient[m.Id]; !ok {
 			continue
 		}
