@@ -21,10 +21,5 @@ func refillRoom(mr *model.Room, userId model.UserId) oapi.Room {
 }
 
 func refillUser(mu *model.User) oapi.User {
-	var u oapi.User
-	u.Avatar = mu.Avatar.Int()
-	u.UserId = mu.Id.UUID()
-	u.Username = mu.Name.String()
-
-	return u
+	return oapi.RefillUser(mu)
 }

@@ -17,7 +17,10 @@ func (h *handler) JoinRoom(c echo.Context) error {
 	}
 
 	room, uid, err := h.r.JoinRoom(&repository.JoinRoomArgs{
-		Avatar:   model.Avatar(req.Avatar),
+		Avatar: model.Avatar{
+			Type:  model.AvatarType(req.Avatar.Type),
+			Color: model.AvatarColor(req.Avatar.Color),
+		},
 		RoomId:   model.RoomId(req.RoomId),
 		Username: model.Username(req.Username),
 	})
@@ -40,7 +43,10 @@ func (h *handler) CreateRoom(c echo.Context) error {
 	}
 
 	room, err := h.r.CreateRoom(&repository.CreateRoomArgs{
-		Avatar:   model.Avatar(req.Avatar),
+		Avatar: model.Avatar{
+			Type:  model.AvatarType(req.Avatar.Type),
+			Color: model.AvatarColor(req.Avatar.Color),
+		},
 		Capacity: model.Capacity(req.Capacity),
 		Username: model.Username(req.Username),
 	})

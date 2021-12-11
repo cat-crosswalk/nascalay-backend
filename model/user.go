@@ -33,13 +33,24 @@ func (un Username) String() string {
 	return string(un)
 }
 
-type Avatar int
+type Avatar struct {
+	Type  AvatarType
+	Color AvatarColor
+}
 
-func (a Avatar) Int() int {
+type AvatarType int
+
+func (a AvatarType) Int() int {
 	return int(a)
 }
 
 const (
-	Avatar0 Avatar = iota // Note: ここにAvatarの種類を追記する
+	Avatar0 AvatarType = iota // Note: ここにAvatarの種類を追記する
 	AvatarLimit
 )
+
+type AvatarColor string
+
+func (a AvatarColor) String() string {
+	return string(a)
+}

@@ -75,6 +75,15 @@ const (
 	WsNextShowStatusOdai WsNextShowStatus = "odai"
 )
 
+// アバター情報
+type Avatar struct {
+	// アバターの背景色
+	Color string `json:"color"`
+
+	// アバターの種類
+	Type int `json:"type"`
+}
+
 // ユーザーが描画するキャンバスの分割情報・描画位置
 type Canvas struct {
 	// ボードの座標ID
@@ -86,8 +95,8 @@ type Canvas struct {
 
 // 新規ルーム作成リクエスト
 type CreateRoomRequest struct {
-	// アバターの種類
-	Avatar int `json:"avatar"`
+	// アバター情報
+	Avatar Avatar `json:"avatar"`
 
 	// ルームの最大収容人数
 	Capacity int `json:"capacity"`
@@ -98,8 +107,8 @@ type CreateRoomRequest struct {
 
 // ルーム参加リクエスト
 type JoinRoomRequest struct {
-	// アバターの種類
-	Avatar int `json:"avatar"`
+	// アバター情報
+	Avatar Avatar `json:"avatar"`
 
 	// ルームID
 	RoomId string `json:"roomId"`
@@ -128,8 +137,8 @@ type Room struct {
 
 // ユーザー情報
 type User struct {
-	// アバターの種類
-	Avatar int `json:"avatar"`
+	// アバター情報
+	Avatar Avatar `json:"avatar"`
 
 	// ユーザーUUID
 	UserId uuid.UUID `json:"userId"`

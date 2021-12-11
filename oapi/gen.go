@@ -10,14 +10,21 @@ func (u UserIdInQuery) Refill() (model.UserId, error) {
 	return model.UserIdFromString(string(u))
 }
 
+func RefillUser(mu *model.User) User {
+	return User{
+		Avatar: Avatar{
+			Color: mu.Avatar.Color.String(),
+			Type:  mu.Avatar.Type.Int(),
+		},
+		Username: mu.Name.String(),
+		UserId:   mu.Id.UUID(),
+	}
+}
+
 func RefillUsers(mus []model.User) []User {
 	us := make([]User, len(mus))
 	for i, v := range mus {
-		us[i] = User{
-			Avatar:   v.Avatar.Int(),
-			Username: v.Name.String(),
-			UserId:   v.Id.UUID(),
-		}
+		us[i] = RefillUser(&v)
 	}
 
 	return us
