@@ -10,6 +10,7 @@ import (
 	"github.com/21hack02win/nascalay-backend/oapi"
 	"github.com/21hack02win/nascalay-backend/util/canvas"
 	"github.com/21hack02win/nascalay-backend/util/random"
+	"github.com/ashanbrown/makezero/makezero"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -302,7 +303,8 @@ func (c *Client) sendDrawStartEvent() error {
 		odai      *model.Odai
 		drawer    *model.Drawer
 	)
-
+	drawnArea := make([]int, drawCount.Int()-1)
+	
 	random.SetupMemberRoles(game, c.room.Members)
 
 	for _, v := range game.Odais {
@@ -313,6 +315,9 @@ func (c *Client) sendDrawStartEvent() error {
 		if v.DrawerSeq[drawCount].UserId == c.userId {
 			odai = v
 			drawer = &v.DrawerSeq[drawCount]
+			for i := 0; i < drawCount.Int()-1; i++ {
+				drawnArea[i] = v.DrawerSeq[i].AreaId.Int()
+			}
 			break
 		}
 	}
@@ -338,6 +343,7 @@ func (c *Client) sendDrawStartEvent() error {
 				Img:          string(odai.Img),
 				Odai:         odai.Title.String(),
 				TimeLimit:    int(game.TimeLimit),
+				DrawnArea:    drawnArea,
 			},
 		},
 	)
