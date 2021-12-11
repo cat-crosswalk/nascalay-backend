@@ -10,7 +10,6 @@ import (
 	"github.com/21hack02win/nascalay-backend/oapi"
 	"github.com/21hack02win/nascalay-backend/util/canvas"
 	"github.com/21hack02win/nascalay-backend/util/random"
-	"github.com/ashanbrown/makezero/makezero"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -304,7 +303,7 @@ func (c *Client) sendDrawStartEvent() error {
 		drawer    *model.Drawer
 	)
 	drawnArea := make([]int, drawCount.Int()-1)
-	
+
 	random.SetupMemberRoles(game, c.room.Members)
 
 	for _, v := range game.Odais {
