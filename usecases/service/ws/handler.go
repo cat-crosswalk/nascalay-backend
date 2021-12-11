@@ -801,8 +801,8 @@ func (c *Client) sendShowCanvasEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.sendMsg(buf)
 	c.room.Game.NextShowPhase = model.GameShowPhaseAnswer
+	c.sendMsg(buf)
 
 	return nil
 }
