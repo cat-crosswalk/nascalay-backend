@@ -655,7 +655,7 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 	// 全員の回答が送信されたらSHOWフェーズに移行
 	allAnswerReceived := true
 	for _, v := range game.Odais {
-		if v.Answer != nil {
+		if v.Answer == nil {
 			allAnswerReceived = false
 			break
 		}
