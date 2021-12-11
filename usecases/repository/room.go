@@ -9,6 +9,7 @@ type RoomRepository interface {
 	CreateRoom(cr *CreateRoomArgs) (*model.Room, error)
 	GetRoom(rid model.RoomId) (*model.Room, error)
 	GetRoomFromUserId(uid model.UserId) (*model.Room, error)
+	DeleteRoom(rid model.RoomId) error
 }
 
 type CreateRoomArgs struct {

@@ -749,11 +749,26 @@ func (c *Client) sendChangeHostEvent() error {
 	return nil
 }
 
-// TODO: 実装する
 // BREAK_ROOM
 // 部屋が破壊されたときに通知する (サーバー -> ルーム全員)
 // 部屋が立ってからゲーム開始まで15分以上経過している場合，部屋を閉じる
 // このタイミングでサーバーは保持しているルームに関わる全データを削除
 func (c *Client) sendBreakRoomEvent(body interface{}) error {
+	for _, v := range c.room.Members {
+		if v.Id == c.userId {
+			continue
+		}
+
+		if cc, ok := c.hub.userIdToClient[v.Id]; ok {
+			c.hub.unregister(cc)
+		}
+	}
+
+	if err := c.hub.repo.DeleteRoom(c.room.Id); err != nil {
+		return fmt.Errorf("failed to delete room: %w", err)
+	}
+
+	c.hub.unregister(c)
+
 	return nil
 }

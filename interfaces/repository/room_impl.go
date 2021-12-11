@@ -76,3 +76,13 @@ func (r *storeRepository) GetRoomFromUserId(uid model.UserId) (*model.Room, erro
 
 	return room, nil
 }
+
+func (r *storeRepository) DeleteRoom(rid model.RoomId) error {
+	if _, ok := r.room[rid]; !ok {
+		return repository.ErrNotFound
+	}
+
+	delete(r.room, rid)
+
+	return nil
+}
