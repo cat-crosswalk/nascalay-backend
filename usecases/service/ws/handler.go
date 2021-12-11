@@ -198,16 +198,10 @@ func (c *Client) receiveOdaiReadyEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
-	for _, m := range c.room.Members {
-		if m.Id == c.userId {
-			log.Println("[DEBUG]", m.Name, "is ready")
-		}
-	}
 	c.room.Game.AddReady(c.userId)
 
 	if c.allMembersAreReady() {
 		if !c.room.Game.Timer.Stop() {
-			log.Println("timer was already stopped")
 			<-c.room.Game.Timer.C
 		}
 		if err := c.sendOdaiFinishEvent(); err != nil {
