@@ -439,7 +439,7 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 			game.Status = model.GameStatusAnswer
 
 			if err := c.sendAnswerStartEvent(); err != nil {
-				return fmt.Errorf("failed to send ANSWER_START event: %w", err.Error())
+				return fmt.Errorf("failed to send ANSWER_START event: %w", err)
 			}
 		}
 	}
