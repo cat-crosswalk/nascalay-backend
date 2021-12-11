@@ -126,7 +126,7 @@ func (c *Client) receiveRequestGameStartEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
-	if stopped := c.room.Game.Timer.Stop(); !stopped {
+	if stopped := c.room.Game.BreakTimer.Stop(); !stopped {
 		go c.waitAndBreakRoom()
 	}
 

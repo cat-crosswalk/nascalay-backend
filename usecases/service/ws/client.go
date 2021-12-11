@@ -184,18 +184,18 @@ func (c *Client) resetTimer() {
 	// タイマーをリセットする
 	// 15(分)後に次のゲームが始まらなければルームを削除する
 	game := c.room.Game
-	timer := game.Timer
+	bt := game.BreakTimer
 
-	if stopped := timer.Stop(); !stopped {
+	if stopped := bt.Stop(); !stopped {
 		go c.waitAndBreakRoom()
 	}
 
-	timer.Reset(time.Minute * 15)
+	bt.Reset(time.Minute * 15)
 	go c.waitAndBreakRoom()
 }
 
 func (c *Client) waitAndBreakRoom() {
-	<-c.room.Game.Timer.C
+	<-c.room.Game.BreakTimer.C
 	if err := c.sendBreakRoomEvent(); err != nil {
 		log.Println("failed to send BREAK_ROOM event:", err.Error())
 	}

@@ -15,6 +15,7 @@ type Game struct {
 	ShowCount     ShowCount
 	NextShowPhase GameNextShowPhase
 	Canvas        Canvas
+	BreakTimer    *time.Timer
 }
 
 type GameStatus int
@@ -113,6 +114,7 @@ func InitGame() *Game {
 			BoardName: "5x5",
 			AllArea:   25,
 		},
+		BreakTimer:    time.NewTimer(time.Minute * 15),
 	}
 }
 
