@@ -303,7 +303,7 @@ func (c *Client) sendDrawStartEvent() error {
 					AreaId:    drawer.AreaId.Int(),
 					BoardName: game.Canvas.BoardName,
 				},
-				DrawPhaseNum: game.DrawCount.Int(),
+				DrawPhaseNum: game.DrawCount.Int() - 1,
 				Img:          string(odai.Img),
 				Odai:         odai.Title.String(),
 				TimeLimit:    int(game.TimeLimit),
