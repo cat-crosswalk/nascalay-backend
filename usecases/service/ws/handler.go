@@ -868,9 +868,9 @@ func (c *Client) sendShowAnswerEvent() error {
 		} else {
 			c.room.Game.NextShowPhase = model.GameShowPhaseEnd
 		}
-	}
 
-	c.room.Game.ShowCount++
+		c.room.Game.ShowCount++
+	}
 
 	c.sendMsg(buf)
 
