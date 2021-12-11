@@ -106,7 +106,7 @@ func InitGame() *Game {
 		Odais:         make([]*Odai, 0, 100),
 		TimeLimit:     DefaultTimeLimit,
 		Timeout:       Timeout(time.Now()),
-		Timer:         nil,
+		Timer:         time.NewTimer(0),
 		DrawCount:     0,
 		ShowCount:     0,
 		NextShowPhase: 0,
