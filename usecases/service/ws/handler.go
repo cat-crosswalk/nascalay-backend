@@ -432,14 +432,14 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 
 			c.bloadcast(func(cc *Client) {
 				if err := cc.sendDrawStartEvent(); err != nil {
-					log.Println("failed to send DRAW_START event:", err)
+					log.Println("failed to send DRAW_START event:", err.Error())
 				}
 			})
 		} else {
 			game.Status = model.GameStatusAnswer
 
 			if err := c.sendAnswerStartEvent(); err != nil {
-				return fmt.Errorf("failed to send ANSWER_START event: %w", err)
+				return fmt.Errorf("failed to send ANSWER_START event: %w", err.Error())
 			}
 		}
 	}
@@ -572,7 +572,7 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 
 		c.bloadcast(func(cc *Client) {
 			if err := cc.sendShowStartEvent(); err != nil {
-				log.Println("failed to send SHOW_START event:", err)
+				log.Println("failed to send SHOW_START event:", err.Error())
 			}
 		})
 	}
@@ -749,7 +749,7 @@ func (c *Client) receiveReturnRoomEvent(_ interface{}) error {
 
 	c.bloadcast(func(cc *Client) {
 		if err := cc.sendNextRoomEvent(); err != nil {
-			log.Println("failed to send NEXT_ROOM event:", err)
+			log.Println("failed to send NEXT_ROOM event:", err.Error())
 		}
 	})
 
