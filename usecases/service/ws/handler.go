@@ -629,7 +629,7 @@ func (c *Client) sendAnswerFinishEvent() error {
 // SHOWフェーズを開始する
 func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusAnswer) {
-		return erWrongPhase
+		return errWrongPhase
 	}
 
 	if body == nil {
