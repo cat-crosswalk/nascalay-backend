@@ -34,7 +34,9 @@ func (h *Hub) Run() {
 		case cli := <-h.registerCh:
 			h.register(cli)
 		case cli := <-h.unregisterCh:
-			h.unregister(cli)
+			if _, ok := h.userIdToClient[cli.userId]; ok {
+				h.unregister(cli)
+			}
 		}
 	}
 }
