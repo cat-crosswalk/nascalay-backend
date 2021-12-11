@@ -852,8 +852,8 @@ func (c *Client) sendShowAnswerEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.sendMsg(buf)
 	c.room.Game.NextShowPhase = nsp
+	c.sendMsg(buf)
 
 	return nil
 }
