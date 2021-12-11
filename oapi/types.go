@@ -265,6 +265,9 @@ type WsShowAnswerEventBody struct {
 	// 回答
 	Answer string `json:"answer"`
 
+	// ユーザー情報
+	Answerer User `json:"answerer"`
+
 	// 次のWebsocketイベントのリスト
 	Next WsNextShowStatus `json:"next"`
 }
@@ -285,6 +288,9 @@ type WsShowOdaiEventBody struct {
 
 	// お題
 	Odai string `json:"odai"`
+
+	// ユーザー情報
+	Sender User `json:"sender"`
 }
 
 // ルームID

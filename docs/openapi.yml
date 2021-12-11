@@ -499,15 +499,24 @@ components:
       description: 最初のお題を受信する (サーバー -> ルーム全員)
       example:
         odai: そうじきをかけるねこ
+        sender:
+          userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          username: John
+          avatar:
+            type: 5
+            color: '#ffffff'
         next: odai
       properties:
         odai:
           type: string
           description: お題
+        sender:
+          $ref: '#/components/schemas/User'
         next:
           $ref: '#/components/schemas/WsNextShowStatus'
       required:
         - odai
+        - sender
         - next
     WsShowCanvasEventBody:
       title: WsShowCanvasEventBody
@@ -531,15 +540,24 @@ components:
       description: 最後の回答を受信する (サーバー -> ルーム全員)
       example:
         answer: そうじきをかけるねこ
+        answerer:
+          userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          username: John
+          avatar:
+            type: 5
+            color: '#ffffff'
         next: odai
       properties:
         answer:
           type: string
           description: 回答
+        answerer:
+          $ref: '#/components/schemas/User'
         next:
           $ref: '#/components/schemas/WsNextShowStatus'
       required:
         - answer
+        - answerer
         - next
     WsChangeHostEventBody:
       title: WsChangeHostEventBody

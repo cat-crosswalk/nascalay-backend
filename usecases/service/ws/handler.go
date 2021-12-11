@@ -678,6 +678,8 @@ func (c *Client) receiveShowNextEvent(_ interface{}) error {
 		return errUnknownPhase
 	}
 
+	c.room.Game.ShowCount++
+
 	return nil
 }
 
@@ -688,19 +690,28 @@ func (c *Client) sendShowOdaiEvent() error {
 		return errWrongPhase
 	}
 	var (
-		game      = c.room.Game
-		showCount = game.ShowCount
+		game = c.room.Game
+		sc   = game.ShowCount.Int()
 	)
-	if len(game.Odais) < showCount.Int()+1 {
+	if len(game.Odais) < sc+1 {
 		return errNotFound
+	}
+
+	sender := oapi.User{}
+	for _, m := range c.room.Members {
+		if m.Id == game.Odais[sc].SenderId {
+			sender = oapi.RefillUser(&m)
+			break
+		}
 	}
 
 	buf, err := json.Marshal(
 		&oapi.WsJSONBody{
 			Type: oapi.WsEventSHOWODAI,
 			Body: &oapi.WsShowOdaiEventBody{
-				Next: oapi.WsNextShowStatus("canvas"),
-				Odai: game.Odais[showCount.Int()].Title.String(),
+				Sender: sender,
+				Next:   oapi.WsNextShowStatus("canvas"),
+				Odai:   game.Odais[sc].Title.String(),
 			},
 		},
 	)
@@ -719,11 +730,13 @@ func (c *Client) sendShowCanvasEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
+
 	var (
-		game      = c.room.Game
-		showCount = game.ShowCount
+		game = c.room.Game
+		sc   = game.ShowCount.Int()
 	)
-	if len(game.Odais) < showCount.Int()+1 {
+
+	if len(game.Odais) < sc+1 {
 		return errNotFound
 	}
 
@@ -732,7 +745,7 @@ func (c *Client) sendShowCanvasEvent() error {
 			Type: oapi.WsEventSHOWCANVAS,
 			Body: &oapi.WsShowCanvasEventBody{
 				Next: oapi.WsNextShowStatus("answer"),
-				Img:  game.Odais[showCount.Int()].Img.String(),
+				Img:  game.Odais[sc].Img.String(),
 			},
 		},
 	)
@@ -751,25 +764,36 @@ func (c *Client) sendShowAnswerEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
+
 	var (
-		game      = c.room.Game
-		showCount = game.ShowCount
+		game = c.room.Game
+		sc   = game.ShowCount.Int()
 	)
-	if len(game.Odais) < showCount.Int()+1 {
+
+	if len(game.Odais) < sc+1 {
 		return errNotFound
 	}
 
 	next := oapi.WsNextShowStatus("odai")
-	if len(game.Odais) == showCount.Int()+1 {
+	if len(game.Odais) == sc+1 {
 		next = oapi.WsNextShowStatus("end")
+	}
+
+	answerer := oapi.User{}
+	for _, m := range c.room.Members {
+		if m.Id == game.Odais[sc].SenderId {
+			answerer = oapi.RefillUser(&m)
+			break
+		}
 	}
 
 	buf, err := json.Marshal(
 		&oapi.WsJSONBody{
 			Type: oapi.WsEventSHOWANSWER,
 			Body: &oapi.WsShowAnswerEventBody{
-				Next:   next,
-				Answer: game.Odais[showCount.Int()].Answer.String(),
+				Answerer: answerer,
+				Next:     next,
+				Answer:   game.Odais[sc].Answer.String(),
 			},
 		},
 	)
