@@ -767,6 +767,7 @@ func (c *Client) sendShowOdaiEvent() error {
 	}
 
 	c.sendMsg(buf)
+	c.room.Game.NextShowPhase = model.GameShowPhaseCanvas
 
 	return nil
 }
@@ -801,6 +802,7 @@ func (c *Client) sendShowCanvasEvent() error {
 	}
 
 	c.sendMsg(buf)
+	c.room.Game.NextShowPhase = model.GameShowPhaseAnswer
 
 	return nil
 }
@@ -822,8 +824,10 @@ func (c *Client) sendShowAnswerEvent() error {
 	}
 
 	next := oapi.WsNextShowStatus("odai")
+	nsp := model.GameShowPhaseOdai
 	if len(game.Odais) == sc+1 {
 		next = oapi.WsNextShowStatus("end")
+		nsp = model.GameShowPhaseEnd
 	}
 
 	answerer := oapi.User{}
@@ -849,6 +853,7 @@ func (c *Client) sendShowAnswerEvent() error {
 	}
 
 	c.sendMsg(buf)
+	c.room.Game.NextShowPhase = nsp
 
 	return nil
 }
