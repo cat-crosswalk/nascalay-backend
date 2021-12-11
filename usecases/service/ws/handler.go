@@ -198,7 +198,7 @@ func (c *Client) receiveOdaiReadyEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
-	c.room.Game.AddReady(c.userId)
+	c.AddReady(c.userId)
 
 	if c.allMembersAreReady() {
 		if !c.room.Game.Timer.Stop() {
@@ -219,7 +219,7 @@ func (c *Client) receiveOdaiCancelEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
-	c.room.Game.CancelReady(c.userId)
+	c.CancelReady(c.userId)
 
 	return nil
 }
@@ -376,7 +376,7 @@ func (c *Client) receiveDrawReadyEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
-	c.room.Game.AddReady(c.userId)
+	c.AddReady(c.userId)
 
 	if c.allMembersAreReady() {
 		if !c.room.Game.Timer.Stop() {
@@ -397,7 +397,7 @@ func (c *Client) receiveDrawCancelEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
-	c.room.Game.CancelReady(c.userId)
+	c.CancelReady(c.userId)
 
 	return nil
 }
@@ -550,7 +550,7 @@ func (c *Client) receiveAnswerReadyEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
-	c.room.Game.AddReady(c.userId)
+	c.AddReady(c.userId)
 
 	if c.allMembersAreReady() {
 		if !c.room.Game.Timer.Stop() {
@@ -571,7 +571,7 @@ func (c *Client) receiveAnswerCancelEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
-	c.room.Game.CancelReady(c.userId)
+	c.CancelReady(c.userId)
 
 	return nil
 }
@@ -653,7 +653,7 @@ func (c *Client) sendShowStartEvent() error {
 		return errWrongPhase
 	}
 
-	c.resetTimer()
+	c.resetBreakTimer()
 
 	buf, err := json.Marshal(
 		&oapi.WsJSONBody{
@@ -835,7 +835,7 @@ func (c *Client) receiveReturnRoomEvent(_ interface{}) error {
 	}
 
 	c.room.ResetGame()
-	c.resetTimer()
+	c.resetBreakTimer()
 
 	c.bloadcast(func(cc *Client) {
 		if err := cc.sendNextRoomEvent(); err != nil {

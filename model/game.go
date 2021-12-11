@@ -118,14 +118,6 @@ func InitGame() *Game {
 	}
 }
 
-func (g *Game) AddReady(uid UserId) {
-	g.Ready[uid] = struct{}{}
-}
-
-func (g *Game) CancelReady(uid UserId) {
-	delete(g.Ready, uid)
-}
-
 func (g *Game) AddOdai(uid UserId, title OdaiTitle) {
 	g.Odais = append(g.Odais, &Odai{
 		Title:     title,
