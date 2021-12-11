@@ -181,10 +181,12 @@ func (c *Client) sendGameStartEvent() error {
 	c.room.Game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
 	c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
 
-	<-c.room.Game.Timer.C
-	if err := c.sendOdaiFinishEvent(); err != nil {
-		return fmt.Errorf("failed to send ODAI_FINISH event: %w", err)
-	}
+	go func() {
+		<-c.room.Game.Timer.C
+		if err := c.sendOdaiFinishEvent(); err != nil {
+			log.Println("failed to send ODAI_FINISH event: ", err.Error())
+		}
+	}()
 
 	return nil
 }
@@ -196,10 +198,16 @@ func (c *Client) receiveOdaiReadyEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
+	for _, m := range c.room.Members {
+		if m.Id == c.userId {
+			log.Println("[DEBUG]", m.Name, "is ready")
+		}
+	}
 	c.room.Game.AddReady(c.userId)
 
 	if c.allMembersAreReady() {
 		if !c.room.Game.Timer.Stop() {
+			log.Println("timer was already stopped")
 			<-c.room.Game.Timer.C
 		}
 		if err := c.sendOdaiFinishEvent(); err != nil {
@@ -352,10 +360,12 @@ func (c *Client) sendDrawStartEvent() error {
 	c.room.Game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
 	c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
 
-	<-c.room.Game.Timer.C
-	if err := c.sendDrawFinishEvent(); err != nil {
-		return fmt.Errorf("failed to send DRAW_FINISH event: %w", err)
-	}
+	go func() {
+		<-c.room.Game.Timer.C
+		if err := c.sendDrawFinishEvent(); err != nil {
+			log.Println("failed to send DRAW_FINISH event: ", err.Error())
+		}
+	}()
 
 	return nil
 }
@@ -524,10 +534,12 @@ func (c *Client) sendAnswerStartEvent() error {
 	c.room.Game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
 	c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
 
-	<-c.room.Game.Timer.C
-	if err := c.sendAnswerFinishEvent(); err != nil {
-		return fmt.Errorf("failed to send ANSWER_FINISH event: %w", err)
-	}
+	go func() {
+		<-c.room.Game.Timer.C
+		if err := c.sendAnswerFinishEvent(); err != nil {
+			log.Println("failed to send ANSWER_FINISH event: ", err.Error())
+		}
+	}()
 
 	return nil
 }

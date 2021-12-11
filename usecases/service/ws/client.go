@@ -138,7 +138,7 @@ func (c *Client) bloadcast(next func(c *Client)) {
 			continue
 		}
 
-		next(cc)
+		go next(cc)
 	}
 }
 
