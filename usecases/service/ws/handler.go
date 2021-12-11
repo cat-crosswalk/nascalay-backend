@@ -779,7 +779,7 @@ func (c *Client) sendNextRoomEvent() error {
 
 // CHANGE_HOST
 // ホストが落ちた時に飛んできて，ホスト役を変更する (サーバー -> ルーム全員)
-func (c *Client) sendChangeHostEvent() error { //nolint:unused
+func (c *Client) sendChangeHostEvent() error {
 	room := c.room
 	found := false
 	for _, v := range room.Members {

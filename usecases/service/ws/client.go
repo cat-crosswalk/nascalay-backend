@@ -142,6 +142,15 @@ func (c *Client) bloadcast(next func(c *Client)) {
 
 func (c *Client) sendMsg(msg []byte) {
 	// TODO: unregisterできるようにする
+	if c.send == nil {
+		if c.userId == c.room.HostId {
+			c.sendChangeHostEvent()
+		}
+		c.hub.unregister(c)
+
+		return
+	}
+
 	c.send <- msg
 }
 
