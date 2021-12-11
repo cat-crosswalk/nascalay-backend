@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/oapi"
@@ -596,6 +597,23 @@ func (c *Client) receiveShowNextEvent(_ interface{}) error {
 			return fmt.Errorf("failed to send SHOW_ANSWER event: %w", err)
 		}
 	case model.GameShowPhaseEnd:
+		game := c.room.Game
+		timer := game.Timer
+		waitFunc := func(timer *time.Timer) {
+			<-timer.C
+			if err := c.sendBreakRoomEvent(); err != nil {
+				log.Println("failed to send BREAK_ROOM event:", err.Error())
+			}
+		}
+
+		if stopped := timer.Stop(); !stopped {
+			go waitFunc(timer)
+		}
+
+		timer.Reset(time.Minute * time.Duration(game.Timeout))
+		go waitFunc(timer)
+
+		return nil
 	default:
 		return errUnknownPhase
 	}
@@ -718,6 +736,7 @@ func (c *Client) receiveReturnRoomEvent(_ interface{}) error {
 			log.Println("failed to send NEXT_ROOM event:", err)
 		}
 	})
+
 	return nil
 }
 
@@ -753,7 +772,7 @@ func (c *Client) sendChangeHostEvent() error {
 // 部屋が破壊されたときに通知する (サーバー -> ルーム全員)
 // 部屋が立ってからゲーム開始まで15分以上経過している場合，部屋を閉じる
 // このタイミングでサーバーは保持しているルームに関わる全データを削除
-func (c *Client) sendBreakRoomEvent(body interface{}) error {
+func (c *Client) sendBreakRoomEvent() error {
 	for _, v := range c.room.Members {
 		if v.Id == c.userId {
 			continue
