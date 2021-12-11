@@ -96,9 +96,15 @@ const (
 )
 
 type Canvas struct {
-	BoardName string // TODO: なんならenum 優先度低
+	BoardName string
 	AllArea   int
 }
+
+const (
+	BoardName5x5 = "5x5" // default
+	BoardName4x4 = "4x4"
+	BoardName4x3 = "4x3"
+)
 
 func InitGame() *Game {
 	return &Game{
@@ -113,7 +119,7 @@ func InitGame() *Game {
 		ShowCount:     0,
 		NextShowPhase: 0,
 		Canvas: Canvas{
-			BoardName: "5x5",
+			BoardName: BoardName5x5,
 			AllArea:   25,
 		},
 		BreakTimer: time.NewTimer(time.Minute * 15),
