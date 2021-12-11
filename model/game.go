@@ -101,10 +101,16 @@ type Canvas struct {
 }
 
 const (
-	BoardName5x5 = "5x5" // default
-	BoardName4x4 = "4x4"
+	BoardName4x4 = "4x4" // default
+	BoardName5x5 = "5x5"
 	BoardName4x3 = "4x3"
 )
+
+var boardNameToAllArea = map[string]int{
+	BoardName4x4: 16,
+	BoardName5x5: 25,
+	BoardName4x3: 12,
+}
 
 func InitGame() *Game {
 	return &Game{
@@ -119,8 +125,8 @@ func InitGame() *Game {
 		ShowCount:     0,
 		NextShowPhase: 0,
 		Canvas: Canvas{
-			BoardName: BoardName5x5,
-			AllArea:   25,
+			BoardName: BoardName4x4,
+			AllArea:   boardNameToAllArea[BoardName4x4],
 		},
 		BreakTimer: time.NewTimer(time.Minute * 15),
 	}
