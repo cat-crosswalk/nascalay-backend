@@ -69,7 +69,7 @@ func (i AreaId) Int() int {
 
 type TimeLimit int
 
-const DefaultTimeLimit = TimeLimit(40) // Default time limit is 40 seconds
+const DefaultTimeLimit = TimeLimit(30) // Default time limit is 30 seconds
 
 type Timeout time.Time
 
