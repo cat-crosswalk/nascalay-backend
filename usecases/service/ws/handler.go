@@ -149,23 +149,30 @@ func (c *Client) sendGameStartEvent() error {
 		return errWrongPhase
 	}
 
-	buf, err := json.Marshal(
-		&oapi.WsJSONBody{
-			Type: oapi.WsEventGAMESTART,
-			Body: &oapi.WsGameStartEventBody{
-				OdaiExample: random.OdaiExample(),
-				TimeLimit:   int(c.room.Game.TimeLimit),
+	for _, m := range c.room.Members {
+		buf, err := json.Marshal(
+			&oapi.WsJSONBody{
+				Type: oapi.WsEventGAMESTART,
+				Body: &oapi.WsGameStartEventBody{
+					OdaiExample: random.OdaiExample(),
+					TimeLimit:   int(c.room.Game.TimeLimit),
+				},
 			},
-		},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to encode as JSON: %w", err)
+		)
+		if err != nil {
+			return fmt.Errorf("failed to encode as JSON: %w", err)
+		}
+
+		cc, ok := c.hub.userIdToClient[m.Id]
+		if !ok {
+			return fmt.Errorf("failed to find client: %w", errNotFound)
+		}
+
+		cc.sendMsg(buf)
 	}
 
 	// ODAIフェーズに移行
 	c.room.Game.Status = model.GameStatusOdai
-
-	c.sendMsgToEachClientInRoom(buf)
 
 	return nil
 }
