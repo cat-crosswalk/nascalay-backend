@@ -5,11 +5,17 @@
 ### Run local server (live-reloading)
 
 ```sh
-$ make run
+make run
 ```
 
 ### Lint and format
 
 ```sh
-$ make lint
+make lint
+```
+
+### start
+
+```sh
+docker-compose up
 ```
