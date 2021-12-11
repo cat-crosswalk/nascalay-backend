@@ -58,6 +58,9 @@ func (s *streamer) ServeWS(w http.ResponseWriter, r *http.Request, userId model.
 }
 
 func (s *streamer) NotifyOfNewRoomMember(room *model.Room) error {
+	s.hub.mux.Lock()
+	defer s.hub.mux.Unlock()
+
 	cli, ok := s.hub.userIdToClient[room.HostId]
 	if !ok {
 		return errNotFound
@@ -78,8 +81,14 @@ func (s *streamer) addNewClient(userId model.UserId, conn *websocket.Conn) (*Cli
 
 	s.hub.Register(cli)
 
+	s.hub.mux.Lock()
+	defer s.hub.mux.Unlock()
+
 	c, ok := s.hub.userIdToClient[userId]
 	if !ok {
+		s.hub.mux.Lock()
+		defer s.hub.mux.Unlock()
+
 		s.hub.userIdToClient[userId] = c
 	}
 

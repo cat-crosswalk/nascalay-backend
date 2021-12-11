@@ -456,6 +456,9 @@ func (c *Client) sendAnswerStartEvent() error {
 	}
 
 	for _, v := range c.room.Game.Odais {
+		c.hub.mux.Lock()
+		defer c.hub.mux.Unlock()
+
 		ac, ok := c.hub.userIdToClient[v.AnswererId]
 		if !ok {
 			return errNotFound
@@ -783,6 +786,9 @@ func (c *Client) sendChangeHostEvent() error {
 	room := c.room
 	found := false
 	for _, v := range room.Members {
+		c.hub.mux.Lock()
+		defer c.hub.mux.Unlock()
+
 		if _, ok := c.hub.userIdToClient[v.Id]; ok && v.Id != room.HostId {
 			found = true
 			room.HostId = v.Id
@@ -806,6 +812,9 @@ func (c *Client) sendBreakRoomEvent() error {
 		if v.Id == c.userId {
 			continue
 		}
+
+		c.hub.mux.Lock()
+		defer c.hub.mux.Unlock()
 
 		if cc, ok := c.hub.userIdToClient[v.Id]; ok {
 			c.hub.unregister(cc)

@@ -1,6 +1,8 @@
 package ws
 
 import (
+	"sync"
+
 	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/usecases/repository"
 )
@@ -10,6 +12,7 @@ type Hub struct {
 	userIdToClient map[model.UserId]*Client
 	registerCh     chan *Client
 	unregisterCh   chan *Client
+	mux            sync.RWMutex
 }
 
 func NewHub(repo repository.Repository) *Hub {
@@ -18,6 +21,7 @@ func NewHub(repo repository.Repository) *Hub {
 		userIdToClient: make(map[model.UserId]*Client),
 		registerCh:     make(chan *Client),
 		unregisterCh:   make(chan *Client),
+		mux:            sync.RWMutex{},
 	}
 }
 
@@ -40,10 +44,16 @@ func (h *Hub) Run() {
 }
 
 func (h *Hub) register(cli *Client) {
+	h.mux.Lock()
+	defer h.mux.Unlock()
+
 	h.userIdToClient[cli.userId] = cli
 }
 
 func (h *Hub) unregister(cli *Client) {
+	h.mux.Lock()
+	defer h.mux.Unlock()
+
 	close(cli.send)
 	delete(h.userIdToClient, cli.userId)
 }
