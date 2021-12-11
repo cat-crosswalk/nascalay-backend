@@ -14,6 +14,8 @@ func newEchoHTTPError(err error) error {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	case errors.Is(err, repository.ErrAlreadyExists):
 		return echo.NewHTTPError(http.StatusConflict, err.Error())
+	case errors.Is(err, repository.ErrForbidden):
+		return echo.NewHTTPError(http.StatusForbidden, err.Error())
 	default:
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}

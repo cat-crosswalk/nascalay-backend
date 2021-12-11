@@ -12,6 +12,10 @@ func (r *storeRepository) JoinRoom(jr *repository.JoinRoomArgs) (*model.Room, mo
 		return nil, model.UserId{}, repository.ErrNotFound
 	}
 
+	if room.Capacity.Int() <= len(room.Members) {
+		return nil, model.UserId{}, repository.ErrForbidden
+	}
+
 	uid := random.UserId()
 	r.userIdToRoomId[uid] = jr.RoomId
 
