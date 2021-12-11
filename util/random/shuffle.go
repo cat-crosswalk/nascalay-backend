@@ -42,21 +42,14 @@ func SetupMemberRoles(g *model.Game, members []model.User) {
 	}
 	for i := 0; i < n; i++ {
 		ars := RandIntArray(g.Canvas.AllArea)
+		g.Odais[i].DrawerSeq = make([]model.Drawer, g.Canvas.AllArea)
 		for j := 0; j < g.Canvas.AllArea; j++ {
-			g.Odais[i].DrawerSeq = append(g.Odais[i].DrawerSeq, model.Drawer{
+			g.Odais[i].DrawerSeq[j] = model.Drawer{
 				UserId: members[rect[i][j]].Id,
 				AreaId: model.AreaId(ars[j]),
-			})
+			}
 		}
 	}
-}
-
-// 配列の中からランダムに1つ取り出す
-func Choice(arr []int) int {
-	if len(arr) == 0 {
-		return -1
-	}
-	return arr[rand.Intn(len(arr))]
 }
 
 func RandIntArray(n int) []int {
