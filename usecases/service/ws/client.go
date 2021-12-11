@@ -140,20 +140,14 @@ func (c *Client) bloadcast(next func(c *Client)) {
 	}
 }
 
-func (c *Client) sendOrUnregister(cc *Client, msg []byte) {
-	select {
-	case cc.send <- msg:
-	default:
-		if cc.userId == c.room.HostId {
-			c.sendChangeHostEvent()
-		}
-		c.hub.unregister(cc)
-	}
+func (c *Client) sendMsg(msg []byte) {
+	// TODO: unregisterできるようにする
+	c.send <- msg
 }
 
 func (c *Client) sendMsgToEachClientInRoom(msg []byte) {
 	c.bloadcast(func(cc *Client) {
-		c.sendOrUnregister(cc, msg)
+		c.sendMsg(msg)
 	})
 }
 

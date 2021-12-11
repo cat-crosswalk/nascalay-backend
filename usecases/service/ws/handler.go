@@ -321,7 +321,7 @@ func (c *Client) sendDrawStartEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.sendOrUnregister(c, buf)
+	c.sendMsg(buf)
 
 	return nil
 }
@@ -474,7 +474,7 @@ func (c *Client) sendAnswerStartEvent() error {
 			return fmt.Errorf("failed to encode as JSON: %w", err)
 		}
 
-		c.sendOrUnregister(ac, buf)
+		ac.sendMsg(buf)
 	}
 
 	return nil
@@ -598,7 +598,7 @@ func (c *Client) sendShowStartEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.sendOrUnregister(c, buf)
+	c.sendMsg(buf)
 
 	return nil
 }
@@ -662,7 +662,7 @@ func (c *Client) sendShowOdaiEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.sendOrUnregister(c, buf)
+	c.sendMsg(buf)
 
 	return nil
 }
@@ -694,7 +694,7 @@ func (c *Client) sendShowCanvasEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.sendOrUnregister(c, buf)
+	c.sendMsg(buf)
 
 	return nil
 }
@@ -731,7 +731,7 @@ func (c *Client) sendShowAnswerEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.sendOrUnregister(c, buf)
+	c.sendMsg(buf)
 
 	return nil
 }
@@ -772,14 +772,14 @@ func (c *Client) sendNextRoomEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.sendOrUnregister(c, buf)
+	c.sendMsg(buf)
 
 	return nil
 }
 
 // CHANGE_HOST
 // ホストが落ちた時に飛んできて，ホスト役を変更する (サーバー -> ルーム全員)
-func (c *Client) sendChangeHostEvent() error {
+func (c *Client) sendChangeHostEvent() error { //nolint:unused
 	room := c.room
 	found := false
 	for _, v := range room.Members {
