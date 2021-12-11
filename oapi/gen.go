@@ -29,3 +29,18 @@ func RefillUsers(mus []model.User) []User {
 
 	return us
 }
+
+func RefillRoom(mr *model.Room, userId model.UserId) Room {
+	var r Room
+	r.Capacity = mr.Capacity.Int()
+	r.HostId = mr.HostId.UUID()
+	r.Members = make([]User, len(mr.Members))
+	r.RoomId = mr.Id.String()
+	r.UserId = userId.UUID()
+
+	for i, v := range mr.Members {
+		r.Members[i] = RefillUser(&v)
+	}
+
+	return r
+}
