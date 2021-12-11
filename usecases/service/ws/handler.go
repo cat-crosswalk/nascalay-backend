@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/oapi"
@@ -125,6 +124,10 @@ func (c *Client) sendRoomUpdateOptionEvent(body *oapi.WsRoomUpdateOptionEventBod
 func (c *Client) receiveRequestGameStartEvent(_ interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
+	}
+
+	if stopped := c.room.Game.Timer.Stop(); !stopped {
+		go c.waitAndBreakRoom()
 	}
 
 	if c.userId != c.room.HostId {
@@ -584,6 +587,8 @@ func (c *Client) sendShowStartEvent() error {
 		return errWrongPhase
 	}
 
+	c.resetTimer()
+
 	buf, err := json.Marshal(
 		&oapi.WsJSONBody{
 			Type: oapi.WsEventSHOWSTART,
@@ -623,23 +628,6 @@ func (c *Client) receiveShowNextEvent(_ interface{}) error {
 			return fmt.Errorf("failed to send SHOW_ANSWER event: %w", err)
 		}
 	case model.GameShowPhaseEnd:
-		game := c.room.Game
-		timer := game.Timer
-		waitFunc := func(timer *time.Timer) {
-			<-timer.C
-			if err := c.sendBreakRoomEvent(); err != nil {
-				log.Println("failed to send BREAK_ROOM event:", err.Error())
-			}
-		}
-
-		if stopped := timer.Stop(); !stopped {
-			go waitFunc(timer)
-		}
-
-		timer.Reset(time.Minute * time.Duration(game.Timeout))
-		go waitFunc(timer)
-
-		return nil
 	default:
 		return errUnknownPhase
 	}
@@ -755,7 +743,9 @@ func (c *Client) receiveReturnRoomEvent(_ interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
+
 	c.room.ResetGame()
+	c.resetTimer()
 
 	c.bloadcast(func(cc *Client) {
 		if err := cc.sendNextRoomEvent(); err != nil {

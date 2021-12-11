@@ -171,3 +171,24 @@ func (c *Client) allMembersAreReady() bool {
 
 	return true
 }
+
+func (c *Client) resetTimer() {
+	// タイマーをリセットする
+	// game.Timeout(分)後に次のゲームが始まらなければルームを削除する
+	game := c.room.Game
+	timer := game.Timer
+
+	if stopped := timer.Stop(); !stopped {
+		go c.waitAndBreakRoom()
+	}
+
+	timer.Reset(time.Minute * time.Duration(game.Timeout))
+	go c.waitAndBreakRoom()
+}
+
+func (c *Client) waitAndBreakRoom() {
+	<-c.room.Game.Timer.C
+	if err := c.sendBreakRoomEvent(); err != nil {
+		log.Println("failed to send BREAK_ROOM event:", err.Error())
+	}
+}
