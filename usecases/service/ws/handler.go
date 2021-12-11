@@ -483,6 +483,9 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 					log.Println("failed to send DRAW_START event:", err.Error())
 				}
 			})
+			// DRAWのカウントダウン開始
+			c.room.Game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
+			c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
 		} else {
 			game.Status = model.GameStatusAnswer
 
