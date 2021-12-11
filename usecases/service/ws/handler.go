@@ -1,4 +1,3 @@
-//nolint:unused // TODO: 実装したら消す
 package ws
 
 import (
