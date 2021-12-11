@@ -1,6 +1,7 @@
 package random
 
 import (
+	"log"
 	"math/rand"
 	"time"
 
@@ -49,6 +50,7 @@ func SetupMemberRoles(g *model.Game, members []model.User) {
 				AreaId: model.AreaId(ars[j]),
 			}
 		}
+		log.Println(g.Odais[i].DrawerSeq)
 	}
 }
 

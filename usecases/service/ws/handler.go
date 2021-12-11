@@ -288,6 +288,7 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 		game.ResetReady()
 		game.Status = model.GameStatusDraw
 		game.DrawCount = 0
+		random.SetupMemberRoles(game, c.room.Members)
 		c.bloadcast(func(cc *Client) {
 			if err := cc.sendDrawStartEvent(); err != nil {
 				log.Println("failed to send DRAW_START event:", err.Error())
@@ -326,8 +327,6 @@ func (c *Client) sendDrawStartEvent() error {
 		drawer    *model.Drawer
 	)
 	drawnArea := make([]int, drawCount.Int())
-
-	random.SetupMemberRoles(game, c.room.Members)
 
 	for _, v := range game.Odais {
 		if len(v.DrawerSeq) <= drawCount.Int() {
