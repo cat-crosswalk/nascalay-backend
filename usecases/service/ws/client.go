@@ -182,7 +182,7 @@ func (c *Client) allMembersAreReady() bool {
 
 func (c *Client) resetTimer() {
 	// タイマーをリセットする
-	// game.Timeout(分)後に次のゲームが始まらなければルームを削除する
+	// 15(分)後に次のゲームが始まらなければルームを削除する
 	game := c.room.Game
 	timer := game.Timer
 
@@ -190,7 +190,7 @@ func (c *Client) resetTimer() {
 		go c.waitAndBreakRoom()
 	}
 
-	timer.Reset(time.Minute * time.Duration(game.Timeout))
+	timer.Reset(time.Minute * 15)
 	go c.waitAndBreakRoom()
 }
 

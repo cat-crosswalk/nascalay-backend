@@ -70,7 +70,7 @@ type TimeLimit int
 
 const DefaultTimeLimit = TimeLimit(40) // Default time limit is 40 seconds
 
-type Timeout int
+type Timeout time.Time
 
 type DrawCount int
 
@@ -104,7 +104,7 @@ func InitGame() *Game {
 		Ready:         make(map[UserId]struct{}),
 		Odais:         make([]*Odai, 0, 100),
 		TimeLimit:     DefaultTimeLimit,
-		Timeout:       0,
+		Timeout:       Timeout(time.Now()),
 		Timer:         time.NewTimer(time.Second * time.Duration(DefaultTimeLimit)),
 		DrawCount:     0,
 		ShowCount:     0,
