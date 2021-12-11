@@ -486,6 +486,13 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 			// DRAWのカウントダウン開始
 			c.room.Game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
 			c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
+
+			go func() {
+				<-c.room.Game.Timer.C
+				if err := c.sendDrawFinishEvent(); err != nil {
+					log.Println("failed to send DRAW_FINISH event: ", err.Error())
+				}
+			}()
 		} else {
 			game.Status = model.GameStatusAnswer
 
