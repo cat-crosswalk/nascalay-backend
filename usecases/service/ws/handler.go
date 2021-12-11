@@ -302,7 +302,7 @@ func (c *Client) sendDrawStartEvent() error {
 		odai      *model.Odai
 		drawer    *model.Drawer
 	)
-	drawnArea := make([]int, drawCount.Int()-1)
+	drawnArea := make([]int, drawCount.Int())
 
 	random.SetupMemberRoles(game, c.room.Members)
 
@@ -314,7 +314,7 @@ func (c *Client) sendDrawStartEvent() error {
 		if v.DrawerSeq[drawCount].UserId == c.userId {
 			odai = v
 			drawer = &v.DrawerSeq[drawCount]
-			for i := 0; i < drawCount.Int()-1; i++ {
+			for i := 0; i < drawCount.Int(); i++ {
 				drawnArea[i] = v.DrawerSeq[i].AreaId.Int()
 			}
 			break
