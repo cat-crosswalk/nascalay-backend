@@ -86,9 +86,6 @@ func (s *streamer) addNewClient(userId model.UserId, conn *websocket.Conn) (*Cli
 
 	c, ok := s.hub.userIdToClient[userId]
 	if !ok {
-		s.hub.mux.Lock()
-		defer s.hub.mux.Unlock()
-
 		s.hub.userIdToClient[userId] = c
 	}
 

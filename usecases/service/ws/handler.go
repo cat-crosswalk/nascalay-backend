@@ -165,7 +165,7 @@ func (c *Client) sendGameStartEvent() error {
 	// ODAIフェーズに移行
 	c.room.Game.Status = model.GameStatusOdai
 
-	go c.sendMsgToEachClientInRoom(buf)
+	c.sendMsgToEachClientInRoom(buf)
 
 	return nil
 }
@@ -217,7 +217,7 @@ func (c *Client) sendOdaiFinishEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	go c.sendMsgToEachClientInRoom(buf)
+	c.sendMsgToEachClientInRoom(buf)
 
 	return nil
 }
@@ -373,7 +373,7 @@ func (c *Client) sendDrawFinishEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	go c.sendMsgToEachClientInRoom(buf)
+	c.sendMsgToEachClientInRoom(buf)
 
 	return nil
 }
@@ -455,10 +455,10 @@ func (c *Client) sendAnswerStartEvent() error {
 		return errWrongPhase
 	}
 
-	for _, v := range c.room.Game.Odais {
-		c.hub.mux.Lock()
-		defer c.hub.mux.Unlock()
+	c.hub.mux.Lock()
+	defer c.hub.mux.Unlock()
 
+	for _, v := range c.room.Game.Odais {
 		ac, ok := c.hub.userIdToClient[v.AnswererId]
 		if !ok {
 			return errNotFound
@@ -530,7 +530,7 @@ func (c *Client) sendAnswerFinishEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	go c.sendMsgToEachClientInRoom(buf)
+	c.sendMsgToEachClientInRoom(buf)
 
 	return nil
 }
@@ -785,10 +785,10 @@ func (c *Client) sendNextRoomEvent() error {
 func (c *Client) sendChangeHostEvent() error {
 	room := c.room
 	found := false
-	for _, v := range room.Members {
-		c.hub.mux.Lock()
-		defer c.hub.mux.Unlock()
+	c.hub.mux.Lock()
+	defer c.hub.mux.Unlock()
 
+	for _, v := range room.Members {
 		if _, ok := c.hub.userIdToClient[v.Id]; ok && v.Id != room.HostId {
 			found = true
 			room.HostId = v.Id
@@ -808,13 +808,13 @@ func (c *Client) sendChangeHostEvent() error {
 // 部屋が立ってからゲーム開始まで15分以上経過している場合，部屋を閉じる
 // このタイミングでサーバーは保持しているルームに関わる全データを削除
 func (c *Client) sendBreakRoomEvent() error {
+	c.hub.mux.Lock()
+	defer c.hub.mux.Unlock()
+
 	for _, v := range c.room.Members {
 		if v.Id == c.userId {
 			continue
 		}
-
-		c.hub.mux.Lock()
-		defer c.hub.mux.Unlock()
 
 		if cc, ok := c.hub.userIdToClient[v.Id]; ok {
 			c.hub.unregister(cc)
