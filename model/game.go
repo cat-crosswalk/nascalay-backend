@@ -15,6 +15,7 @@ type Game struct {
 	ShowCount     ShowCount
 	NextShowPhase GameNextShowPhase
 	Canvas        Canvas
+	BreakTimer    *time.Timer
 }
 
 type GameStatus int
@@ -70,7 +71,7 @@ type TimeLimit int
 
 const DefaultTimeLimit = TimeLimit(40) // Default time limit is 40 seconds
 
-type Timeout int
+type Timeout time.Time
 
 type DrawCount int
 
@@ -104,8 +105,8 @@ func InitGame() *Game {
 		Ready:         make(map[UserId]struct{}),
 		Odais:         make([]*Odai, 0, 100),
 		TimeLimit:     DefaultTimeLimit,
-		Timeout:       0,
-		Timer:         time.NewTimer(time.Second * time.Duration(DefaultTimeLimit)),
+		Timeout:       Timeout(time.Now()),
+		Timer:         time.NewTimer(0),
 		DrawCount:     0,
 		ShowCount:     0,
 		NextShowPhase: 0,
@@ -113,6 +114,7 @@ func InitGame() *Game {
 			BoardName: "5x5",
 			AllArea:   25,
 		},
+		BreakTimer: time.NewTimer(time.Minute * 15),
 	}
 }
 

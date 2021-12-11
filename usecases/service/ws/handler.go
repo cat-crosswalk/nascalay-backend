@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/oapi"
@@ -126,7 +127,7 @@ func (c *Client) receiveRequestGameStartEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
-	if stopped := c.room.Game.Timer.Stop(); !stopped {
+	if stopped := c.room.Game.BreakTimer.Stop(); !stopped {
 		go c.waitAndBreakRoom()
 	}
 
@@ -173,6 +174,14 @@ func (c *Client) sendGameStartEvent() error {
 
 	// ODAIフェーズに移行
 	c.room.Game.Status = model.GameStatusOdai
+	// ODAIのカウントダウン開始
+	c.room.Game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
+	c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
+
+	<-c.room.Game.Timer.C
+	if err := c.sendOdaiFinishEvent(); err != nil {
+		return fmt.Errorf("failed to send ODAI_FINISH event: %w", err)
+	}
 
 	return nil
 }
@@ -187,6 +196,9 @@ func (c *Client) receiveOdaiReadyEvent(_ interface{}) error {
 	c.room.Game.AddReady(c.userId)
 
 	if c.allMembersAreReady() {
+		if !c.room.Game.Timer.Stop() {
+			<-c.room.Game.Timer.C
+		}
 		if err := c.sendOdaiFinishEvent(); err != nil {
 			return fmt.Errorf("failed to send ODAI_FINISH event: %w", err)
 		}
@@ -330,6 +342,15 @@ func (c *Client) sendDrawStartEvent() error {
 
 	c.sendMsg(buf)
 
+	// DRAWのカウントダウン開始
+	c.room.Game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
+	c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
+
+	<-c.room.Game.Timer.C
+	if err := c.sendDrawFinishEvent(); err != nil {
+		return fmt.Errorf("failed to send DRAW_FINISH event: %w", err)
+	}
+
 	return nil
 }
 
@@ -343,6 +364,9 @@ func (c *Client) receiveDrawReadyEvent(_ interface{}) error {
 	c.room.Game.AddReady(c.userId)
 
 	if c.allMembersAreReady() {
+		if !c.room.Game.Timer.Stop() {
+			<-c.room.Game.Timer.C
+		}
 		if err := c.sendDrawFinishEvent(); err != nil {
 			return fmt.Errorf("failed to send DRAW_FINISH event: %w", err)
 		}
@@ -487,6 +511,15 @@ func (c *Client) sendAnswerStartEvent() error {
 		ac.sendMsg(buf)
 	}
 
+	// ANSWERのカウントダウン開始
+	c.room.Game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
+	c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
+
+	<-c.room.Game.Timer.C
+	if err := c.sendAnswerFinishEvent(); err != nil {
+		return fmt.Errorf("failed to send ANSWER_FINISH event: %w", err)
+	}
+
 	return nil
 }
 
@@ -500,6 +533,9 @@ func (c *Client) receiveAnswerReadyEvent(_ interface{}) error {
 	c.room.Game.AddReady(c.userId)
 
 	if c.allMembersAreReady() {
+		if !c.room.Game.Timer.Stop() {
+			<-c.room.Game.Timer.C
+		}
 		if err := c.sendAnswerFinishEvent(); err != nil {
 			return fmt.Errorf("failed to send ANSWER_FINISH event: %w", err)
 		}
