@@ -913,7 +913,9 @@ func (c *Client) sendNextRoomEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.sendMsg(buf)
+	c.bloadcast(func(cc *Client) {
+		cc.sendMsg(buf)
+	})
 
 	return nil
 }
