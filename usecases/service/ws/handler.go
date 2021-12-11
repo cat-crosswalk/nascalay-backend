@@ -98,13 +98,24 @@ func (c *Client) receiveRoomSetOptionEvent(body interface{}) error {
 	return nil
 }
 
-// TODO: 実装する
 // ROOM_UPDATE_OPTION
 // ゲームの設定を更新する (サーバー -> ルーム全員)
 func (c *Client) sendRoomUpdateOptionEvent(body *oapi.WsRoomUpdateOptionEventBody) error {
 	if !c.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
 	}
+
+	buf, err := json.Marshal(
+		&oapi.WsJSONBody{
+			Type: oapi.WsEventROOMUPDATEOPTION,
+			Body: body,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to encode as JSON: %w", err)
+	}
+
+	c.sendMsgToEachClientInRoom(buf)
 
 	return nil
 }
