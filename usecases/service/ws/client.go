@@ -25,7 +25,9 @@ const (
 	maxMessageSize = 512
 )
 
-var newline = []byte{'\n'}
+var (
+	newline = []byte{'\n'}
+)
 
 type Client struct {
 	hub    *Hub
@@ -131,6 +133,9 @@ func (c *Client) readPump() {
 
 func (c *Client) bloadcast(next func(c *Client)) {
 	for _, m := range c.room.Members {
+		c.hub.mux.Lock()
+		defer c.hub.mux.Unlock()
+
 		cc, ok := c.hub.userIdToClient[m.Id]
 		if !ok {
 			continue
@@ -163,6 +168,9 @@ func (c *Client) sendMsgToEachClientInRoom(msg []byte) {
 func (c *Client) allMembersAreReady() bool {
 	r := c.room
 	for _, m := range r.Members {
+		c.hub.mux.Lock()
+		defer c.hub.mux.Unlock()
+
 		if _, ok := c.hub.userIdToClient[m.Id]; !ok {
 			continue
 		}
