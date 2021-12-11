@@ -772,7 +772,10 @@ func (c *Client) sendShowOdaiEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.room.Game.NextShowPhase = model.GameShowPhaseCanvas
+	if c.userId == c.room.HostId {
+		c.room.Game.NextShowPhase = model.GameShowPhaseCanvas
+	}
+
 	c.sendMsg(buf)
 
 	return nil
@@ -807,7 +810,10 @@ func (c *Client) sendShowCanvasEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.room.Game.NextShowPhase = model.GameShowPhaseAnswer
+	if c.userId == c.room.HostId {
+		c.room.Game.NextShowPhase = model.GameShowPhaseAnswer
+	}
+
 	c.sendMsg(buf)
 
 	return nil
@@ -829,11 +835,11 @@ func (c *Client) sendShowAnswerEvent() error {
 		return errNotFound
 	}
 
-	next := oapi.WsNextShowStatus("odai")
-	nsp := model.GameShowPhaseOdai
-	if len(game.Odais) == sc+1 {
+	var next oapi.WsNextShowStatus
+	if sc+1 < len(game.Odais) {
+		next = oapi.WsNextShowStatus("odai")
+	} else {
 		next = oapi.WsNextShowStatus("end")
-		nsp = model.GameShowPhaseEnd
 	}
 
 	answerer := oapi.User{}
@@ -858,7 +864,14 @@ func (c *Client) sendShowAnswerEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.room.Game.NextShowPhase = nsp
+	if c.userId == c.room.HostId {
+		if sc+1 < len(game.Odais) {
+			c.room.Game.NextShowPhase = model.GameShowPhaseOdai
+		} else {
+			c.room.Game.NextShowPhase = model.GameShowPhaseEnd
+		}
+	}
+
 	c.sendMsg(buf)
 
 	return nil
