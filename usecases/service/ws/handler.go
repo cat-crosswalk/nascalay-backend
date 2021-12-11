@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/oapi"
@@ -173,6 +174,8 @@ func (c *Client) sendGameStartEvent() error {
 
 	// ODAIフェーズに移行
 	c.room.Game.Status = model.GameStatusOdai
+	// ODAIのカウントダウン開始
+	c.room.Game.Timer = time.NewTimer(time.Second * time.Duration(c.room.Game.TimeLimit))
 
 	return nil
 }
@@ -330,6 +333,9 @@ func (c *Client) sendDrawStartEvent() error {
 
 	c.sendMsg(buf)
 
+	// DRAWのカウントダウン開始
+	c.room.Game.Timer = time.NewTimer(time.Second * time.Duration(c.room.Game.TimeLimit))
+
 	return nil
 }
 
@@ -486,6 +492,9 @@ func (c *Client) sendAnswerStartEvent() error {
 
 		ac.sendMsg(buf)
 	}
+
+	// ANSWERのカウントダウン開始
+	c.room.Game.Timer = time.NewTimer(time.Second * time.Duration(c.room.Game.TimeLimit))
 
 	return nil
 }
