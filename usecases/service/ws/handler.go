@@ -742,10 +742,23 @@ func (c *Client) sendNextRoomEvent() error {
 	return nil
 }
 
-// TODO: 実装する
 // CHANGE_HOST
 // ホストが落ちた時に飛んできて，ホスト役を変更する (サーバー -> ルーム全員)
 func (c *Client) sendChangeHostEvent() error {
+	room := c.room
+	found := false
+	for _, v := range room.Members {
+		if _, ok := c.hub.userIdToClient[v.Id]; ok && v.Id != room.HostId {
+			found = true
+			room.HostId = v.Id
+			break
+		}
+	}
+
+	if !found {
+		return errNotFound
+	}
+
 	return nil
 }
 
