@@ -107,9 +107,11 @@ components:
         userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
         hostId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
         members:
-          - username: John
-            avatar: 5
-            userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          - userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+            username: John
+            avatar:
+              type: 5
+              color: '#ffffff'
       properties:
         roomId:
           type: string
@@ -144,9 +146,11 @@ components:
       type: object
       description: ユーザー情報
       example:
-        username: John
-        avatar: 5
         userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        username: John
+        avatar:
+          type: 5
+          color: '#ffffff'
       properties:
         userId:
           type: string
@@ -157,27 +161,45 @@ components:
           type: string
           description: ユーザー名
         avatar:
-          type: integer
-          description: アバターの種類
+          $ref: '#/components/schemas/Avatar'
       required:
         - userId
         - username
         - avatar
+    Avatar:
+      title: Avatar
+      type: object
+      description: アバター情報
+      example:
+        type: 5
+        color: '#ffffff'
+      properties:
+        type:
+          type: integer
+          description: アバターの種類
+        color:
+          type: string
+          description: アバターの背景色
+          pattern: '^#[a-fA-F0-9]{6}'
+      required:
+        - type
+        - color
     CreateRoomRequest:
       title: CreateRoomRequest
       type: object
       description: 新規ルーム作成リクエスト
       example:
         username: John
-        avatar: 5
+        avatar:
+          type: 5
+          color: '#ffffff'
         capacity: 4
       properties:
         username:
           type: string
           description: ユーザー名
         avatar:
-          type: integer
-          description: アバターの種類
+          $ref: '#/components/schemas/Avatar'
         capacity:
           type: integer
           description: ルームの最大収容人数
@@ -192,7 +214,9 @@ components:
       example:
         roomId: Nao340bzc0
         username: John
-        avatar: 5
+        avatar:
+          type: 5
+          color: '#ffffff'
       properties:
         roomId:
           type: string
@@ -202,8 +226,7 @@ components:
           type: string
           description: ユーザー名
         avatar:
-          type: integer
-          description: アバターの種類
+          $ref: '#/components/schemas/Avatar'
       required:
         - roomId
         - username
@@ -316,9 +339,11 @@ components:
         capacity: 0
         hostId: 70e3fb2d-1cb6-4dbc-ab8d-fa7209aca5dd
         members:
-          - username: John
-            avatar: 5
-            userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          - userId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+            username: John
+            avatar:
+              type: 5
+              color: '#ffffff'
       properties:
         capacity:
           type: integer

@@ -17,7 +17,10 @@ func (h *handler) JoinRoom(c echo.Context) error {
 	}
 
 	room, uid, err := h.r.JoinRoom(&repository.JoinRoomArgs{
-		Avatar:   model.Avatar(req.Avatar),
+		Avatar: model.Avatar{
+			Type:  model.AvatarType(req.Avatar.Type),
+			Color: model.AvatarColor(req.Avatar.Color),
+		},
 		RoomId:   model.RoomId(req.RoomId),
 		Username: model.Username(req.Username),
 	})
@@ -30,7 +33,7 @@ func (h *handler) JoinRoom(c echo.Context) error {
 		c.Logger().Error(fmt.Errorf("failed to notify of new member: %w", err))
 	}
 
-	return echo.NewHTTPError(http.StatusOK, refillRoom(room, uid))
+	return echo.NewHTTPError(http.StatusOK, oapi.RefillRoom(room, uid))
 }
 
 func (h *handler) CreateRoom(c echo.Context) error {
@@ -40,7 +43,10 @@ func (h *handler) CreateRoom(c echo.Context) error {
 	}
 
 	room, err := h.r.CreateRoom(&repository.CreateRoomArgs{
-		Avatar:   model.Avatar(req.Avatar),
+		Avatar: model.Avatar{
+			Type:  model.AvatarType(req.Avatar.Type),
+			Color: model.AvatarColor(req.Avatar.Color),
+		},
 		Capacity: model.Capacity(req.Capacity),
 		Username: model.Username(req.Username),
 	})
@@ -48,7 +54,7 @@ func (h *handler) CreateRoom(c echo.Context) error {
 		return newEchoHTTPError(err)
 	}
 
-	return echo.NewHTTPError(http.StatusCreated, refillRoom(room, room.HostId))
+	return echo.NewHTTPError(http.StatusCreated, oapi.RefillRoom(room, room.HostId))
 }
 
 func (h *handler) GetRoom(c echo.Context, roomId oapi.RoomIdInPath) error {
@@ -57,5 +63,5 @@ func (h *handler) GetRoom(c echo.Context, roomId oapi.RoomIdInPath) error {
 		return newEchoHTTPError(err)
 	}
 
-	return c.JSON(http.StatusOK, refillRoom(room, model.UserId{})) // ユーザーIDが必要ないのでとりあえずuuid.Nilにしておく
+	return c.JSON(http.StatusOK, oapi.RefillRoom(room, model.UserId{})) // ユーザーIDが必要ないのでとりあえずuuid.Nilにしておく
 }
