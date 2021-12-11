@@ -175,6 +175,9 @@ func (c *Client) sendGameStartEvent() error {
 	// ODAIフェーズに移行
 	c.room.Game.Status = model.GameStatusOdai
 	// ODAIのカウントダウン開始
+	if !c.room.Game.Timer.Stop() {
+		<-c.room.Game.Timer.C
+	}
 	c.room.Game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
 	c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
 
@@ -343,6 +346,9 @@ func (c *Client) sendDrawStartEvent() error {
 	c.sendMsg(buf)
 
 	// DRAWのカウントダウン開始
+	if !c.room.Game.Timer.Stop() {
+		<-c.room.Game.Timer.C
+	}
 	c.room.Game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
 	c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
 
@@ -512,6 +518,9 @@ func (c *Client) sendAnswerStartEvent() error {
 	}
 
 	// ANSWERのカウントダウン開始
+	if !c.room.Game.Timer.Stop() {
+		<-c.room.Game.Timer.C
+	}
 	c.room.Game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
 	c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
 
