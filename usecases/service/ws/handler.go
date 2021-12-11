@@ -646,7 +646,8 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 
 	for _, v := range game.Odais {
 		if v.AnswererId == c.userId {
-			v.Answer = model.OdaiAnswer(e.Answer)
+			ma := model.OdaiAnswer(e.Answer)
+			v.Answer = &ma
 			break
 		}
 	}
@@ -654,7 +655,7 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 	// 全員の回答が送信されたらSHOWフェーズに移行
 	allAnswerReceived := true
 	for _, v := range game.Odais {
-		if v.Answer == "" {
+		if v.Answer == nil {
 			allAnswerReceived = false
 			break
 		}
