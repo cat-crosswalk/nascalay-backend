@@ -629,7 +629,7 @@ func (c *Client) sendAnswerFinishEvent() error {
 // SHOWフェーズを開始する
 func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusAnswer) {
-		return errWrongPhase
+		return erWrongPhase
 	}
 
 	if body == nil {
@@ -730,8 +730,6 @@ func (c *Client) receiveShowNextEvent(_ interface{}) error {
 	default:
 		return errUnknownPhase
 	}
-
-	c.room.Game.ShowCount++
 
 	return nil
 }
@@ -871,6 +869,8 @@ func (c *Client) sendShowAnswerEvent() error {
 			c.room.Game.NextShowPhase = model.GameShowPhaseEnd
 		}
 	}
+
+	c.room.Game.ShowCount++
 
 	c.sendMsg(buf)
 
