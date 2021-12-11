@@ -766,6 +766,7 @@ func (c *Client) sendShowOdaiEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
+	c.room.Game.NextShowPhase = model.GameShowPhaseCanvas
 	c.sendMsg(buf)
 
 	return nil
@@ -800,6 +801,7 @@ func (c *Client) sendShowCanvasEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
+	c.room.Game.NextShowPhase = model.GameShowPhaseAnswer
 	c.sendMsg(buf)
 
 	return nil
@@ -822,8 +824,10 @@ func (c *Client) sendShowAnswerEvent() error {
 	}
 
 	next := oapi.WsNextShowStatus("odai")
+	nsp := model.GameShowPhaseOdai
 	if len(game.Odais) == sc+1 {
 		next = oapi.WsNextShowStatus("end")
+		nsp = model.GameShowPhaseEnd
 	}
 
 	answerer := oapi.User{}
@@ -848,6 +852,7 @@ func (c *Client) sendShowAnswerEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
+	c.room.Game.NextShowPhase = nsp
 	c.sendMsg(buf)
 
 	return nil
