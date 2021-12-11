@@ -190,6 +190,9 @@ func (c *Client) receiveOdaiReadyEvent(_ interface{}) error {
 	c.room.Game.AddReady(c.userId)
 
 	if c.allMembersAreReady() {
+		if c.room.Game.Timer == nil || !c.room.Game.Timer.Stop() {
+			c.room.Game.Timer = nil
+		}
 		if err := c.sendOdaiFinishEvent(); err != nil {
 			return fmt.Errorf("failed to send ODAI_FINISH event: %w", err)
 		}
@@ -349,6 +352,9 @@ func (c *Client) receiveDrawReadyEvent(_ interface{}) error {
 	c.room.Game.AddReady(c.userId)
 
 	if c.allMembersAreReady() {
+		if c.room.Game.Timer == nil || !c.room.Game.Timer.Stop() {
+			c.room.Game.Timer = nil
+		}
 		if err := c.sendDrawFinishEvent(); err != nil {
 			return fmt.Errorf("failed to send DRAW_FINISH event: %w", err)
 		}
@@ -509,6 +515,9 @@ func (c *Client) receiveAnswerReadyEvent(_ interface{}) error {
 	c.room.Game.AddReady(c.userId)
 
 	if c.allMembersAreReady() {
+		if c.room.Game.Timer == nil || !c.room.Game.Timer.Stop() {
+			c.room.Game.Timer = nil
+		}
 		if err := c.sendAnswerFinishEvent(); err != nil {
 			return fmt.Errorf("failed to send ANSWER_FINISH event: %w", err)
 		}
