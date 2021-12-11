@@ -15,9 +15,6 @@ func Setup(e *echo.Echo, baseEndpoint string) {
 		},
 	}))
 	e.Use(middleware.Recover())
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"https://nascalay.trasta.dev"},
-	}))
 
 	s := injectServer()
 	oapi.RegisterHandlersWithBaseURL(e, s, baseEndpoint)
