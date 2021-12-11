@@ -47,8 +47,6 @@ func (r *storeRepository) CreateRoom(cr *repository.CreateRoomArgs) (*model.Room
 	}
 	room.Game = model.InitGame()
 
-	// TODO: オプション処理
-
 	r.room[rid] = &room
 
 	return &room, nil
