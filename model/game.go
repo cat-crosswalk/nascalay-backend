@@ -31,7 +31,7 @@ const (
 
 type Odai struct {
 	Title      OdaiTitle
-	Answer     OdaiAnswer
+	Answer     *OdaiAnswer
 	SenderId   UserId
 	AnswererId UserId
 	DrawerSeq  []Drawer
