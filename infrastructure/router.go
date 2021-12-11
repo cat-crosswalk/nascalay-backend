@@ -19,6 +19,8 @@ func Setup(e *echo.Echo, baseEndpoint string) {
 		AllowOrigins: []string{"https://nascalay.trasta.dev"},
 	}))
 
+	e.Static("/", "dist")
+
 	s := injectServer()
 	oapi.RegisterHandlersWithBaseURL(e, s, baseEndpoint)
 }

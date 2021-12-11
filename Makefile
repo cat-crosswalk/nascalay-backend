@@ -1,5 +1,6 @@
 SHELL   := /bin/bash
 APP_PORT := ${or ${APP_PORT}, "8080"}
+FRONTEND_DIR := ${or ${FRONTEND_DIR}, ../nascalay-frontend}
 
 build:
 	@go build -v ./...
@@ -13,3 +14,9 @@ lint:
 
 go-gen:
 	@go generate ./...
+
+.PHONY: dev-with-client
+dev-with-client:
+	@cd ${FRONTEND_DIR} && yarn build
+	@cp ${FRONTEND_DIR}/dist . -r
+	@APP_PORT=${APP_PORT} go run main.go -b /api

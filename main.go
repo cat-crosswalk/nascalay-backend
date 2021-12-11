@@ -13,7 +13,7 @@ import (
 var baseEndpoint string
 
 func main() {
-	flag.StringVar(&baseEndpoint, "b", "", "Custom base endpoint .e.g \"/api\"")
+	flag.StringVar(&baseEndpoint, "b", "/api", "Custom base endpoint .e.g \"/api\"")
 	flag.Parse()
 
 	e := echo.New()
