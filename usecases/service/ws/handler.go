@@ -709,17 +709,23 @@ func (c *Client) receiveShowNextEvent(_ interface{}) error {
 
 	switch c.room.Game.NextShowPhase {
 	case model.GameShowPhaseOdai:
-		if err := c.sendShowOdaiEvent(); err != nil {
-			return fmt.Errorf("failed to send SHOW_ODAI event: %w", err)
-		}
+		c.bloadcast(func(cc *Client) {
+			if err := cc.sendShowOdaiEvent(); err != nil {
+				log.Println("failed to send SHOW_ODAI event:", err.Error())
+			}
+		})
 	case model.GameShowPhaseCanvas:
-		if err := c.sendShowCanvasEvent(); err != nil {
-			return fmt.Errorf("failed to send SHOW_CANVAS event: %w", err)
-		}
+		c.bloadcast(func(cc *Client) {
+			if err := cc.sendShowCanvasEvent(); err != nil {
+				log.Println("failed to send SHOW_CANVAS event:", err.Error())
+			}
+		})
 	case model.GameShowPhaseAnswer:
-		if err := c.sendShowAnswerEvent(); err != nil {
-			return fmt.Errorf("failed to send SHOW_ANSWER event: %w", err)
-		}
+		c.bloadcast(func(cc *Client) {
+			if err := cc.sendShowAnswerEvent(); err != nil {
+				log.Println("failed to send SHOW_ANSWER event:", err.Error())
+			}
+		})
 	case model.GameShowPhaseEnd:
 	default:
 		return errUnknownPhase
