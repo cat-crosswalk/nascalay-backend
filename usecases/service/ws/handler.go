@@ -66,7 +66,6 @@ func (c *Client) sendRoomNewMemberEvent(room *model.Room) error {
 	return nil
 }
 
-// TODO: 実装する
 // ROOM_SET_OPTION
 // ゲームのオプションを設定する (ホスト -> サーバー)
 func (c *Client) receiveRoomSetOptionEvent(body interface{}) error {
@@ -83,13 +82,26 @@ func (c *Client) receiveRoomSetOptionEvent(body interface{}) error {
 		return fmt.Errorf("failed to decode body: %w", err)
 	}
 
+	updateBody := new(oapi.WsRoomUpdateOptionEventBody)
+	game := c.room.Game
+
+	// Set options
+	if e.TimeLimit != nil {
+		game.TimeLimit = model.TimeLimit(*e.TimeLimit)
+		updateBody.TimeLimit = e.TimeLimit
+	}
+
+	if err := c.sendRoomUpdateOptionEvent(updateBody); err != nil {
+		return fmt.Errorf("failed to send ROOM_UPDATE_OPTION event: %w", err)
+	}
+
 	return nil
 }
 
 // TODO: 実装する
 // ROOM_UPDATE_OPTION
 // ゲームの設定を更新する (サーバー -> ルーム全員)
-func (c *Client) sendRoomUpdateOptionEvent(body interface{}) error {
+func (c *Client) sendRoomUpdateOptionEvent(body *oapi.WsRoomUpdateOptionEventBody) error {
 	if !c.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
 	}
