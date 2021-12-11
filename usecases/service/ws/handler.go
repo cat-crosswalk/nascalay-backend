@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/21hack02win/nascalay-backend/model"
@@ -353,7 +354,7 @@ func (c *Client) sendDrawStartEvent() error {
 					BoardName: game.Canvas.BoardName,
 				},
 				DrawPhaseNum: game.DrawCount.Int(),
-				Img:          string(odai.Img),
+				Img:          odai.Img.AddPrefix(),
 				Odai:         odai.Title.String(),
 				TimeLimit:    int(game.TimeLimit),
 				DrawnArea:    drawnArea,
@@ -444,15 +445,16 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 
 	for _, v := range c.room.Game.Odais {
 		if v.DrawerSeq[c.room.Game.DrawCount].UserId == c.userId {
-			if len(v.Img) == 0 {
-				newImg, err := canvas.MergeImage(model.Img(v.Img), model.Img(e.Img))
+			sendImg := e.Img[strings.IndexByte(e.Img, ',')+1:]
+			if len(v.Img) > 0 {
+				newImg, err := canvas.MergeImage(string(v.Img), sendImg)
 				if err != nil {
-					v.Img = model.Img(e.Img)
+					v.Img = model.Img(sendImg)
 					return fmt.Errorf("failed to merge image: %w", err)
 				}
-				v.Img = newImg
+				v.Img = model.Img(newImg)
 			} else {
-				v.Img = model.Img(e.Img)
+				v.Img = model.Img(sendImg)
 			}
 			v.ImgUpdated = true
 			break
@@ -481,6 +483,9 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 					log.Println("failed to send DRAW_START event:", err.Error())
 				}
 			})
+			// DRAWのカウントダウン開始
+			c.room.Game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
+			c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
 		} else {
 			game.Status = model.GameStatusAnswer
 
@@ -514,7 +519,7 @@ func (c *Client) sendAnswerStartEvent() error {
 			&oapi.WsJSONBody{
 				Type: oapi.WsEventANSWERSTART,
 				Body: oapi.WsAnswerStartEventBody{
-					Img:       string(v.Img),
+					Img:       v.Img.AddPrefix(),
 					TimeLimit: int(c.room.Game.TimeLimit),
 				},
 			},
@@ -762,7 +767,7 @@ func (c *Client) sendShowCanvasEvent() error {
 			Type: oapi.WsEventSHOWCANVAS,
 			Body: &oapi.WsShowCanvasEventBody{
 				Next: oapi.WsNextShowStatus("answer"),
-				Img:  game.Odais[sc].Img.String(),
+				Img:  game.Odais[sc].Img.AddPrefix(),
 			},
 		},
 	)

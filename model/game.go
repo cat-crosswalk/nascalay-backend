@@ -50,10 +50,10 @@ func (o OdaiAnswer) String() string {
 	return string(o)
 }
 
-type Img []byte
+type Img string
 
-func (i Img) String() string {
-	return string(i)
+func (i Img) AddPrefix() string {
+	return "data:image/png;base64," + string(i)
 }
 
 type Drawer struct {

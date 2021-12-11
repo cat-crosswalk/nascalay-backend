@@ -2,20 +2,24 @@ package canvas
 
 import (
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"image"
 	"image/draw"
 	"image/png"
+	"strings"
 )
 
-func MergeImage(a []byte, b []byte) ([]byte, error) {
-	ai, _, err := image.Decode(bytes.NewReader(a))
+func MergeImage(a string, b string) (string, error) {
+	reader := base64.NewDecoder(base64.StdEncoding, strings.NewReader(a))
+	ai, _, err := image.Decode(reader)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode image: %w", err)
+		return "", fmt.Errorf("failed to decode image: %w", err)
 	}
-	bi, _, err := image.Decode(bytes.NewReader(b))
+	reader = base64.NewDecoder(base64.StdEncoding, strings.NewReader(b))
+	bi, _, err := image.Decode(reader)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode image: %w", err)
+		return "", fmt.Errorf("failed to decode image: %w", err)
 	}
 	rect := image.Rectangle{image.Point{0, 0}, ai.Bounds().Size()}
 	rgba := image.NewRGBA(rect)
@@ -24,7 +28,7 @@ func MergeImage(a []byte, b []byte) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	err = png.Encode(buf, rgba)
 	if err != nil {
-		return nil, fmt.Errorf("failed to encode image: %w", err)
+		return "", fmt.Errorf("failed to encode image: %w", err)
 	}
-	return buf.Bytes(), nil
+	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
 }
