@@ -126,6 +126,9 @@ func (c *Client) receiveRequestGameStartEvent(_ interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
 	}
+	if len(c.room.Members) < 2 {
+		return errNotEnoughMember
+	}
 
 	if stopped := c.room.Game.BreakTimer.Stop(); !stopped {
 		go c.waitAndBreakRoom()
@@ -148,9 +151,6 @@ func (c *Client) receiveRequestGameStartEvent(_ interface{}) error {
 func (c *Client) sendGameStartEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
-	}
-	if len(c.room.Members) < 2 {
-		return errNotEnoughMember
 	}
 
 	for _, m := range c.room.Members {
