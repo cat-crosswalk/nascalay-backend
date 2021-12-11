@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/21hack02win/nascalay-backend/oapi"
@@ -16,7 +17,7 @@ func Setup(e *echo.Echo, baseEndpoint string) {
 	}))
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"https://nascalay.trasta.dev"},
+		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodOptions},
 	}))
 
 	s := injectServer()

@@ -67,7 +67,6 @@ func (c *Client) sendRoomNewMemberEvent(room *model.Room) error {
 	return nil
 }
 
-// TODO: 実装する
 // ROOM_SET_OPTION
 // ゲームのオプションを設定する (ホスト -> サーバー)
 func (c *Client) receiveRoomSetOptionEvent(body interface{}) error {
@@ -84,16 +83,40 @@ func (c *Client) receiveRoomSetOptionEvent(body interface{}) error {
 		return fmt.Errorf("failed to decode body: %w", err)
 	}
 
+	updateBody := new(oapi.WsRoomUpdateOptionEventBody)
+	game := c.room.Game
+
+	// Set options
+	if e.TimeLimit != nil {
+		game.TimeLimit = model.TimeLimit(*e.TimeLimit)
+		updateBody.TimeLimit = e.TimeLimit
+	}
+
+	if err := c.sendRoomUpdateOptionEvent(updateBody); err != nil {
+		return fmt.Errorf("failed to send ROOM_UPDATE_OPTION event: %w", err)
+	}
+
 	return nil
 }
 
-// TODO: 実装する
 // ROOM_UPDATE_OPTION
 // ゲームの設定を更新する (サーバー -> ルーム全員)
-func (c *Client) sendRoomUpdateOptionEvent(body interface{}) error {
+func (c *Client) sendRoomUpdateOptionEvent(body *oapi.WsRoomUpdateOptionEventBody) error {
 	if !c.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
 	}
+
+	buf, err := json.Marshal(
+		&oapi.WsJSONBody{
+			Type: oapi.WsEventROOMUPDATEOPTION,
+			Body: body,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to encode as JSON: %w", err)
+	}
+
+	c.sendMsgToEachClientInRoom(buf)
 
 	return nil
 }
@@ -229,13 +252,13 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 	if len(game.Odais) == len(members) {
 		game.ResetReady()
 		game.Status = model.GameStatusDraw
+		game.DrawCount = 0
+		c.bloadcast(func(cc *Client) {
+			if err := cc.sendDrawStartEvent(); err != nil {
+				log.Println("failed to send DRAW_START event:", err.Error())
+			}
+		})
 	}
-
-	c.bloadcast(func(cc *Client) {
-		if err := cc.sendDrawStartEvent(); err != nil {
-			log.Println("failed to send DRAW_START event:", err.Error())
-		}
-	})
 
 	return nil
 }
@@ -257,6 +280,10 @@ func (c *Client) sendDrawStartEvent() error {
 	random.SetupMemberRoles(game, c.room.Members)
 
 	for _, v := range game.Odais {
+		if len(v.DrawerSeq) <= drawCount.Int() {
+			return errInvalidDrawCount
+		}
+
 		if v.DrawerSeq[drawCount].UserId == c.userId {
 			odai = v
 			drawer = &v.DrawerSeq[drawCount]
@@ -761,10 +788,23 @@ func (c *Client) sendNextRoomEvent() error {
 	return nil
 }
 
-// TODO: 実装する
 // CHANGE_HOST
 // ホストが落ちた時に飛んできて，ホスト役を変更する (サーバー -> ルーム全員)
 func (c *Client) sendChangeHostEvent() error {
+	room := c.room
+	found := false
+	for _, v := range room.Members {
+		if _, ok := c.hub.userIdToClient[v.Id]; ok && v.Id != room.HostId {
+			found = true
+			room.HostId = v.Id
+			break
+		}
+	}
+
+	if !found {
+		return errNotFound
+	}
+
 	return nil
 }
 

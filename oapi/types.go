@@ -232,14 +232,14 @@ type WsRoomNewMemberEventBody struct {
 
 // ゲームのオプションを設定する (ホスト -> サーバー)
 type WsRoomSetOptionEventBody struct {
-	// 何か
-	Something string `json:"something"`
+	// 制限時間
+	TimeLimit *int `json:"timeLimit,omitempty"`
 }
 
 // ゲームの設定を更新する (サーバー -> ルーム全員)
 type WsRoomUpdateOptionEventBody struct {
-	// 何か
-	Something string `json:"something"`
+	// 制限時間
+	TimeLimit *int `json:"timeLimit,omitempty"`
 }
 
 // WsSendMessage defines model for WsSendMessage.

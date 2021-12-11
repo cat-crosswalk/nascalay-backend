@@ -109,6 +109,10 @@ func InitGame() *Game {
 		DrawCount:     0,
 		ShowCount:     0,
 		NextShowPhase: 0,
+		Canvas: Canvas{
+			BoardName: "5x5",
+			AllArea:   25,
+		},
 	}
 }
 
