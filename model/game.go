@@ -8,9 +8,9 @@ type Game struct {
 	Status        GameStatus
 	Ready         map[UserId]struct{}
 	Odais         []*Odai
-	TimeLimit     TimeLimit
-	Timeout       Timeout
-	Timer         *Timer
+	TimeLimit     TimeLimit // seconds
+	Timeout       Timeout   // minute
+	Timer         *time.Timer
 	DrawCount     DrawCount
 	ShowCount     ShowCount
 	NextShowPhase GameNextShowPhase
@@ -72,12 +72,6 @@ const DefaultTimeLimit = TimeLimit(40) // Default time limit is 40 seconds
 
 type Timeout int
 
-type Timer time.Timer
-
-func NewTimer(duration time.Duration) *Timer {
-	return (*Timer)(time.NewTimer(duration))
-}
-
 type DrawCount int
 
 func (d DrawCount) Int() int {
@@ -111,7 +105,7 @@ func InitGame() *Game {
 		Odais:         make([]*Odai, 0, 100),
 		TimeLimit:     DefaultTimeLimit,
 		Timeout:       0,
-		Timer:         NewTimer(time.Second * time.Duration(DefaultTimeLimit)),
+		Timer:         time.NewTimer(time.Second * time.Duration(DefaultTimeLimit)),
 		DrawCount:     0,
 		ShowCount:     0,
 		NextShowPhase: 0,

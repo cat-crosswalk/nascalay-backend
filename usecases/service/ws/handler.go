@@ -1,4 +1,3 @@
-//nolint:unused // TODO: 実装したら消す
 package ws
 
 import (
@@ -125,6 +124,10 @@ func (c *Client) sendRoomUpdateOptionEvent(body *oapi.WsRoomUpdateOptionEventBod
 func (c *Client) receiveRequestGameStartEvent(_ interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
+	}
+
+	if stopped := c.room.Game.Timer.Stop(); !stopped {
+		go c.waitAndBreakRoom()
 	}
 
 	if c.userId != c.room.HostId {
@@ -584,6 +587,8 @@ func (c *Client) sendShowStartEvent() error {
 		return errWrongPhase
 	}
 
+	c.resetTimer()
+
 	buf, err := json.Marshal(
 		&oapi.WsJSONBody{
 			Type: oapi.WsEventSHOWSTART,
@@ -738,13 +743,16 @@ func (c *Client) receiveReturnRoomEvent(_ interface{}) error {
 	if !c.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
+
 	c.room.ResetGame()
+	c.resetTimer()
 
 	c.bloadcast(func(cc *Client) {
 		if err := cc.sendNextRoomEvent(); err != nil {
 			log.Println("failed to send NEXT_ROOM event:", err)
 		}
 	})
+
 	return nil
 }
 
@@ -789,11 +797,26 @@ func (c *Client) sendChangeHostEvent() error {
 	return nil
 }
 
-// TODO: 実装する
 // BREAK_ROOM
 // 部屋が破壊されたときに通知する (サーバー -> ルーム全員)
 // 部屋が立ってからゲーム開始まで15分以上経過している場合，部屋を閉じる
 // このタイミングでサーバーは保持しているルームに関わる全データを削除
-func (c *Client) sendBreakRoomEvent(body interface{}) error {
+func (c *Client) sendBreakRoomEvent() error {
+	for _, v := range c.room.Members {
+		if v.Id == c.userId {
+			continue
+		}
+
+		if cc, ok := c.hub.userIdToClient[v.Id]; ok {
+			c.hub.unregister(cc)
+		}
+	}
+
+	if err := c.hub.repo.DeleteRoom(c.room.Id); err != nil {
+		return fmt.Errorf("failed to delete room: %w", err)
+	}
+
+	c.hub.unregister(c)
+
 	return nil
 }
