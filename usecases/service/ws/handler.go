@@ -176,6 +176,7 @@ func (c *Client) sendGameStartEvent() error {
 	c.room.Game.Status = model.GameStatusOdai
 	// ODAIのカウントダウン開始
 	c.room.Game.Timer = time.NewTimer(time.Second * time.Duration(c.room.Game.TimeLimit))
+	c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
 
 	return nil
 }
@@ -338,6 +339,7 @@ func (c *Client) sendDrawStartEvent() error {
 
 	// DRAWのカウントダウン開始
 	c.room.Game.Timer = time.NewTimer(time.Second * time.Duration(c.room.Game.TimeLimit))
+	c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
 
 	return nil
 }
@@ -501,6 +503,7 @@ func (c *Client) sendAnswerStartEvent() error {
 
 	// ANSWERのカウントダウン開始
 	c.room.Game.Timer = time.NewTimer(time.Second * time.Duration(c.room.Game.TimeLimit))
+	c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
 
 	return nil
 }
