@@ -423,6 +423,10 @@ components:
         odai: ねこのおばけ
         drawPhaseNum: 3
         allDrawPhaseNum: 10
+        drawnArea:
+          - 3
+          - 1
+          - 5
       description: キャンバス情報とお題を送信する (サーバー -> ルーム各員)
       properties:
         timeLimit:
@@ -442,6 +446,11 @@ components:
         allDrawPhaseNum:
           type: integer
           description: 全DRAWフェーズ数
+        drawnArea:
+          type: array
+          description: 埋まっているエリアの一覧
+          items:
+            type: integer
       required:
         - timeLimit
         - canvas
@@ -449,6 +458,7 @@ components:
         - odai
         - drawPhaseNum
         - allDrawPhaseNum
+        - drawnArea
     WsDrawSendEventBody:
       title: WsDrawSendEventBody
       type: object
