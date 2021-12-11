@@ -11,4 +11,5 @@ var (
 	errAlreadyExists    = errors.New("already exists")
 	errUnknownPhase     = errors.New("unknown phase")
 	errInvalidDrawCount = errors.New("invalid draw count")
+	errNotEnoughMember  = errors.New("not enough member")
 )

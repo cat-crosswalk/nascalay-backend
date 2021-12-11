@@ -149,6 +149,9 @@ func (c *Client) sendGameStartEvent() error {
 	if !c.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
 	}
+	if len(c.room.Members) < 2 {
+		return errNotEnoughMember
+	}
 
 	for _, m := range c.room.Members {
 		buf, err := json.Marshal(
