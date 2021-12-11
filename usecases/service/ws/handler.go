@@ -766,8 +766,8 @@ func (c *Client) sendShowOdaiEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.sendMsg(buf)
 	c.room.Game.NextShowPhase = model.GameShowPhaseCanvas
+	c.sendMsg(buf)
 
 	return nil
 }
