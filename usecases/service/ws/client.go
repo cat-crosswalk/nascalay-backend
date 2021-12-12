@@ -2,6 +2,7 @@
 package ws
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"time"
@@ -125,7 +126,15 @@ func (c *Client) readPump() {
 
 		if err := c.callEventHandler(req); err != nil {
 			log.Println("websocket error occured:", err.Error())
-			c.send <- []byte(err.Error())
+			buf, _ := json.Marshal(
+				&oapi.WsJSONBody{
+					Type: oapi.WsEventERROR,
+					Body: &oapi.WsErrorBody{
+						Content: err.Error(),
+					},
+				},
+			)
+			c.send <- []byte(buf)
 			continue
 		}
 	}

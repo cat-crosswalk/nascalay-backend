@@ -31,6 +31,8 @@ const (
 
 	WsEventDRAWSTART WsEvent = "DRAW_START"
 
+	WsEventERROR WsEvent = "ERROR"
+
 	WsEventGAMESTART WsEvent = "GAME_START"
 
 	WsEventNEXTROOM WsEvent = "NEXT_ROOM"
@@ -198,6 +200,12 @@ type WsDrawStartEventBody struct {
 
 	// 制限時間
 	TimeLimit int `json:"timeLimit"`
+}
+
+// エラー用ボディ
+type WsErrorBody struct {
+	// エラーの内容
+	Content string `json:"content"`
 }
 
 // Websocketイベントのリスト
