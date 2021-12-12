@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/21hack02win/nascalay-backend/oapi"
+	"github.com/21hack02win/nascalay-backend/usecases/repository"
 	"github.com/labstack/echo/v4"
 )
 
@@ -14,9 +16,9 @@ func (h *handler) Ws(c echo.Context, params oapi.WsParams) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	if err := h.stream.ServeWS(c.Response().Writer, c.Request(), uid); err != nil {
-		c.Logger().Error(err)
-		return newEchoHTTPError(err)
+	err = h.stream.ServeWS(c.Response().Writer, c.Request(), uid)
+	if err != nil && !errors.Is(err, repository.ErrNotFound) {
+		return newEchoHTTPError(err, c)
 	}
 
 	return c.NoContent(http.StatusNoContent)
