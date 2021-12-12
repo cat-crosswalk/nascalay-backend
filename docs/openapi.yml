@@ -281,6 +281,7 @@ components:
         - NEXT_ROOM
         - CHANGE_HOST
         - BREAK_ROOM
+        - ERROR
     WsReceiveMessage:
       title: WsReceiveMessage
       description: WebSocketで クライアントからサーバーへ送信する情報
@@ -308,6 +309,7 @@ components:
               $ref: '#/components/schemas/WsEvent'
             body:
               oneOf:
+                - $ref: '#/components/schemas/WsErrorBody'
                 - $ref: '#/components/schemas/WsRoomNewMemberEventBody'
                 - $ref: '#/components/schemas/WsRoomUpdateOptionEventBody'
                 - $ref: '#/components/schemas/WsGameStartEventBody'
@@ -331,6 +333,18 @@ components:
         - canvas
         - answer
         - end
+    WsErrorBody:
+      title: WsErrorBody
+      type: object
+      description: エラー用ボディ
+      example:
+        content: connection failed
+      properties:
+        content:
+          type: string
+          description: エラーの内容
+      required:
+        - content
     WsRoomNewMemberEventBody:
       title: WsRoomNewMemberEventBody
       type: object
