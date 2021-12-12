@@ -337,8 +337,8 @@ func (c *Client) sendDrawStartEvent() error {
 		}
 
 		drawnArea := make([]int, drawCount.Int())
-		for i, d := range o.DrawerSeq {
-			drawnArea[i] = d.AreaId.Int()
+		for i := 0; i < drawCount.Int(); i++ {
+			drawnArea[i] = o.DrawerSeq[i].AreaId.Int()
 		}
 
 		buf, err := json.Marshal(
