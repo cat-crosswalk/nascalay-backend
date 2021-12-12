@@ -653,11 +653,9 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 	if allAnswerReceived {
 		game.Status = model.GameStatusShow
 
-		c.bloadcast(func(cc *Client) {
-			if err := cc.sendShowStartEvent(); err != nil {
-				log.Println("failed to send SHOW_START event:", err.Error())
-			}
-		})
+		if err := c.sendShowStartEvent(); err != nil {
+			return fmt.Errorf("failed to send SHOW_START event: %w", err)
+		}
 	}
 
 	return nil
@@ -666,6 +664,7 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 // SHOW_START
 // 結果表示フェーズが始まったことを通知する (サーバー -> ルーム全員)
 func (c *Client) sendShowStartEvent() error {
+	// NOTE: 最後に回答したユーザーのクライアントで行う
 	if !c.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
@@ -681,7 +680,7 @@ func (c *Client) sendShowStartEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.sendMsg(buf)
+	c.sendMsgToEachClientInRoom(buf)
 
 	return nil
 }
