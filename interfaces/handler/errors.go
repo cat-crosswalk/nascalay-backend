@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func newEchoHTTPError(err error) error {
+func newEchoHTTPError(err error, c echo.Context) error {
 	switch {
 	case errors.Is(err, repository.ErrNotFound):
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
@@ -17,6 +17,7 @@ func newEchoHTTPError(err error) error {
 	case errors.Is(err, repository.ErrForbidden):
 		return echo.NewHTTPError(http.StatusForbidden, err.Error())
 	default:
+		c.Logger().Error(err.Error())
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 }

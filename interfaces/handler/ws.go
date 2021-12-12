@@ -15,8 +15,7 @@ func (h *handler) Ws(c echo.Context, params oapi.WsParams) error {
 	}
 
 	if err := h.stream.ServeWS(c.Response().Writer, c.Request(), uid); err != nil {
-		c.Logger().Error(err)
-		return newEchoHTTPError(err)
+		return newEchoHTTPError(err, c)
 	}
 
 	return c.NoContent(http.StatusNoContent)

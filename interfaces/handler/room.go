@@ -25,7 +25,7 @@ func (h *handler) JoinRoom(c echo.Context) error {
 		Username: model.Username(req.Username),
 	})
 	if err != nil {
-		return newEchoHTTPError(err)
+		return newEchoHTTPError(err, c)
 	}
 
 	// Notify Other Clients of the new user with WebSocket
@@ -51,7 +51,7 @@ func (h *handler) CreateRoom(c echo.Context) error {
 		Username: model.Username(req.Username),
 	})
 	if err != nil {
-		return newEchoHTTPError(err)
+		return newEchoHTTPError(err, c)
 	}
 
 	return echo.NewHTTPError(http.StatusCreated, oapi.RefillRoom(room, room.HostId))
@@ -60,7 +60,7 @@ func (h *handler) CreateRoom(c echo.Context) error {
 func (h *handler) GetRoom(c echo.Context, roomId oapi.RoomIdInPath) error {
 	room, err := h.r.GetRoom(model.RoomId(roomId))
 	if err != nil {
-		return newEchoHTTPError(err)
+		return newEchoHTTPError(err, c)
 	}
 
 	return echo.NewHTTPError(http.StatusOK, oapi.RefillRoom(room, model.UserId{})) // ユーザーIDが必要ないのでとりあえずuuid.Nilにしておく
