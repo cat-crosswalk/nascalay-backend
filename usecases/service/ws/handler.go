@@ -315,7 +315,7 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 // DRAW_START
 // キャンバス情報とお題を送信する (サーバー -> ルーム各員)
 func (c *Client) sendDrawStartEvent() error {
-	// NOTE: 最後にお題を送信したユーザーのクライアントから実行される
+	// NOTE: 最後にお題を送信したユーザー(2回目以降は最後に絵を送信したユーザー)のクライアントから実行される
 	if !c.room.GameStatusIs(model.GameStatusDraw) {
 		return errWrongPhase
 	}
@@ -478,11 +478,10 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 
 			game.ResetImgUpdated()
 
-			c.bloadcast(func(cc *Client) {
-				if err := cc.sendDrawStartEvent(); err != nil {
-					log.Println("failed to send DRAW_START event:", err.Error())
-				}
-			})
+			if err := c.sendDrawStartEvent(); err != nil {
+				return fmt.Errorf("failed to send DRAW_START event: %w", err)
+			}
+
 			// DRAWのカウントダウン開始
 			c.room.Game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
 			c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
