@@ -289,11 +289,10 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 		game.Status = model.GameStatusDraw
 		game.DrawCount = 0
 		random.SetupMemberRoles(game, c.room.Members)
-		c.bloadcast(func(cc *Client) {
-			if err := cc.sendDrawStartEvent(); err != nil {
-				log.Println("failed to send DRAW_START event:", err.Error())
-			}
-		})
+
+		if err := c.sendDrawStartEvent(); err != nil {
+			return fmt.Errorf("failed to send DRAW_START event: %w", err)
+		}
 
 		// DRAWのカウントダウン開始
 		c.room.Game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
@@ -316,6 +315,7 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 // DRAW_START
 // キャンバス情報とお題を送信する (サーバー -> ルーム各員)
 func (c *Client) sendDrawStartEvent() error {
+	// NOTE: 最後にお題を送信したユーザー(2回目以降は最後に絵を送信したユーザー)のクライアントから実行される
 	if !c.room.GameStatusIs(model.GameStatusDraw) {
 		return errWrongPhase
 	}
@@ -323,56 +323,47 @@ func (c *Client) sendDrawStartEvent() error {
 	var (
 		game      = c.room.Game
 		drawCount = game.DrawCount
-		odai      *model.Odai
-		drawer    *model.Drawer
 	)
-	drawnArea := make([]int, drawCount.Int())
 
-	for _, v := range game.Odais {
-		if len(v.DrawerSeq) <= drawCount.Int() {
+	for _, o := range game.Odais {
+		if len(o.DrawerSeq) <= drawCount.Int() {
 			return errInvalidDrawCount
 		}
 
-		if v.DrawerSeq[drawCount].UserId == c.userId {
-			odai = v
-			drawer = &v.DrawerSeq[drawCount]
-			for i := 0; i < drawCount.Int(); i++ {
-				drawnArea[i] = v.DrawerSeq[i].AreaId.Int()
-			}
-			break
+		drawer := o.DrawerSeq[drawCount.Int()]
+		cc, ok := c.hub.userIdToClient[drawer.UserId] // `drawCount`番目に描くユーザーのクライアント
+		if !ok {
+			return errNotFound
 		}
-	}
 
-	if odai == nil {
-		return errNotFound
-	}
+		drawnArea := make([]int, drawCount.Int())
+		for i := 0; i < drawCount.Int(); i++ {
+			drawnArea[i] = o.DrawerSeq[i].AreaId.Int()
+		}
 
-	if drawer == nil {
-		return errUnAuthorized
-	}
-
-	buf, err := json.Marshal(
-		&oapi.WsJSONBody{
-			Type: oapi.WsEventDRAWSTART,
-			Body: oapi.WsDrawStartEventBody{
-				AllDrawPhaseNum: c.room.AllDrawPhase(),
-				Canvas: oapi.Canvas{
-					AreaId:    drawer.AreaId.Int(),
-					BoardName: game.Canvas.BoardName,
+		buf, err := json.Marshal(
+			&oapi.WsJSONBody{
+				Type: oapi.WsEventDRAWSTART,
+				Body: oapi.WsDrawStartEventBody{
+					AllDrawPhaseNum: c.room.AllDrawPhase(),
+					Canvas: oapi.Canvas{
+						AreaId:    drawer.AreaId.Int(),
+						BoardName: game.Canvas.BoardName,
+					},
+					DrawPhaseNum: game.DrawCount.Int(),
+					Img:          o.Img.AddPrefix(),
+					Odai:         o.Title.String(),
+					TimeLimit:    int(game.TimeLimit),
+					DrawnArea:    drawnArea,
 				},
-				DrawPhaseNum: game.DrawCount.Int(),
-				Img:          odai.Img.AddPrefix(),
-				Odai:         odai.Title.String(),
-				TimeLimit:    int(game.TimeLimit),
-				DrawnArea:    drawnArea,
 			},
-		},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to encode as JSON: %w", err)
-	}
+		)
+		if err != nil {
+			return fmt.Errorf("failed to encode as JSON: %w", err)
+		}
 
-	c.sendMsg(buf)
+		cc.sendMsg(buf)
+	}
 
 	return nil
 }
@@ -487,11 +478,10 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 
 			game.ResetImgUpdated()
 
-			c.bloadcast(func(cc *Client) {
-				if err := cc.sendDrawStartEvent(); err != nil {
-					log.Println("failed to send DRAW_START event:", err.Error())
-				}
-			})
+			if err := c.sendDrawStartEvent(); err != nil {
+				return fmt.Errorf("failed to send DRAW_START event: %w", err)
+			}
+
 			// DRAWのカウントダウン開始
 			c.room.Game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
 			c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
@@ -663,11 +653,9 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 	if allAnswerReceived {
 		game.Status = model.GameStatusShow
 
-		c.bloadcast(func(cc *Client) {
-			if err := cc.sendShowStartEvent(); err != nil {
-				log.Println("failed to send SHOW_START event:", err.Error())
-			}
-		})
+		if err := c.sendShowStartEvent(); err != nil {
+			return fmt.Errorf("failed to send SHOW_START event: %w", err)
+		}
 	}
 
 	return nil
@@ -676,6 +664,7 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 // SHOW_START
 // 結果表示フェーズが始まったことを通知する (サーバー -> ルーム全員)
 func (c *Client) sendShowStartEvent() error {
+	// NOTE: 最後に回答したユーザーのクライアントで行う
 	if !c.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
@@ -691,7 +680,7 @@ func (c *Client) sendShowStartEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	c.sendMsg(buf)
+	c.sendMsgToEachClientInRoom(buf)
 
 	return nil
 }
