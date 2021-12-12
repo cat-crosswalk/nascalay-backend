@@ -842,7 +842,7 @@ func (c *Client) sendShowAnswerEvent() error {
 
 	answerer := oapi.User{}
 	for _, m := range c.room.Members {
-		if m.Id == game.Odais[sc].SenderId {
+		if m.Id == game.Odais[sc].AnswererId {
 			answerer = oapi.RefillUser(&m)
 			break
 		}
