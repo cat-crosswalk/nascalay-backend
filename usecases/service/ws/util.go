@@ -1,10 +1,12 @@
 package ws
 
 import (
+	"fmt"
 	"log"
 	"time"
 
 	"github.com/21hack02win/nascalay-backend/model"
+	"github.com/21hack02win/nascalay-backend/oapi"
 )
 
 // Exec `next` func for all clients in the room
@@ -24,7 +26,7 @@ func (c *Client) sendMsg(msg []byte) {
 	if c.send == nil {
 		if c.userId == c.room.HostId {
 			if err := c.sendChangeHostEvent(); err != nil {
-				log.Println("failed to send change host event:", err.Error())
+				log.Println(c.sendEventErr(err, oapi.WsEventCHANGEHOST))
 			}
 		}
 		c.hub.unregister(c)
@@ -80,7 +82,7 @@ func (c *Client) resetBreakTimer() {
 func (c *Client) waitAndBreakRoom() {
 	<-c.room.Game.BreakTimer.C
 	if err := c.sendBreakRoomEvent(); err != nil {
-		log.Println("failed to send BREAK_ROOM event:", err.Error())
+		log.Println(c.sendEventErr(err, oapi.WsEventBREAKROOM))
 	}
 }
 
@@ -98,4 +100,14 @@ func (c *Client) CancelReady(uid model.UserId) {
 	defer c.hub.mux.Unlock()
 
 	delete(c.room.Game.Ready, uid)
+}
+
+func (c *Client) sendEventErr(err error, eventName oapi.WsEvent) error {
+	return fmt.Errorf(
+		"[ERROR] failed to send %s event (userId:%s, roomId:%s): %w",
+		eventName,
+		c.userId.UUID().String(),
+		c.room.Id.String(),
+		err,
+	)
 }

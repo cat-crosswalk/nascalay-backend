@@ -93,7 +93,7 @@ func (c *Client) receiveRoomSetOptionEvent(body interface{}) error {
 	}
 
 	if err := c.sendRoomUpdateOptionEvent(updateBody); err != nil {
-		return fmt.Errorf("failed to send ROOM_UPDATE_OPTION event: %w", err)
+		return c.sendEventErr(err, oapi.WsEventROOMUPDATEOPTION)
 	}
 
 	return nil
@@ -140,7 +140,7 @@ func (c *Client) receiveRequestGameStartEvent(_ interface{}) error {
 	}
 
 	if err := c.sendGameStartEvent(); err != nil {
-		return fmt.Errorf("failed to send GAME_START event: %w", err)
+		return c.sendEventErr(err, oapi.WsEventGAMESTART)
 	}
 
 	return nil
@@ -157,7 +157,7 @@ func (c *Client) sendGameStartEvent() error {
 	for _, m := range c.room.Members {
 		cc, ok := c.hub.userIdToClient[m.Id]
 		if !ok {
-			log.Printf("failed to find client(userId:%s)", m.Id.UUID().String())
+			log.Printf("[INFO] client(userId:%s) not found", m.Id.UUID().String())
 			continue
 		}
 
@@ -190,7 +190,7 @@ func (c *Client) sendGameStartEvent() error {
 		select {
 		case <-c.room.Game.Timer.C:
 			if err := c.sendOdaiFinishEvent(); err != nil {
-				log.Println("failed to send ODAI_FINISH event: ", err.Error())
+				log.Println(c.sendEventErr(err, oapi.WsEventODAIFINISH).Error())
 			}
 		case <-c.room.Game.TimerStopChan:
 		}
@@ -215,7 +215,7 @@ func (c *Client) receiveOdaiReadyEvent(_ interface{}) error {
 			<-c.room.Game.Timer.C
 		}
 		if err := c.sendOdaiFinishEvent(); err != nil {
-			return fmt.Errorf("failed to send ODAI_FINISH event: %w", err)
+			return c.sendEventErr(err, oapi.WsEventODAIFINISH)
 		}
 	}
 
@@ -273,39 +273,53 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 		return fmt.Errorf("failed to decode body: %w", err)
 	}
 
+	game := c.room.Game
+
 	// 存在チェック
-	for _, v := range c.room.Game.Odais {
+	for _, v := range game.Odais {
 		if v.SenderId == c.userId || v.Title == model.OdaiTitle(e.Odai) {
 			return errAlreadyExists
 		}
 	}
 
-	c.room.Game.AddOdai(c.userId, model.OdaiTitle(e.Odai))
+	game.AddOdai(c.userId, model.OdaiTitle(e.Odai))
 
 	// 全員のお題送信が完了したらDRAWフェーズに移行
-	members := c.room.Members
-	game := c.room.Game
-	if len(game.Odais) == len(members) {
+	odaisByUnregisteredClients := make([]model.UserId, 0, len(c.room.Members)) // ハブから登録解除したクライアントの配列
+	for _, v := range c.room.Members {
+		if _, ok := c.hub.userIdToClient[v.Id]; !ok {
+			odaisByUnregisteredClients = append(odaisByUnregisteredClients, v.Id)
+		}
+	}
+
+	if len(game.Odais)+len(odaisByUnregisteredClients) == len(c.room.Members) {
+		for _, Id := range odaisByUnregisteredClients {
+			game.Odais = append(game.Odais, &model.Odai{
+				Title:     model.OdaiTitle(random.OdaiExample()),
+				SenderId:  Id,
+				DrawerSeq: []model.Drawer{},
+			})
+		}
 		game.ResetReady()
 		game.Status = model.GameStatusDraw
 		game.DrawCount = 0
 		random.SetupMemberRoles(game, c.room.Members)
 
 		if err := c.sendDrawStartEvent(); err != nil {
-			return fmt.Errorf("failed to send DRAW_START event: %w", err)
+			return c.sendEventErr(err, oapi.WsEventDRAWSTART)
 		}
 
 		// DRAWのカウントダウン開始
-		c.room.Game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
-		c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
+		game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
+		game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
 
 		go func() {
 			select {
-			case <-c.room.Game.Timer.C:
+			case <-game.Timer.C:
 				if err := c.sendDrawFinishEvent(); err != nil {
-					log.Println("failed to send DRAW_FINISH event: ", err.Error())
+					log.Println(c.sendEventErr(err, oapi.WsEventDRAWFINISH).Error())
 				}
-			case <-c.room.Game.TimerStopChan:
+			case <-game.TimerStopChan:
 			}
 		}()
 	}
@@ -334,7 +348,7 @@ func (c *Client) sendDrawStartEvent() error {
 		drawer := o.DrawerSeq[drawCount.Int()]
 		cc, ok := c.hub.userIdToClient[drawer.UserId] // `drawCount`番目に描くユーザーのクライアント
 		if !ok {
-			log.Printf("failed to find client(userId:%s)", drawer.UserId.UUID().String())
+			log.Printf("[INFO] client(userId:%s) not found", drawer.UserId.UUID().String())
 			continue
 		}
 
@@ -386,7 +400,7 @@ func (c *Client) receiveDrawReadyEvent(_ interface{}) error {
 			<-c.room.Game.Timer.C
 		}
 		if err := c.sendDrawFinishEvent(); err != nil {
-			return fmt.Errorf("failed to send DRAW_FINISH event: %w", err)
+			return c.sendEventErr(err, oapi.WsEventDRAWFINISH)
 		}
 	}
 
@@ -466,6 +480,10 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 	// 全員の絵の送信が完了したら再度DRAW_STARTを送信する or ANSWERフェーズに移行
 	allImgUpdated := true
 	for _, v := range c.room.Game.Odais {
+		if _, ok := c.hub.userIdToClient[v.DrawerSeq[c.room.Game.DrawCount.Int()].UserId]; !ok {
+			continue
+		}
+
 		if !v.ImgUpdated {
 			allImgUpdated = false
 			break
@@ -481,7 +499,7 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 			game.ResetImgUpdated()
 
 			if err := c.sendDrawStartEvent(); err != nil {
-				return fmt.Errorf("failed to send DRAW_START event: %w", err)
+				return c.sendEventErr(err, oapi.WsEventDRAWSTART)
 			}
 
 			// DRAWのカウントダウン開始
@@ -492,7 +510,7 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 				select {
 				case <-c.room.Game.Timer.C:
 					if err := c.sendDrawFinishEvent(); err != nil {
-						log.Println("failed to send DRAW_FINISH event: ", err.Error())
+						log.Println(c.sendEventErr(err, oapi.WsEventDRAWFINISH).Error())
 					}
 				case <-c.room.Game.TimerStopChan:
 				}
@@ -501,7 +519,7 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 			game.Status = model.GameStatusAnswer
 
 			if err := c.sendAnswerStartEvent(); err != nil {
-				return fmt.Errorf("failed to send ANSWER_START event: %w", err)
+				return c.sendEventErr(err, oapi.WsEventANSWERSTART)
 			}
 		}
 	}
@@ -523,7 +541,7 @@ func (c *Client) sendAnswerStartEvent() error {
 	for _, v := range c.room.Game.Odais {
 		ac, ok := c.hub.userIdToClient[v.AnswererId]
 		if !ok {
-			log.Printf("failed to find client(userId:%s)", v.AnswererId.UUID().String())
+			log.Printf("[INFO] client(userId:%s) not found", v.AnswererId.UUID().String())
 			continue
 		}
 
@@ -551,7 +569,7 @@ func (c *Client) sendAnswerStartEvent() error {
 		select {
 		case <-c.room.Game.Timer.C:
 			if err := c.sendAnswerFinishEvent(); err != nil {
-				log.Println("failed to send ANSWER_FINISH event: ", err.Error())
+				log.Println(c.sendEventErr(err, oapi.WsEventANSWERFINISH).Error())
 			}
 		case <-c.room.Game.TimerStopChan:
 		}
@@ -576,7 +594,7 @@ func (c *Client) receiveAnswerReadyEvent(_ interface{}) error {
 			<-c.room.Game.Timer.C
 		}
 		if err := c.sendAnswerFinishEvent(); err != nil {
-			return fmt.Errorf("failed to send ANSWER_FINISH event: %w", err)
+			return c.sendEventErr(err, oapi.WsEventANSWERFINISH)
 		}
 	}
 
@@ -647,6 +665,10 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 	// 全員の回答が送信されたらSHOWフェーズに移行
 	allAnswerReceived := true
 	for _, v := range game.Odais {
+		if _, ok := c.hub.userIdToClient[v.AnswererId]; !ok {
+			continue
+		}
+
 		if v.Answer == nil {
 			allAnswerReceived = false
 			break
@@ -657,7 +679,7 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 		game.Status = model.GameStatusShow
 
 		if err := c.sendShowStartEvent(); err != nil {
-			return fmt.Errorf("failed to send SHOW_START event: %w", err)
+			return c.sendEventErr(err, oapi.WsEventSHOWSTART)
 		}
 	}
 
@@ -703,19 +725,19 @@ func (c *Client) receiveShowNextEvent(_ interface{}) error {
 	case model.GameShowPhaseOdai:
 		c.bloadcast(func(cc *Client) {
 			if err := cc.sendShowOdaiEvent(); err != nil {
-				log.Println("failed to send SHOW_ODAI event:", err.Error())
+				log.Println(cc.sendEventErr(err, oapi.WsEventSHOWODAI))
 			}
 		})
 	case model.GameShowPhaseCanvas:
 		c.bloadcast(func(cc *Client) {
 			if err := cc.sendShowCanvasEvent(); err != nil {
-				log.Println("failed to send SHOW_CANVAS event:", err.Error())
+				log.Println(cc.sendEventErr(err, oapi.WsEventSHOWCANVAS))
 			}
 		})
 	case model.GameShowPhaseAnswer:
 		c.bloadcast(func(cc *Client) {
 			if err := cc.sendShowAnswerEvent(); err != nil {
-				log.Println("failed to send SHOW_ANSWER event:", err.Error())
+				log.Println(cc.sendEventErr(err, oapi.WsEventSHOWANSWER))
 			}
 		})
 	case model.GameShowPhaseEnd:
@@ -882,7 +904,7 @@ func (c *Client) receiveReturnRoomEvent(_ interface{}) error {
 
 	c.bloadcast(func(cc *Client) {
 		if err := cc.sendNextRoomEvent(); err != nil {
-			log.Println("failed to send NEXT_ROOM event:", err.Error())
+			log.Println(cc.sendEventErr(err, oapi.WsEventRETURNROOM))
 		}
 	})
 
