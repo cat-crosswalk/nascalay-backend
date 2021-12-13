@@ -283,9 +283,17 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 	c.room.Game.AddOdai(c.userId, model.OdaiTitle(e.Odai))
 
 	// 全員のお題送信が完了したらDRAWフェーズに移行
-	members := c.room.Members
+	clientsNum := 0 // 現時点で登録されているクライアントの数
+	for _, v := range c.room.Members {
+		if _, ok := c.hub.userIdToClient[v.Id]; !ok {
+			continue
+		}
+
+		clientsNum++
+	}
+
 	game := c.room.Game
-	if len(game.Odais) == len(members) {
+	if len(game.Odais) == clientsNum {
 		game.ResetReady()
 		game.Status = model.GameStatusDraw
 		game.DrawCount = 0
@@ -466,6 +474,10 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 	// 全員の絵の送信が完了したら再度DRAW_STARTを送信する or ANSWERフェーズに移行
 	allImgUpdated := true
 	for _, v := range c.room.Game.Odais {
+		if _, ok := c.hub.userIdToClient[v.DrawerSeq[c.room.Game.DrawCount.Int()].UserId]; !ok {
+			continue
+		}
+
 		if !v.ImgUpdated {
 			allImgUpdated = false
 			break
@@ -647,6 +659,10 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 	// 全員の回答が送信されたらSHOWフェーズに移行
 	allAnswerReceived := true
 	for _, v := range game.Odais {
+		if _, ok := c.hub.userIdToClient[v.AnswererId]; !ok {
+			continue
+		}
+
 		if v.Answer == nil {
 			allAnswerReceived = false
 			break
