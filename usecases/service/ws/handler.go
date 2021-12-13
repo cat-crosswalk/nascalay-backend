@@ -283,17 +283,20 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 	c.room.Game.AddOdai(c.userId, model.OdaiTitle(e.Odai))
 
 	// 全員のお題送信が完了したらDRAWフェーズに移行
-	clientsNum := 0 // 現時点で登録されているクライアントの数
+	odaisByUnregisteredClients := make([]*model.Odai, 0, len(c.room.Members)) // ハブから登録解除したクライアントの配列
 	for _, v := range c.room.Members {
 		if _, ok := c.hub.userIdToClient[v.Id]; !ok {
-			continue
+			odaisByUnregisteredClients = append(odaisByUnregisteredClients, &model.Odai{
+				Title:     model.OdaiTitle(random.OdaiExample()),
+				SenderId:  v.Id,
+				DrawerSeq: []model.Drawer{},
+			})
 		}
-
-		clientsNum++
 	}
 
 	game := c.room.Game
-	if len(game.Odais) == clientsNum {
+	if len(game.Odais)+len(odaisByUnregisteredClients) == len(c.room.Members) {
+		game.Odais = append(game.Odais, odaisByUnregisteredClients...)
 		game.ResetReady()
 		game.Status = model.GameStatusDraw
 		game.DrawCount = 0
