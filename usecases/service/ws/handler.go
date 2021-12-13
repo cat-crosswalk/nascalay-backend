@@ -862,13 +862,18 @@ func (c *Client) sendShowAnswerEvent() error {
 		}
 	}
 
+	var answer string
+	if a := game.Odais[sc].Answer; a != nil {
+		answer = a.String()
+	}
+
 	buf, err := json.Marshal(
 		&oapi.WsJSONBody{
 			Type: oapi.WsEventSHOWANSWER,
 			Body: &oapi.WsShowAnswerEventBody{
 				Answerer: answerer,
 				Next:     next,
-				Answer:   game.Odais[sc].Answer.String(),
+				Answer:   answer,
 			},
 		},
 	)
