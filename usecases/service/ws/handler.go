@@ -285,21 +285,19 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 	game.AddOdai(c.userId, model.OdaiTitle(e.Odai))
 
 	// 全員のお題送信が完了したらDRAWフェーズに移行
-	odaisByUnregisteredClients := make([]model.UserId, 0, len(c.room.Members)) // ハブから登録解除したクライアントの配列
+	odaisByUnregisteredClients := make([]*model.Odai, 0, len(c.room.Members)) // ハブから登録解除したクライアントの配列
 	for _, v := range c.room.Members {
 		if _, ok := c.hub.userIdToClient[v.Id]; !ok {
-			odaisByUnregisteredClients = append(odaisByUnregisteredClients, v.Id)
+			odaisByUnregisteredClients = append(odaisByUnregisteredClients, &model.Odai{
+				Title:     model.OdaiTitle(random.OdaiExample()),
+				SenderId:  v.Id,
+				DrawerSeq: []model.Drawer{},
+			})
 		}
 	}
 
 	if len(game.Odais)+len(odaisByUnregisteredClients) == len(c.room.Members) {
-		for _, Id := range odaisByUnregisteredClients {
-			game.Odais = append(game.Odais, &model.Odai{
-				Title:     model.OdaiTitle(random.OdaiExample()),
-				SenderId:  Id,
-				DrawerSeq: []model.Drawer{},
-			})
-		}
+		game.Odais = append(game.Odais, odaisByUnregisteredClients...)
 		game.ResetReady()
 		game.Status = model.GameStatusDraw
 		game.DrawCount = 0
