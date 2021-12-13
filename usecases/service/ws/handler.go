@@ -721,25 +721,35 @@ func (c *Client) receiveShowNextEvent(_ interface{}) error {
 		return errUnAuthorized
 	}
 
-	switch c.room.Game.NextShowPhase {
+	game := c.room.Game
+
+	switch game.NextShowPhase {
 	case model.GameShowPhaseOdai:
 		c.bloadcast(func(cc *Client) {
 			if err := cc.sendShowOdaiEvent(); err != nil {
 				log.Println(cc.sendEventErr(err, oapi.WsEventSHOWODAI))
 			}
 		})
+		game.NextShowPhase = model.GameShowPhaseCanvas
 	case model.GameShowPhaseCanvas:
 		c.bloadcast(func(cc *Client) {
 			if err := cc.sendShowCanvasEvent(); err != nil {
 				log.Println(cc.sendEventErr(err, oapi.WsEventSHOWCANVAS))
 			}
 		})
+		game.NextShowPhase = model.GameShowPhaseAnswer
 	case model.GameShowPhaseAnswer:
 		c.bloadcast(func(cc *Client) {
 			if err := cc.sendShowAnswerEvent(); err != nil {
 				log.Println(cc.sendEventErr(err, oapi.WsEventSHOWANSWER))
 			}
 		})
+		if game.ShowCount.Int()+1 < len(game.Odais) {
+			game.NextShowPhase = model.GameShowPhaseOdai
+		} else {
+			game.NextShowPhase = model.GameShowPhaseEnd
+		}
+		game.ShowCount++
 	case model.GameShowPhaseEnd:
 	default:
 		return errUnknownPhase
@@ -784,10 +794,6 @@ func (c *Client) sendShowOdaiEvent() error {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
 	}
 
-	if c.userId == c.room.HostId {
-		c.room.Game.NextShowPhase = model.GameShowPhaseCanvas
-	}
-
 	c.sendMsg(buf)
 
 	return nil
@@ -820,10 +826,6 @@ func (c *Client) sendShowCanvasEvent() error {
 	)
 	if err != nil {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
-	}
-
-	if c.userId == c.room.HostId {
-		c.room.Game.NextShowPhase = model.GameShowPhaseAnswer
 	}
 
 	c.sendMsg(buf)
@@ -879,16 +881,6 @@ func (c *Client) sendShowAnswerEvent() error {
 	)
 	if err != nil {
 		return fmt.Errorf("failed to encode as JSON: %w", err)
-	}
-
-	if c.userId == c.room.HostId {
-		if sc+1 < len(game.Odais) {
-			c.room.Game.NextShowPhase = model.GameShowPhaseOdai
-		} else {
-			c.room.Game.NextShowPhase = model.GameShowPhaseEnd
-		}
-
-		c.room.Game.ShowCount++
 	}
 
 	c.sendMsg(buf)
