@@ -14,7 +14,7 @@ func init() {
 // AnswerId, DrawerSeqを埋める
 func SetupMemberRoles(g *model.Game, members []model.User) {
 	// n = メンバーの数 = お題の数
-	n := len(members)
+	n := len(g.Odais)
 	// n * n の行列を作る
 	rect := make([][]int, n)
 	for i := 0; i < n; i++ {
@@ -22,7 +22,7 @@ func SetupMemberRoles(g *model.Game, members []model.User) {
 	}
 	answers := RandIntArrayAllMove(n)
 	for i := 0; i < n; i++ {
-		g.Odais[i].AnswererId = members[answers[i]].Id
+		g.Odais[i].AnswererId = g.Odais[answers[i]].SenderId
 	}
 	k := 0 // 横(描く回数)
 	loop := true
@@ -45,7 +45,7 @@ func SetupMemberRoles(g *model.Game, members []model.User) {
 		g.Odais[i].DrawerSeq = make([]model.Drawer, g.Canvas.AllArea)
 		for j := 0; j < g.Canvas.AllArea; j++ {
 			g.Odais[i].DrawerSeq[j] = model.Drawer{
-				UserId: members[rect[i][j]].Id,
+				UserId: g.Odais[rect[i][j]].SenderId,
 				AreaId: model.AreaId(ars[j]),
 			}
 		}
@@ -61,6 +61,7 @@ func RandIntArray(n int) []int {
 	return arr
 }
 
+// すべての要素がindexの値と同じにならない 0~n-1 のランダムな配列を返す
 func RandIntArrayAllMove(n int) []int {
 	res := make([]int, n)
 	inx := RandIntArray(n)
