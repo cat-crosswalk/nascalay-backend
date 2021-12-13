@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/21hack02win/nascalay-backend/model"
+	"github.com/21hack02win/nascalay-backend/oapi"
 	"github.com/gorilla/websocket"
 )
 
@@ -67,7 +68,7 @@ func (s *streamer) NotifyOfNewRoomMember(room *model.Room) error {
 	}
 
 	if err := cli.sendRoomNewMemberEvent(room); err != nil {
-		return fmt.Errorf("failed to send ROOM_NEW_MEMBER event: %w", err)
+		return cli.sendEventErr(err, oapi.WsEventROOMNEWMEMBER)
 	}
 
 	return nil
