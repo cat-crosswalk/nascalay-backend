@@ -155,6 +155,12 @@ func (c *Client) sendGameStartEvent() error {
 	}
 
 	for _, m := range c.room.Members {
+		cc, ok := c.hub.userIdToClient[m.Id]
+		if !ok {
+			log.Printf("failed to find client(userId:%s)", m.Id.UUID().String())
+			continue
+		}
+
 		buf, err := json.Marshal(
 			&oapi.WsJSONBody{
 				Type: oapi.WsEventGAMESTART,
@@ -166,11 +172,6 @@ func (c *Client) sendGameStartEvent() error {
 		)
 		if err != nil {
 			return fmt.Errorf("failed to encode as JSON: %w", err)
-		}
-
-		cc, ok := c.hub.userIdToClient[m.Id]
-		if !ok {
-			return fmt.Errorf("failed to find client: %w", errNotFound)
 		}
 
 		cc.sendMsg(buf)
@@ -333,7 +334,8 @@ func (c *Client) sendDrawStartEvent() error {
 		drawer := o.DrawerSeq[drawCount.Int()]
 		cc, ok := c.hub.userIdToClient[drawer.UserId] // `drawCount`番目に描くユーザーのクライアント
 		if !ok {
-			return errNotFound
+			log.Printf("failed to find client(userId:%s)", drawer.UserId.UUID().String())
+			continue
 		}
 
 		drawnArea := make([]int, drawCount.Int())
@@ -521,7 +523,8 @@ func (c *Client) sendAnswerStartEvent() error {
 	for _, v := range c.room.Game.Odais {
 		ac, ok := c.hub.userIdToClient[v.AnswererId]
 		if !ok {
-			return errNotFound
+			log.Printf("failed to find client(userId:%s)", v.AnswererId.UUID().String())
+			continue
 		}
 
 		buf, err := json.Marshal(
