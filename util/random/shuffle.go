@@ -61,6 +61,7 @@ func RandIntArray(n int) []int {
 	return arr
 }
 
+// すべての要素がindexの値と同じにならない 0~n-1 のランダムな配列を返す
 func RandIntArrayAllMove(n int) []int {
 	res := make([]int, n)
 	inx := RandIntArray(n)
