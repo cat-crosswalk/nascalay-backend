@@ -273,14 +273,16 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 		return fmt.Errorf("failed to decode body: %w", err)
 	}
 
+	game := c.room.Game
+
 	// 存在チェック
-	for _, v := range c.room.Game.Odais {
+	for _, v := range game.Odais {
 		if v.SenderId == c.userId || v.Title == model.OdaiTitle(e.Odai) {
 			return errAlreadyExists
 		}
 	}
 
-	c.room.Game.AddOdai(c.userId, model.OdaiTitle(e.Odai))
+	game.AddOdai(c.userId, model.OdaiTitle(e.Odai))
 
 	// 全員のお題送信が完了したらDRAWフェーズに移行
 	odaisByUnregisteredClients := make([]*model.Odai, 0, len(c.room.Members)) // ハブから登録解除したクライアントの配列
@@ -294,7 +296,6 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 		}
 	}
 
-	game := c.room.Game
 	if len(game.Odais)+len(odaisByUnregisteredClients) == len(c.room.Members) {
 		game.Odais = append(game.Odais, odaisByUnregisteredClients...)
 		game.ResetReady()
@@ -307,16 +308,16 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 		}
 
 		// DRAWのカウントダウン開始
-		c.room.Game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
-		c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
+		game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
+		game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
 
 		go func() {
 			select {
-			case <-c.room.Game.Timer.C:
+			case <-game.Timer.C:
 				if err := c.sendDrawFinishEvent(); err != nil {
 					log.Println(c.sendEventErr(err, oapi.WsEventDRAWFINISH).Error())
 				}
-			case <-c.room.Game.TimerStopChan:
+			case <-game.TimerStopChan:
 			}
 		}()
 	}
