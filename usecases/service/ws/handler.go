@@ -909,7 +909,7 @@ func (c *Client) receiveReturnRoomEvent(_ interface{}) error {
 
 	c.bloadcast(func(cc *Client) {
 		if err := cc.sendNextRoomEvent(); err != nil {
-			log.Println(cc.sendEventErr(err, oapi.WsEventRETURNROOM))
+			log.Println(cc.sendEventErr(err, oapi.WsEventNEXTROOM))
 		}
 	})
 
@@ -919,7 +919,7 @@ func (c *Client) receiveReturnRoomEvent(_ interface{}) error {
 // NEXT_ROOM
 // ルームの表示に遷移する (サーバー -> ルーム全員)
 func (c *Client) sendNextRoomEvent() error {
-	if !c.room.GameStatusIs(model.GameStatusShow) {
+	if !c.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
 	}
 
