@@ -721,9 +721,7 @@ func (c *Client) receiveShowNextEvent(_ interface{}) error {
 		return errUnAuthorized
 	}
 
-	var (
-		game = c.room.Game
-	)
+	game := c.room.Game
 
 	switch game.NextShowPhase {
 	case model.GameShowPhaseOdai:
