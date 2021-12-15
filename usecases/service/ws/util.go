@@ -3,6 +3,7 @@ package ws
 import (
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/21hack02win/nascalay-backend/model"
@@ -10,15 +11,21 @@ import (
 )
 
 // Exec `next` func for all clients in the room
-func (c *Client) bloadcast(next func(c *Client)) {
+func (c *Client) broadcast(next func(c *Client)) {
+	var wg sync.WaitGroup
 	for _, m := range c.room.Members {
 		cc, ok := c.hub.userIdToClient[m.Id]
 		if !ok {
 			continue
 		}
 
-		go next(cc)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			next(cc)
+		}()
 	}
+	wg.Wait()
 }
 
 // Send message to a client
@@ -39,7 +46,7 @@ func (c *Client) sendMsg(msg *oapi.WsSendMessage) {
 
 // Send message to all clients in the room
 func (c *Client) sendMsgToEachClientInRoom(msg *oapi.WsSendMessage) {
-	c.bloadcast(func(cc *Client) {
+	c.broadcast(func(cc *Client) {
 		cc.sendMsg(msg)
 	})
 }

@@ -661,21 +661,21 @@ func (c *Client) receiveShowNextEvent(_ interface{}) error {
 
 	switch game.NextShowPhase {
 	case model.GameShowPhaseOdai:
-		c.bloadcast(func(cc *Client) {
+		c.broadcast(func(cc *Client) {
 			if err := cc.sendShowOdaiEvent(); err != nil {
 				log.Println(cc.sendEventErr(err, oapi.WsEventSHOWODAI))
 			}
 		})
 		game.NextShowPhase = model.GameShowPhaseCanvas
 	case model.GameShowPhaseCanvas:
-		c.bloadcast(func(cc *Client) {
+		c.broadcast(func(cc *Client) {
 			if err := cc.sendShowCanvasEvent(); err != nil {
 				log.Println(cc.sendEventErr(err, oapi.WsEventSHOWCANVAS))
 			}
 		})
 		game.NextShowPhase = model.GameShowPhaseAnswer
 	case model.GameShowPhaseAnswer:
-		c.bloadcast(func(cc *Client) {
+		c.broadcast(func(cc *Client) {
 			if err := cc.sendShowAnswerEvent(); err != nil {
 				log.Println(cc.sendEventErr(err, oapi.WsEventSHOWANSWER))
 			}
@@ -814,7 +814,7 @@ func (c *Client) receiveReturnRoomEvent(_ interface{}) error {
 	c.room.ResetGame()
 	c.resetBreakTimer()
 
-	c.bloadcast(func(cc *Client) {
+	c.broadcast(func(cc *Client) {
 		if err := cc.sendNextRoomEvent(); err != nil {
 			log.Println(cc.sendEventErr(err, oapi.WsEventNEXTROOM))
 		}
