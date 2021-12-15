@@ -29,7 +29,7 @@ func (c *Client) broadcast(next func(c *Client)) {
 }
 
 // Send message to a client
-func (c *Client) sendMsg(msg []byte) {
+func (c *Client) sendMsg(msg *oapi.WsSendMessage) {
 	if c.send == nil {
 		if c.userId == c.room.HostId {
 			if err := c.sendChangeHostEvent(); err != nil {
@@ -45,7 +45,7 @@ func (c *Client) sendMsg(msg []byte) {
 }
 
 // Send message to all clients in the room
-func (c *Client) sendMsgToEachClientInRoom(msg []byte) {
+func (c *Client) sendMsgToEachClientInRoom(msg *oapi.WsSendMessage) {
 	c.broadcast(func(cc *Client) {
 		cc.sendMsg(msg)
 	})

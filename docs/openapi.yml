@@ -76,13 +76,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WsReceiveMessage'
+                $ref: '#/components/schemas/WsSendMessage'
       operationId: ws
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WsSendMessage'
+              $ref: '#/components/schemas/WsReceiveMessage'
         description: ''
       description: |-
         Websocketを送受信する
@@ -281,6 +281,7 @@ components:
         - NEXT_ROOM
         - CHANGE_HOST
         - BREAK_ROOM
+        - WELCOME_NEW_CLIENT
         - ERROR
     WsReceiveMessage:
       title: WsReceiveMessage
@@ -309,6 +310,7 @@ components:
               $ref: '#/components/schemas/WsEvent'
             body:
               oneOf:
+                - $ref: '#/components/schemas/WsWelcomeNewClientBody'
                 - $ref: '#/components/schemas/WsErrorBody'
                 - $ref: '#/components/schemas/WsRoomNewMemberEventBody'
                 - $ref: '#/components/schemas/WsRoomUpdateOptionEventBody'
@@ -333,6 +335,18 @@ components:
         - canvas
         - answer
         - end
+    WsWelcomeNewClientBody:
+      title: WsWelcomeNewClientBody
+      type: object
+      description: 接続時に送信する (サーバー -> 新規クライアント)
+      example:
+        content: Welcome to nascalay-backend!
+      properties:
+        content:
+          type: string
+          description: 接続確認メッセージ
+      required:
+        - content
     WsErrorBody:
       title: WsErrorBody
       type: object
