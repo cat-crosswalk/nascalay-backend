@@ -26,16 +26,12 @@ const (
 	maxMessageSize = 300000
 )
 
-var (
-	newline = []byte{'\n'}
-)
-
 type Client struct {
 	hub    *Hub
 	userId model.UserId
 	room   *model.Room
 	conn   *websocket.Conn
-	send   chan []byte
+	send   chan *oapi.WsSendMessage
 }
 
 func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn) (*Client, error) {
@@ -49,7 +45,7 @@ func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn) (*Client, er
 		userId: userId,
 		room:   room,
 		conn:   conn,
-		send:   make(chan []byte, 256),
+		send:   make(chan *oapi.WsSendMessage, 256),
 	}, nil
 }
 
@@ -76,16 +72,27 @@ func (c *Client) writePump() {
 
 			w, err := c.conn.NextWriter(websocket.TextMessage)
 			if err != nil {
-				log.Printf("failed to create next writer: %v", err)
+				log.Println("failed to create next writer:", err.Error())
 				return
 			}
-			w.Write(message)
+
+			buf, err := json.Marshal(message)
+			if err != nil {
+				log.Println("failed to encode as JSON:", err.Error())
+				return
+			}
+
+			w.Write(buf)
 
 			// Add queued chat messages to the current websocket message.
-			n := len(c.send)
-			for i := 0; i < n; i++ {
-				w.Write(newline)
-				w.Write(<-c.send)
+			for i := 0; i < len(c.send); i++ {
+				buf, err = json.Marshal(<-c.send)
+				if err != nil {
+					log.Println("failed to encode as JSON:", err.Error())
+					return
+				}
+
+				w.Write(buf)
 			}
 
 			if err := w.Close(); err != nil {
@@ -126,15 +133,12 @@ func (c *Client) readPump() {
 
 		if err := c.callEventHandler(req); err != nil {
 			log.Println("websocket error occured:", err.Error())
-			buf, _ := json.Marshal(
-				&oapi.WsJSONBody{
-					Type: oapi.WsEventERROR,
-					Body: &oapi.WsErrorBody{
-						Content: err.Error(),
-					},
+			c.send <- &oapi.WsSendMessage{
+				Type: oapi.WsEventERROR,
+				Body: &oapi.WsErrorBody{
+					Content: err.Error(),
 				},
-			)
-			c.send <- []byte(buf)
+			}
 			continue
 		}
 	}

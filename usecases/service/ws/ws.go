@@ -53,7 +53,12 @@ func (s *streamer) ServeWS(w http.ResponseWriter, r *http.Request, userId model.
 	go cli.writePump()
 	go cli.readPump()
 
-	cli.send <- []byte("Welcome to nascalay-backend!")
+	cli.send <- &oapi.WsSendMessage{
+		Type: oapi.WsEventWELCOMENEWCLIENT,
+		Body: oapi.WsWelcomeNewClientBody{
+			Content: "Welcome to nascalay-backend!",
+		},
+	}
 
 	return nil
 }

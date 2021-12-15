@@ -1,7 +1,6 @@
 package ws
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
@@ -48,21 +47,14 @@ func (c *Client) sendRoomNewMemberEvent(room *model.Room) error {
 		return errWrongPhase
 	}
 
-	buf, err := json.Marshal(
-		&oapi.WsJSONBody{
-			Type: oapi.WsEventROOMNEWMEMBER,
-			Body: oapi.WsRoomNewMemberEventBody{
-				Capacity: room.Capacity.Int(),
-				HostId:   room.HostId.UUID(),
-				Members:  oapi.RefillUsers(room.Members),
-			},
+	c.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
+		Type: oapi.WsEventROOMNEWMEMBER,
+		Body: oapi.WsRoomNewMemberEventBody{
+			Capacity: room.Capacity.Int(),
+			HostId:   room.HostId.UUID(),
+			Members:  oapi.RefillUsers(room.Members),
 		},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to encode as JSON: %w", err)
-	}
-
-	c.sendMsgToEachClientInRoom(buf)
+	})
 
 	return nil
 }
@@ -106,17 +98,10 @@ func (c *Client) sendRoomUpdateOptionEvent(body *oapi.WsRoomUpdateOptionEventBod
 		return errWrongPhase
 	}
 
-	buf, err := json.Marshal(
-		&oapi.WsJSONBody{
-			Type: oapi.WsEventROOMUPDATEOPTION,
-			Body: body,
-		},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to encode as JSON: %w", err)
-	}
-
-	c.sendMsgToEachClientInRoom(buf)
+	c.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
+		Type: oapi.WsEventROOMUPDATEOPTION,
+		Body: body,
+	})
 
 	return nil
 }
@@ -161,20 +146,13 @@ func (c *Client) sendGameStartEvent() error {
 			continue
 		}
 
-		buf, err := json.Marshal(
-			&oapi.WsJSONBody{
-				Type: oapi.WsEventGAMESTART,
-				Body: &oapi.WsGameStartEventBody{
-					OdaiExample: random.OdaiExample(),
-					TimeLimit:   int(c.room.Game.TimeLimit),
-				},
+		cc.sendMsg(&oapi.WsSendMessage{
+			Type: oapi.WsEventGAMESTART,
+			Body: &oapi.WsGameStartEventBody{
+				OdaiExample: random.OdaiExample(),
+				TimeLimit:   int(c.room.Game.TimeLimit),
 			},
-		)
-		if err != nil {
-			return fmt.Errorf("failed to encode as JSON: %w", err)
-		}
-
-		cc.sendMsg(buf)
+		})
 	}
 
 	// ODAIフェーズに移行
@@ -242,16 +220,9 @@ func (c *Client) sendOdaiFinishEvent() error {
 		return errWrongPhase
 	}
 
-	buf, err := json.Marshal(
-		&oapi.WsJSONBody{
-			Type: oapi.WsEventODAIFINISH,
-		},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to encode as JSON: %w", err)
-	}
-
-	c.sendMsgToEachClientInRoom(buf)
+	c.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
+		Type: oapi.WsEventODAIFINISH,
+	})
 
 	return nil
 }
@@ -357,28 +328,21 @@ func (c *Client) sendDrawStartEvent() error {
 			drawnArea[i] = o.DrawerSeq[i].AreaId.Int()
 		}
 
-		buf, err := json.Marshal(
-			&oapi.WsJSONBody{
-				Type: oapi.WsEventDRAWSTART,
-				Body: oapi.WsDrawStartEventBody{
-					AllDrawPhaseNum: c.room.AllDrawPhase(),
-					Canvas: oapi.Canvas{
-						AreaId:    drawer.AreaId.Int(),
-						BoardName: game.Canvas.BoardName,
-					},
-					DrawPhaseNum: game.DrawCount.Int(),
-					Img:          o.Img.AddPrefix(),
-					Odai:         o.Title.String(),
-					TimeLimit:    int(game.TimeLimit),
-					DrawnArea:    drawnArea,
+		cc.sendMsg(&oapi.WsSendMessage{
+			Type: oapi.WsEventDRAWSTART,
+			Body: oapi.WsDrawStartEventBody{
+				AllDrawPhaseNum: c.room.AllDrawPhase(),
+				Canvas: oapi.Canvas{
+					AreaId:    drawer.AreaId.Int(),
+					BoardName: game.Canvas.BoardName,
 				},
+				DrawPhaseNum: game.DrawCount.Int(),
+				Img:          o.Img.AddPrefix(),
+				Odai:         o.Title.String(),
+				TimeLimit:    int(game.TimeLimit),
+				DrawnArea:    drawnArea,
 			},
-		)
-		if err != nil {
-			return fmt.Errorf("failed to encode as JSON: %w", err)
-		}
-
-		cc.sendMsg(buf)
+		})
 	}
 
 	return nil
@@ -427,16 +391,9 @@ func (c *Client) sendDrawFinishEvent() error {
 		return errWrongPhase
 	}
 
-	buf, err := json.Marshal(
-		&oapi.WsJSONBody{
-			Type: oapi.WsEventDRAWFINISH,
-		},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to encode as JSON: %w", err)
-	}
-
-	c.sendMsgToEachClientInRoom(buf)
+	c.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
+		Type: oapi.WsEventDRAWFINISH,
+	})
 
 	return nil
 }
@@ -545,20 +502,13 @@ func (c *Client) sendAnswerStartEvent() error {
 			continue
 		}
 
-		buf, err := json.Marshal(
-			&oapi.WsJSONBody{
-				Type: oapi.WsEventANSWERSTART,
-				Body: oapi.WsAnswerStartEventBody{
-					Img:       v.Img.AddPrefix(),
-					TimeLimit: int(c.room.Game.TimeLimit),
-				},
+		ac.sendMsg(&oapi.WsSendMessage{
+			Type: oapi.WsEventANSWERSTART,
+			Body: oapi.WsAnswerStartEventBody{
+				Img:       v.Img.AddPrefix(),
+				TimeLimit: int(c.room.Game.TimeLimit),
 			},
-		)
-		if err != nil {
-			return fmt.Errorf("failed to encode as JSON: %w", err)
-		}
-
-		ac.sendMsg(buf)
+		})
 	}
 
 	// ANSWERのカウントダウン開始
@@ -621,16 +571,9 @@ func (c *Client) sendAnswerFinishEvent() error {
 		return errWrongPhase
 	}
 
-	buf, err := json.Marshal(
-		&oapi.WsJSONBody{
-			Type: oapi.WsEventANSWERFINISH,
-		},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to encode as JSON: %w", err)
-	}
-
-	c.sendMsgToEachClientInRoom(buf)
+	c.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
+		Type: oapi.WsEventANSWERFINISH,
+	})
 
 	return nil
 }
@@ -696,16 +639,9 @@ func (c *Client) sendShowStartEvent() error {
 
 	c.resetBreakTimer()
 
-	buf, err := json.Marshal(
-		&oapi.WsJSONBody{
-			Type: oapi.WsEventSHOWSTART,
-		},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to encode as JSON: %w", err)
-	}
-
-	c.sendMsgToEachClientInRoom(buf)
+	c.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
+		Type: oapi.WsEventSHOWSTART,
+	})
 
 	return nil
 }
@@ -780,21 +716,14 @@ func (c *Client) sendShowOdaiEvent() error {
 		}
 	}
 
-	buf, err := json.Marshal(
-		&oapi.WsJSONBody{
-			Type: oapi.WsEventSHOWODAI,
-			Body: &oapi.WsShowOdaiEventBody{
-				Sender: sender,
-				Next:   oapi.WsNextShowStatus("canvas"),
-				Odai:   game.Odais[sc].Title.String(),
-			},
+	c.sendMsg(&oapi.WsSendMessage{
+		Type: oapi.WsEventSHOWODAI,
+		Body: &oapi.WsShowOdaiEventBody{
+			Sender: sender,
+			Next:   oapi.WsNextShowStatus("canvas"),
+			Odai:   game.Odais[sc].Title.String(),
 		},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to encode as JSON: %w", err)
-	}
-
-	c.sendMsg(buf)
+	})
 
 	return nil
 }
@@ -815,20 +744,13 @@ func (c *Client) sendShowCanvasEvent() error {
 		return errNotFound
 	}
 
-	buf, err := json.Marshal(
-		&oapi.WsJSONBody{
-			Type: oapi.WsEventSHOWCANVAS,
-			Body: &oapi.WsShowCanvasEventBody{
-				Next: oapi.WsNextShowStatus("answer"),
-				Img:  game.Odais[sc].Img.AddPrefix(),
-			},
+	c.sendMsg(&oapi.WsSendMessage{
+		Type: oapi.WsEventSHOWCANVAS,
+		Body: &oapi.WsShowCanvasEventBody{
+			Next: oapi.WsNextShowStatus("answer"),
+			Img:  game.Odais[sc].Img.AddPrefix(),
 		},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to encode as JSON: %w", err)
-	}
-
-	c.sendMsg(buf)
+	})
 
 	return nil
 }
@@ -869,21 +791,14 @@ func (c *Client) sendShowAnswerEvent() error {
 		answer = a.String()
 	}
 
-	buf, err := json.Marshal(
-		&oapi.WsJSONBody{
-			Type: oapi.WsEventSHOWANSWER,
-			Body: &oapi.WsShowAnswerEventBody{
-				Answerer: answerer,
-				Next:     next,
-				Answer:   answer,
-			},
+	c.sendMsg(&oapi.WsSendMessage{
+		Type: oapi.WsEventSHOWANSWER,
+		Body: &oapi.WsShowAnswerEventBody{
+			Answerer: answerer,
+			Next:     next,
+			Answer:   answer,
 		},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to encode as JSON: %w", err)
-	}
-
-	c.sendMsg(buf)
+	})
 
 	return nil
 }
@@ -915,16 +830,9 @@ func (c *Client) sendNextRoomEvent() error {
 		return errWrongPhase
 	}
 
-	buf, err := json.Marshal(
-		&oapi.WsJSONBody{
-			Type: oapi.WsEventNEXTROOM,
-		},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to encode as JSON: %w", err)
-	}
-
-	c.sendMsg(buf)
+	c.sendMsg(&oapi.WsSendMessage{
+		Type: oapi.WsEventNEXTROOM,
+	})
 
 	return nil
 }
