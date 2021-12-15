@@ -64,6 +64,8 @@ const (
 	WsEventSHOWODAI WsEvent = "SHOW_ODAI"
 
 	WsEventSHOWSTART WsEvent = "SHOW_START"
+
+	WsEventWELCOMENEWCLIENT WsEvent = "WELCOME_NEW_CLIENT"
 )
 
 // Defines values for WsNextShowStatus.
@@ -302,6 +304,12 @@ type WsShowOdaiEventBody struct {
 
 	// ユーザー情報
 	Sender User `json:"sender"`
+}
+
+// 接続時に送信する (サーバー -> 新規クライアント)
+type WsWelcomeNewClientBody struct {
+	// 接続確認メッセージ
+	Content string `json:"content"`
 }
 
 // ルームID
