@@ -317,7 +317,7 @@ type JoinRoomJSONBody JoinRoomRequest
 type CreateRoomJSONBody CreateRoomRequest
 
 // WsJSONBody defines parameters for Ws.
-type WsJSONBody WsSendMessage
+type WsJSONBody WsReceiveMessage
 
 // WsParams defines parameters for Ws.
 type WsParams struct {

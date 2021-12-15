@@ -76,13 +76,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WsReceiveMessage'
+                $ref: '#/components/schemas/WsSendMessage'
       operationId: ws
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WsSendMessage'
+              $ref: '#/components/schemas/WsReceiveMessage'
         description: ''
       description: |-
         Websocketを送受信する
