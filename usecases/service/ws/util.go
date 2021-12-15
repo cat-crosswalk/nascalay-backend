@@ -11,7 +11,7 @@ import (
 )
 
 // Exec `next` func for all clients in the room
-func (c *Client) bloadcast(next func(c *Client)) {
+func (c *Client) broadcast(next func(c *Client)) {
 	var wg sync.WaitGroup
 	for _, m := range c.room.Members {
 		cc, ok := c.hub.userIdToClient[m.Id]
@@ -46,7 +46,7 @@ func (c *Client) sendMsg(msg []byte) {
 
 // Send message to all clients in the room
 func (c *Client) sendMsgToEachClientInRoom(msg []byte) {
-	c.bloadcast(func(cc *Client) {
+	c.broadcast(func(cc *Client) {
 		cc.sendMsg(msg)
 	})
 }
