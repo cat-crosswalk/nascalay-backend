@@ -554,11 +554,11 @@ components:
       type: object
       example:
         ready: 2
-      description: お題入力が完了した人数を送信する (サーバー -> ルームの各員)
+      description: 回答の入力が完了した人数を送信する (サーバー -> ルームの各員)
       properties:
         ready:
           type: integer
-          description: お題入力が完了した人数
+          description: 回答の入力が完了した人数
       required:
         - ready
     WsAnswerSendEventBody:

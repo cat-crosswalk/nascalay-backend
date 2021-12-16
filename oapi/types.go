@@ -157,9 +157,9 @@ type User struct {
 	Username string `json:"username"`
 }
 
-// お題入力が完了した人数を送信する (サーバー -> ルームの各員)
+// 回答の入力が完了した人数を送信する (サーバー -> ルームの各員)
 type WsAnswerInputEventBody struct {
-	// お題入力が完了した人数
+	// 回答の入力が完了した人数
 	Ready int `json:"ready"`
 }
 
