@@ -596,6 +596,10 @@ func (c *Client) receiveAnswerReadyEvent(_ interface{}) error {
 		if err := c.sendAnswerFinishEvent(); err != nil {
 			return c.sendEventErr(err, oapi.WsEventANSWERFINISH)
 		}
+	} else {
+		if err := c.sendAnswerInputEvent(); err != nil {
+			return c.sendEventErr(err, oapi.WsEventANSWERINPUT)
+		}
 	}
 
 	return nil
@@ -609,6 +613,27 @@ func (c *Client) receiveAnswerCancelEvent(_ interface{}) error {
 	}
 
 	c.CancelReady(c.userId)
+
+	if err := c.sendAnswerInputEvent(); err != nil {
+		return c.sendEventErr(err, oapi.WsEventANSWERINPUT)
+	}
+
+	return nil
+}
+
+// ANSWER_INPUT
+// 回答の入力が完了した人数を送信する (サーバー -> ルームの各員)
+func (c *Client) sendAnswerInputEvent() error {
+	if !c.room.GameStatusIs(model.GameStatusAnswer) {
+		return errWrongPhase
+	}
+
+	c.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
+		Type: oapi.WsEventANSWERINPUT,
+		Body: &oapi.WsAnswerInputEventBody{
+			Ready: len(c.room.Game.Ready),
+		},
+	})
 
 	return nil
 }
