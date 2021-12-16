@@ -195,6 +195,10 @@ func (c *Client) receiveOdaiReadyEvent(_ interface{}) error {
 		if err := c.sendOdaiFinishEvent(); err != nil {
 			return c.sendEventErr(err, oapi.WsEventODAIFINISH)
 		}
+	} else {
+		if err := c.sendOdaiInputEvent(); err != nil {
+			return c.sendEventErr(err, oapi.WsEventODAIINPUT)
+		}
 	}
 
 	return nil
@@ -208,6 +212,27 @@ func (c *Client) receiveOdaiCancelEvent(_ interface{}) error {
 	}
 
 	c.CancelReady(c.userId)
+
+	if err := c.sendOdaiInputEvent(); err != nil {
+		return c.sendEventErr(err, oapi.WsEventODAIINPUT)
+	}
+
+	return nil
+}
+
+// ODAI_INPUT
+// お題入力が完了した人数を送信する (サーバー -> ルームの各員)
+func (c *Client) sendOdaiInputEvent() error {
+	if !c.room.GameStatusIs(model.GameStatusOdai) {
+		return errWrongPhase
+	}
+
+	c.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
+		Type: oapi.WsEventODAIINPUT,
+		Body: &oapi.WsOdaiInputEventBody{
+			Ready: len(c.room.Game.Ready),
+		},
+	})
 
 	return nil
 }
