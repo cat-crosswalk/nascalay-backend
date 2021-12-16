@@ -391,6 +391,10 @@ func (c *Client) receiveDrawReadyEvent(_ interface{}) error {
 		if err := c.sendDrawFinishEvent(); err != nil {
 			return c.sendEventErr(err, oapi.WsEventDRAWFINISH)
 		}
+	} else {
+		if err := c.sendDrawInputEvent(); err != nil {
+			return c.sendEventErr(err, oapi.WsEventDRAWINPUT)
+		}
 	}
 
 	return nil
@@ -404,6 +408,27 @@ func (c *Client) receiveDrawCancelEvent(_ interface{}) error {
 	}
 
 	c.CancelReady(c.userId)
+
+	if err := c.sendDrawInputEvent(); err != nil {
+		return c.sendEventErr(err, oapi.WsEventDRAWINPUT)
+	}
+
+	return nil
+}
+
+// DRAW_INPUT
+// 絵を描き終えた人数を送信する (サーバー -> ルームの各員)
+func (c *Client) sendDrawInputEvent() error {
+	if !c.room.GameStatusIs(model.GameStatusDraw) {
+		return errWrongPhase
+	}
+
+	c.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
+		Type: oapi.WsEventDRAWINPUT,
+		Body: &oapi.WsDrawInputEventBody{
+			Ready: len(c.room.Game.Ready),
+		},
+	})
 
 	return nil
 }
