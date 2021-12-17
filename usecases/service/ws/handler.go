@@ -196,7 +196,7 @@ func (c *Client) receiveOdaiReadyEvent(_ interface{}) error {
 			return c.sendEventErr(err, oapi.WsEventODAIFINISH)
 		}
 	} else {
-		if err := c.sendOdaiInputEvent(); err != nil {
+		if err := c.sendOdaiInputEvent(len(c.room.Game.Ready)); err != nil {
 			return c.sendEventErr(err, oapi.WsEventODAIINPUT)
 		}
 	}
@@ -213,7 +213,7 @@ func (c *Client) receiveOdaiCancelEvent(_ interface{}) error {
 
 	c.CancelReady(c.userId)
 
-	if err := c.sendOdaiInputEvent(); err != nil {
+	if err := c.sendOdaiInputEvent(len(c.room.Game.Ready)); err != nil {
 		return c.sendEventErr(err, oapi.WsEventODAIINPUT)
 	}
 
@@ -222,7 +222,7 @@ func (c *Client) receiveOdaiCancelEvent(_ interface{}) error {
 
 // ODAI_INPUT
 // お題入力が完了した人数を送信する (サーバー -> ルームの各員)
-func (c *Client) sendOdaiInputEvent() error {
+func (c *Client) sendOdaiInputEvent(readyNum int) error {
 	if !c.room.GameStatusIs(model.GameStatusOdai) {
 		return errWrongPhase
 	}
@@ -230,7 +230,7 @@ func (c *Client) sendOdaiInputEvent() error {
 	c.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
 		Type: oapi.WsEventODAIINPUT,
 		Body: &oapi.WsOdaiInputEventBody{
-			Ready: len(c.room.Game.Ready),
+			Ready: readyNum,
 		},
 	})
 
@@ -392,7 +392,7 @@ func (c *Client) receiveDrawReadyEvent(_ interface{}) error {
 			return c.sendEventErr(err, oapi.WsEventDRAWFINISH)
 		}
 	} else {
-		if err := c.sendDrawInputEvent(); err != nil {
+		if err := c.sendDrawInputEvent(len(c.room.Game.Ready)); err != nil {
 			return c.sendEventErr(err, oapi.WsEventDRAWINPUT)
 		}
 	}
@@ -409,7 +409,7 @@ func (c *Client) receiveDrawCancelEvent(_ interface{}) error {
 
 	c.CancelReady(c.userId)
 
-	if err := c.sendDrawInputEvent(); err != nil {
+	if err := c.sendDrawInputEvent(len(c.room.Game.Ready)); err != nil {
 		return c.sendEventErr(err, oapi.WsEventDRAWINPUT)
 	}
 
@@ -418,7 +418,7 @@ func (c *Client) receiveDrawCancelEvent(_ interface{}) error {
 
 // DRAW_INPUT
 // 絵を描き終えた人数を送信する (サーバー -> ルームの各員)
-func (c *Client) sendDrawInputEvent() error {
+func (c *Client) sendDrawInputEvent(readyNum int) error {
 	if !c.room.GameStatusIs(model.GameStatusDraw) {
 		return errWrongPhase
 	}
@@ -426,7 +426,7 @@ func (c *Client) sendDrawInputEvent() error {
 	c.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
 		Type: oapi.WsEventDRAWINPUT,
 		Body: &oapi.WsDrawInputEventBody{
-			Ready: len(c.room.Game.Ready),
+			Ready: readyNum,
 		},
 	})
 
@@ -597,7 +597,7 @@ func (c *Client) receiveAnswerReadyEvent(_ interface{}) error {
 			return c.sendEventErr(err, oapi.WsEventANSWERFINISH)
 		}
 	} else {
-		if err := c.sendAnswerInputEvent(); err != nil {
+		if err := c.sendAnswerInputEvent(len(c.room.Game.Ready)); err != nil {
 			return c.sendEventErr(err, oapi.WsEventANSWERINPUT)
 		}
 	}
@@ -614,7 +614,7 @@ func (c *Client) receiveAnswerCancelEvent(_ interface{}) error {
 
 	c.CancelReady(c.userId)
 
-	if err := c.sendAnswerInputEvent(); err != nil {
+	if err := c.sendAnswerInputEvent(len(c.room.Game.Ready)); err != nil {
 		return c.sendEventErr(err, oapi.WsEventANSWERINPUT)
 	}
 
@@ -623,7 +623,7 @@ func (c *Client) receiveAnswerCancelEvent(_ interface{}) error {
 
 // ANSWER_INPUT
 // 回答の入力が完了した人数を送信する (サーバー -> ルームの各員)
-func (c *Client) sendAnswerInputEvent() error {
+func (c *Client) sendAnswerInputEvent(readyNum int) error {
 	if !c.room.GameStatusIs(model.GameStatusAnswer) {
 		return errWrongPhase
 	}
@@ -631,7 +631,7 @@ func (c *Client) sendAnswerInputEvent() error {
 	c.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
 		Type: oapi.WsEventANSWERINPUT,
 		Body: &oapi.WsAnswerInputEventBody{
-			Ready: len(c.room.Game.Ready),
+			Ready: readyNum,
 		},
 	})
 
