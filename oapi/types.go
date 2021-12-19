@@ -11,6 +11,8 @@ const (
 
 	WsEventANSWERFINISH WsEvent = "ANSWER_FINISH"
 
+	WsEventANSWERINPUT WsEvent = "ANSWER_INPUT"
+
 	WsEventANSWERREADY WsEvent = "ANSWER_READY"
 
 	WsEventANSWERSEND WsEvent = "ANSWER_SEND"
@@ -24,6 +26,8 @@ const (
 	WsEventDRAWCANCEL WsEvent = "DRAW_CANCEL"
 
 	WsEventDRAWFINISH WsEvent = "DRAW_FINISH"
+
+	WsEventDRAWINPUT WsEvent = "DRAW_INPUT"
 
 	WsEventDRAWREADY WsEvent = "DRAW_READY"
 
@@ -40,6 +44,8 @@ const (
 	WsEventODAICANCEL WsEvent = "ODAI_CANCEL"
 
 	WsEventODAIFINISH WsEvent = "ODAI_FINISH"
+
+	WsEventODAIINPUT WsEvent = "ODAI_INPUT"
 
 	WsEventODAIREADY WsEvent = "ODAI_READY"
 
@@ -151,6 +157,12 @@ type User struct {
 	Username string `json:"username"`
 }
 
+// 回答の入力が完了した人数を送信する (サーバー -> ルームの各員)
+type WsAnswerInputEventBody struct {
+	// 回答の入力が完了した人数
+	Ready int `json:"ready"`
+}
+
 // 回答を送信する (ルームの各員 -> サーバー)
 type WsAnswerSendEventBody struct {
 	// 回答
@@ -170,6 +182,12 @@ type WsAnswerStartEventBody struct {
 type WsChangeHostEventBody struct {
 	// ホストのユーザーUUID
 	HostId string `json:"hostId"`
+}
+
+// 絵を描き終えた人数を送信する (サーバー -> ルームの各員)
+type WsDrawInputEventBody struct {
+	// 絵を描き終えた人数
+	Ready int `json:"ready"`
 }
 
 // 絵を送信する (ルームの各員 -> サーバー)
@@ -224,6 +242,12 @@ type WsGameStartEventBody struct {
 
 // 次のWebsocketイベントのリスト
 type WsNextShowStatus string
+
+// お題入力が完了した人数を送信する (サーバー -> ルームの各員)
+type WsOdaiInputEventBody struct {
+	// お題入力が完了した人数
+	Ready int `json:"ready"`
+}
 
 // お題を送信する (ルームの各員 -> サーバー)
 type WsOdaiSendEventBody struct {

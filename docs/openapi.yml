@@ -260,16 +260,19 @@ components:
         - GAME_START
         - ODAI_READY
         - ODAI_CANCEL
+        - ODAI_INPUT
         - ODAI_FINISH
         - ODAI_SEND
         - DRAW_START
         - DRAW_READY
         - DRAW_CANCEL
+        - DRAW_INPUT
         - DRAW_FINISH
         - DRAW_SEND
         - ANSWER_START
         - ANSWER_READY
         - ANSWER_CANCEL
+        - ANSWER_INPUT
         - ANSWER_FINISH
         - ANSWER_SEND
         - SHOW_START
@@ -315,8 +318,11 @@ components:
                 - $ref: '#/components/schemas/WsRoomNewMemberEventBody'
                 - $ref: '#/components/schemas/WsRoomUpdateOptionEventBody'
                 - $ref: '#/components/schemas/WsGameStartEventBody'
+                - $ref: '#/components/schemas/WsOdaiInputEventBody'
                 - $ref: '#/components/schemas/WsDrawStartEventBody'
+                - $ref: '#/components/schemas/WsDrawInputEventBody'
                 - $ref: '#/components/schemas/WsAnswerStartEventBody'
+                - $ref: '#/components/schemas/WsAnswerInputEventBody'
                 - $ref: '#/components/schemas/WsShowOdaiEventBody'
                 - $ref: '#/components/schemas/WsShowCanvasEventBody'
                 - $ref: '#/components/schemas/WsShowAnswerEventBody'
@@ -427,6 +433,18 @@ components:
       required:
         - odaiExample
         - timeLimit
+    WsOdaiInputEventBody:
+      title: WsOdaiInputEventBody
+      type: object
+      example:
+        ready: 2
+      description: お題入力が完了した人数を送信する (サーバー -> ルームの各員)
+      properties:
+        ready:
+          type: integer
+          description: お題入力が完了した人数
+      required:
+        - ready
     WsOdaiSendEventBody:
       title: WsOdaiSendEventBody
       type: object
@@ -487,6 +505,18 @@ components:
         - drawPhaseNum
         - allDrawPhaseNum
         - drawnArea
+    WsDrawInputEventBody:
+      title: WsDrawInputEventBody
+      type: object
+      example:
+        ready: 2
+      description: 絵を描き終えた人数を送信する (サーバー -> ルームの各員)
+      properties:
+        ready:
+          type: integer
+          description: 絵を描き終えた人数
+      required:
+        - ready
     WsDrawSendEventBody:
       title: WsDrawSendEventBody
       type: object
@@ -519,6 +549,18 @@ components:
       required:
         - timeLimit
         - img
+    WsAnswerInputEventBody:
+      title: WsAnswerInputEventBody
+      type: object
+      example:
+        ready: 2
+      description: 回答の入力が完了した人数を送信する (サーバー -> ルームの各員)
+      properties:
+        ready:
+          type: integer
+          description: 回答の入力が完了した人数
+      required:
+        - ready
     WsAnswerSendEventBody:
       title: WsAnswerSendEventBody
       type: object
