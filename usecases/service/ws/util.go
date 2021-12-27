@@ -2,7 +2,6 @@ package ws
 
 import (
 	"fmt"
-	"log"
 	"sync"
 	"time"
 
@@ -33,7 +32,7 @@ func (c *Client) sendMsg(msg *oapi.WsSendMessage) {
 	if c.send == nil {
 		if c.userId == c.room.HostId {
 			if err := c.sendChangeHostEvent(); err != nil {
-				log.Println(c.sendEventErr(err, oapi.WsEventCHANGEHOST))
+				c.logger.Error(c.sendEventErr(err, oapi.WsEventCHANGEHOST))
 			}
 		}
 		c.hub.unregister(c)
@@ -89,7 +88,7 @@ func (c *Client) resetBreakTimer() {
 func (c *Client) waitAndBreakRoom() {
 	<-c.room.Game.BreakTimer.C
 	if err := c.sendBreakRoomEvent(); err != nil {
-		log.Println(c.sendEventErr(err, oapi.WsEventBREAKROOM))
+		c.logger.Error(c.sendEventErr(err, oapi.WsEventBREAKROOM))
 	}
 }
 

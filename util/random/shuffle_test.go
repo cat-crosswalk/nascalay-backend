@@ -1,7 +1,6 @@
 package random
 
 import (
-	"log"
 	"testing"
 
 	"github.com/21hack02win/nascalay-backend/model"
@@ -155,7 +154,7 @@ func TestSetupMemberRoles(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetupMemberRoles(tt.args.g, tt.args.members)
-			log.Println(tt.args.g.Odais)
+			t.Log(tt.args.g.Odais)
 		})
 	}
 }

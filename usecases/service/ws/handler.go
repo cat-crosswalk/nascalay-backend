@@ -2,7 +2,6 @@ package ws
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -142,7 +141,7 @@ func (c *Client) sendGameStartEvent() error {
 	for _, m := range c.room.Members {
 		cc, ok := c.hub.userIdToClient[m.Id]
 		if !ok {
-			log.Printf("[INFO] client(userId:%s) not found", m.Id.UUID().String())
+			c.logger.Infof("client(userId:%s) not found", m.Id.UUID().String())
 			continue
 		}
 
@@ -168,7 +167,7 @@ func (c *Client) sendGameStartEvent() error {
 		select {
 		case <-c.room.Game.Timer.C:
 			if err := c.sendOdaiFinishEvent(); err != nil {
-				log.Println(c.sendEventErr(err, oapi.WsEventODAIFINISH).Error())
+				c.logger.Error(c.sendEventErr(err, oapi.WsEventODAIFINISH).Error())
 			}
 		case <-c.room.Game.TimerStopChan:
 		}
@@ -288,7 +287,7 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 			select {
 			case <-game.Timer.C:
 				if err := c.sendDrawFinishEvent(); err != nil {
-					log.Println(c.sendEventErr(err, oapi.WsEventDRAWFINISH).Error())
+					c.logger.Error(c.sendEventErr(err, oapi.WsEventDRAWFINISH).Error())
 				}
 			case <-game.TimerStopChan:
 			}
@@ -319,7 +318,7 @@ func (c *Client) sendDrawStartEvent() error {
 		drawer := o.DrawerSeq[drawCount.Int()]
 		cc, ok := c.hub.userIdToClient[drawer.UserId] // `drawCount`番目に描くユーザーのクライアント
 		if !ok {
-			log.Printf("[INFO] client(userId:%s) not found", drawer.UserId.UUID().String())
+			c.logger.Infof("client(userId:%s) not found", drawer.UserId.UUID().String())
 			continue
 		}
 
@@ -467,7 +466,7 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 				select {
 				case <-c.room.Game.Timer.C:
 					if err := c.sendDrawFinishEvent(); err != nil {
-						log.Println(c.sendEventErr(err, oapi.WsEventDRAWFINISH).Error())
+						c.logger.Error(c.sendEventErr(err, oapi.WsEventDRAWFINISH).Error())
 					}
 				case <-c.room.Game.TimerStopChan:
 				}
@@ -498,7 +497,7 @@ func (c *Client) sendAnswerStartEvent() error {
 	for _, v := range c.room.Game.Odais {
 		ac, ok := c.hub.userIdToClient[v.AnswererId]
 		if !ok {
-			log.Printf("[INFO] client(userId:%s) not found", v.AnswererId.UUID().String())
+			c.logger.Infof("client(userId:%s) not found", v.AnswererId.UUID().String())
 			continue
 		}
 
@@ -519,7 +518,7 @@ func (c *Client) sendAnswerStartEvent() error {
 		select {
 		case <-c.room.Game.Timer.C:
 			if err := c.sendAnswerFinishEvent(); err != nil {
-				log.Println(c.sendEventErr(err, oapi.WsEventANSWERFINISH).Error())
+				c.logger.Error(c.sendEventErr(err, oapi.WsEventANSWERFINISH).Error())
 			}
 		case <-c.room.Game.TimerStopChan:
 		}
@@ -663,21 +662,21 @@ func (c *Client) receiveShowNextEvent(_ interface{}) error {
 	case model.GameShowPhaseOdai:
 		c.broadcast(func(cc *Client) {
 			if err := cc.sendShowOdaiEvent(); err != nil {
-				log.Println(cc.sendEventErr(err, oapi.WsEventSHOWODAI))
+				c.logger.Error(cc.sendEventErr(err, oapi.WsEventSHOWODAI))
 			}
 		})
 		game.NextShowPhase = model.GameShowPhaseCanvas
 	case model.GameShowPhaseCanvas:
 		c.broadcast(func(cc *Client) {
 			if err := cc.sendShowCanvasEvent(); err != nil {
-				log.Println(cc.sendEventErr(err, oapi.WsEventSHOWCANVAS))
+				c.logger.Error(cc.sendEventErr(err, oapi.WsEventSHOWCANVAS))
 			}
 		})
 		game.NextShowPhase = model.GameShowPhaseAnswer
 	case model.GameShowPhaseAnswer:
 		c.broadcast(func(cc *Client) {
 			if err := cc.sendShowAnswerEvent(); err != nil {
-				log.Println(cc.sendEventErr(err, oapi.WsEventSHOWANSWER))
+				c.logger.Error(cc.sendEventErr(err, oapi.WsEventSHOWANSWER))
 			}
 		})
 		if game.ShowCount.Int()+1 < len(game.Odais) {
@@ -816,7 +815,7 @@ func (c *Client) receiveReturnRoomEvent(_ interface{}) error {
 
 	c.broadcast(func(cc *Client) {
 		if err := cc.sendNextRoomEvent(); err != nil {
-			log.Println(cc.sendEventErr(err, oapi.WsEventNEXTROOM))
+			c.logger.Error(cc.sendEventErr(err, oapi.WsEventNEXTROOM))
 		}
 	})
 

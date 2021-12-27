@@ -10,9 +10,10 @@ import (
 	"github.com/21hack02win/nascalay-backend/oapi"
 	"github.com/21hack02win/nascalay-backend/usecases/service/ws"
 	"github.com/google/wire"
+	"github.com/labstack/echo/v4"
 )
 
-func injectServer() oapi.ServerInterface {
+func injectServer(logger echo.Logger) oapi.ServerInterface {
 	wire.Build(
 		handler.NewHandler,
 		repository.NewRepository,

@@ -20,6 +20,6 @@ func Setup(e *echo.Echo, baseEndpoint string) {
 		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodOptions},
 	}))
 
-	s := injectServer()
+	s := injectServer(e.Logger)
 	oapi.RegisterHandlersWithBaseURL(e, s, baseEndpoint)
 }

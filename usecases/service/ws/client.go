@@ -4,12 +4,12 @@ package ws
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/oapi"
 	"github.com/gorilla/websocket"
+	"github.com/labstack/echo/v4"
 )
 
 const (
@@ -32,9 +32,10 @@ type Client struct {
 	room   *model.Room
 	conn   *websocket.Conn
 	send   chan *oapi.WsSendMessage
+	logger echo.Logger
 }
 
-func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn) (*Client, error) {
+func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn, logger echo.Logger) (*Client, error) {
 	room, err := hub.repo.GetRoomFromUserId(userId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get room from userId: %w", err)
@@ -46,6 +47,7 @@ func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn) (*Client, er
 		room:   room,
 		conn:   conn,
 		send:   make(chan *oapi.WsSendMessage, 256),
+		logger: logger,
 	}, nil
 }
 
@@ -72,13 +74,13 @@ func (c *Client) writePump() {
 
 			w, err := c.conn.NextWriter(websocket.TextMessage)
 			if err != nil {
-				log.Println("failed to create next writer:", err.Error())
+				c.logger.Error("failed to create next writer:", err.Error())
 				return
 			}
 
 			buf, err := json.Marshal(message)
 			if err != nil {
-				log.Println("failed to encode as JSON:", err.Error())
+				c.logger.Error("failed to encode as JSON:", err.Error())
 				return
 			}
 
@@ -88,7 +90,7 @@ func (c *Client) writePump() {
 			for i := 0; i < len(c.send); i++ {
 				buf, err = json.Marshal(<-c.send)
 				if err != nil {
-					log.Println("failed to encode as JSON:", err.Error())
+					c.logger.Error("failed to encode as JSON:", err.Error())
 					return
 				}
 
@@ -96,13 +98,13 @@ func (c *Client) writePump() {
 			}
 
 			if err := w.Close(); err != nil {
-				log.Println("failed to close writer:", err.Error())
+				c.logger.Error("failed to close writer:", err.Error())
 				return
 			}
 		case <-ticker.C:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				log.Println("failed to write message:", err.Error())
+				c.logger.Error("failed to write message:", err.Error())
 				return
 			}
 		}
@@ -126,13 +128,13 @@ func (c *Client) readPump() {
 		req := new(oapi.WsJSONRequestBody)
 		if err := c.conn.ReadJSON(req); err != nil {
 			if !websocket.IsCloseError(err) && !websocket.IsUnexpectedCloseError(err) {
-				log.Println("websocket error occured:", err.Error())
+				c.logger.Error("websocket error occured:", err.Error())
 			}
 			break
 		}
 
 		if err := c.callEventHandler(req); err != nil {
-			log.Println("websocket error occured:", err.Error())
+			c.logger.Error("websocket error occured:", err.Error())
 			c.send <- &oapi.WsSendMessage{
 				Type: oapi.WsEventERROR,
 				Body: &oapi.WsErrorBody{

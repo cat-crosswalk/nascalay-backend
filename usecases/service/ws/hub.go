@@ -49,12 +49,16 @@ func (h *Hub) register(cli *Client) {
 	h.mux.Lock()
 	defer h.mux.Unlock()
 
+	cli.logger.Infof("new client(userId:%s) has registered", cli.userId.UUID().String())
+
 	h.userIdToClient[cli.userId] = cli
 }
 
 func (h *Hub) unregister(cli *Client) {
 	h.mux.Lock()
 	defer h.mux.Unlock()
+
+	cli.logger.Infof("client(userId:%s) has unregistered", cli.userId.UUID().String())
 
 	close(cli.send)
 	delete(h.userIdToClient, cli.userId)
