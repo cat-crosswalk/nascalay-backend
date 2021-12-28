@@ -11,14 +11,15 @@ import (
 	"github.com/21hack02win/nascalay-backend/interfaces/repository"
 	"github.com/21hack02win/nascalay-backend/oapi"
 	"github.com/21hack02win/nascalay-backend/usecases/service/ws"
+	"github.com/labstack/echo/v4"
 )
 
 // Injectors from wire.go:
 
-func injectServer() oapi.ServerInterface {
+func injectServer(logger echo.Logger) oapi.ServerInterface {
 	repositoryRepository := repository.NewRepository()
 	hub := ws.NewHub(repositoryRepository)
-	streamer := ws.NewStreamer(hub)
+	streamer := ws.NewStreamer(hub, logger)
 	serverInterface := handler.NewHandler(repositoryRepository, streamer)
 	return serverInterface
 }

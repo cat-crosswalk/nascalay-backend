@@ -7,6 +7,7 @@ import (
 	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/oapi"
 	"github.com/gorilla/websocket"
+	"github.com/labstack/echo/v4"
 )
 
 type Streamer interface {
@@ -18,9 +19,10 @@ type Streamer interface {
 type streamer struct {
 	hub      *Hub
 	upgrader websocket.Upgrader
+	logger   echo.Logger
 }
 
-func NewStreamer(hub *Hub) Streamer {
+func NewStreamer(hub *Hub, logger echo.Logger) Streamer {
 	stream := &streamer{
 		hub: hub,
 		upgrader: websocket.Upgrader{
@@ -28,6 +30,7 @@ func NewStreamer(hub *Hub) Streamer {
 				return true
 			},
 		},
+		logger: logger,
 	}
 	stream.Run()
 	return stream
@@ -80,7 +83,7 @@ func (s *streamer) NotifyOfNewRoomMember(room *model.Room) error {
 }
 
 func (s *streamer) addNewClient(userId model.UserId, conn *websocket.Conn) (*Client, error) {
-	cli, err := NewClient(s.hub, userId, conn)
+	cli, err := NewClient(s.hub, userId, conn, s.logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new client: %w", err)
 	}
