@@ -25,7 +25,7 @@ type ServerInterface interface {
 	// getRoom
 	// (GET /rooms/{roomId})
 	GetRoom(ctx echo.Context, roomId RoomIdInPath) error
-	// Your GET endpoint
+	// getWs
 	// (GET /ws)
 	Ws(ctx echo.Context, params WsParams) error
 }

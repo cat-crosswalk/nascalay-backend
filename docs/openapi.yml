@@ -67,9 +67,10 @@ paths:
         - room
   /ws:
     get:
-      summary: Your GET endpoint
-      tags:
-        - ws
+      summary: getWs
+      parameters:
+        - $ref: '#/components/parameters/userIdInQuery'
+
       responses:
         '200':
           description: OK
@@ -93,8 +94,8 @@ paths:
                 "------"
             }
         }
-      parameters:
-        - $ref: '#/components/parameters/userIdInQuery'
+      tags:
+        - ws
   /ping:
     get:
       summary: ping
