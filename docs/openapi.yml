@@ -70,7 +70,6 @@ paths:
       summary: getWs
       parameters:
         - $ref: '#/components/parameters/userIdInQuery'
-
       responses:
         '200':
           description: OK
