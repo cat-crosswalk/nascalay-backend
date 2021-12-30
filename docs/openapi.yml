@@ -7,7 +7,7 @@ info:
     name: 21hack02win
     url: 'https://github.com/21hack02win'
 servers:
-  - url: 'https://api.nascalay.trasta.dev'
+  - url: 'https://nascalay-backend.trap.games'
 paths:
   /rooms/new:
     post:
