@@ -10,7 +10,7 @@ http_proxy: 3000
 https: hard
 
 cname:
-  nascalay.trap.games
+  nascalay-backend.trap.games
 
 use_mariadb: true
 
