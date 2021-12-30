@@ -3,7 +3,7 @@ type: runtime
 startup: |
   go mod download
   go build -o main
-entrypoint: ./main
+entrypoint: ./main -d
 
 http_proxy: 3000
 
@@ -11,8 +11,6 @@ https: hard
 
 cname:
   nascalay-backend.trap.games
-
-use_mariadb: true
 
 branch:
   main:
