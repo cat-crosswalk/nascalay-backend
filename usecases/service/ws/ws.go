@@ -11,7 +11,6 @@ import (
 )
 
 type Streamer interface {
-	Run()
 	ServeWS(w http.ResponseWriter, r *http.Request, uid model.UserId) error
 	NotifyOfNewRoomMember(room *model.Room) error
 }
@@ -32,12 +31,8 @@ func NewStreamer(hub *Hub, logger echo.Logger) Streamer {
 		},
 		logger: logger,
 	}
-	stream.Run()
-	return stream
-}
 
-func (s *streamer) Run() {
-	go s.hub.Run()
+	return stream
 }
 
 func (s *streamer) ServeWS(w http.ResponseWriter, r *http.Request, userId model.UserId) error {
@@ -88,7 +83,7 @@ func (s *streamer) addNewClient(userId model.UserId, conn *websocket.Conn) (*Cli
 		return nil, fmt.Errorf("failed to create new client: %w", err)
 	}
 
-	s.hub.Register(cli)
+	s.hub.register(cli)
 
 	s.hub.mux.Lock()
 	defer s.hub.mux.Unlock()
