@@ -68,9 +68,9 @@ paths:
         - room
   /ws:
     get:
-      summary: Your GET endpoint
-      tags:
-        - ws
+      summary: getWs
+      parameters:
+        - $ref: '#/components/parameters/userIdInQuery'
       responses:
         '200':
           description: OK
@@ -94,8 +94,22 @@ paths:
                 "------"
             }
         }
-      parameters:
-        - $ref: '#/components/parameters/userIdInQuery'
+      tags:
+        - ws
+  /ping:
+    get:
+      summary: ping
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+      operationId: ping
+      description: 疎通確認
+      tags:
+        - ping
 components:
   schemas:
     Room:
@@ -676,3 +690,5 @@ tags:
     description: ルームAPI
   - name: ws
     description: WebsocketAPI
+  - name: ping
+    description: 疎通確認API

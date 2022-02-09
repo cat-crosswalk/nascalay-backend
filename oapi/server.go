@@ -13,6 +13,9 @@ import (
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// ping
+	// (GET /ping)
+	Ping(ctx echo.Context) error
 	// joinRoom
 	// (POST /rooms/join)
 	JoinRoom(ctx echo.Context) error
@@ -22,7 +25,7 @@ type ServerInterface interface {
 	// getRoom
 	// (GET /rooms/{roomId})
 	GetRoom(ctx echo.Context, roomId RoomIdInPath) error
-	// Your GET endpoint
+	// getWs
 	// (GET /ws)
 	Ws(ctx echo.Context, params WsParams) error
 }
@@ -30,6 +33,15 @@ type ServerInterface interface {
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
+}
+
+// Ping converts echo context to params.
+func (w *ServerInterfaceWrapper) Ping(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.Ping(ctx)
+	return err
 }
 
 // JoinRoom converts echo context to params.
@@ -112,6 +124,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
+	router.GET(baseURL+"/ping", wrapper.Ping)
 	router.POST(baseURL+"/rooms/join", wrapper.JoinRoom)
 	router.POST(baseURL+"/rooms/new", wrapper.CreateRoom)
 	router.GET(baseURL+"/rooms/:roomId", wrapper.GetRoom)
