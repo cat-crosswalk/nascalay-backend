@@ -8,8 +8,8 @@ import (
 
 	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/oapi"
+	"github.com/21hack02win/nascalay-backend/util/log"
 	"github.com/gorilla/websocket"
-	"github.com/labstack/echo/v4"
 )
 
 const (
@@ -32,10 +32,10 @@ type Client struct {
 	room   *model.Room
 	conn   *websocket.Conn
 	send   chan *oapi.WsSendMessage
-	logger echo.Logger
+	logger log.Logger
 }
 
-func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn, logger echo.Logger) (*Client, error) {
+func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn, logger log.Logger) (*Client, error) {
 	room, err := hub.repo.GetRoomFromUserId(userId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get room from userId: %w", err)

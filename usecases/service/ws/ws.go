@@ -6,8 +6,8 @@ import (
 
 	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/oapi"
+	"github.com/21hack02win/nascalay-backend/util/log"
 	"github.com/gorilla/websocket"
-	"github.com/labstack/echo/v4"
 )
 
 type Streamer interface {
@@ -19,10 +19,10 @@ type Streamer interface {
 type streamer struct {
 	hub      *Hub
 	upgrader websocket.Upgrader
-	logger   echo.Logger
+	logger   log.Logger
 }
 
-func NewStreamer(hub *Hub, logger echo.Logger) Streamer {
+func NewStreamer(hub *Hub, logger log.Logger) Streamer {
 	stream := &streamer{
 		hub: hub,
 		upgrader: websocket.Upgrader{
