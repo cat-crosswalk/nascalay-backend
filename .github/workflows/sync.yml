@@ -1,0 +1,26 @@
+## gitea に同期するようの actions
+name: sync
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set config
+        run: |
+          echo "${{ secrets.GITEA_SECRET }}" > ~/deploy_key.pem
+          chmod 600 ~/deploy_key.pem
+          git config --local user.email "github@actions"
+          git config --local user.name "github"
+      - name: Push changes
+        env:
+          GIT_SSH_COMMAND: ssh -i ~/deploy_key.pem -o StrictHostKeyChecking=no -F /dev/null
+        run: |
+          git fetch --unshallow origin
+          git push -f ssh://git@git.trap.jp:2200/cat-crosswalk/nascalay-backend.git
