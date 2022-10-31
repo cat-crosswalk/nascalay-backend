@@ -33,7 +33,9 @@ func (h *handler) JoinRoom(c echo.Context) error {
 		c.Logger().Error(fmt.Errorf("failed to notify of new member: %w", err))
 	}
 
-	return echo.NewHTTPError(http.StatusOK, oapi.RefillRoom(room, uid))
+	c.Logger().Infof("%s(userId:%s) joined the room", req.Username, uid.UUID().String())
+
+	return c.JSON(http.StatusOK, oapi.RefillRoom(room, uid))
 }
 
 func (h *handler) CreateRoom(c echo.Context) error {
@@ -54,7 +56,9 @@ func (h *handler) CreateRoom(c echo.Context) error {
 		return newEchoHTTPError(err, c)
 	}
 
-	return echo.NewHTTPError(http.StatusCreated, oapi.RefillRoom(room, room.HostId))
+	c.Logger().Infof("%s(userId:%s) created the room", req.Username, room.HostId.UUID().String())
+
+	return c.JSON(http.StatusCreated, oapi.RefillRoom(room, room.HostId))
 }
 
 func (h *handler) GetRoom(c echo.Context, roomId oapi.RoomIdInPath) error {
@@ -63,5 +67,5 @@ func (h *handler) GetRoom(c echo.Context, roomId oapi.RoomIdInPath) error {
 		return newEchoHTTPError(err, c)
 	}
 
-	return echo.NewHTTPError(http.StatusOK, oapi.RefillRoom(room, model.UserId{})) // ユーザーIDが必要ないのでとりあえずuuid.Nilにしておく
+	return c.JSON(http.StatusOK, oapi.RefillRoom(room, model.UserId{})) // ユーザーIDが必要ないのでとりあえずuuid.Nilにしておく
 }

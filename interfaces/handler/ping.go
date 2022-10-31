@@ -7,5 +7,5 @@ import (
 )
 
 func (h *handler) Ping(c echo.Context) error {
-	return echo.NewHTTPError(http.StatusOK, "pong")
+	return c.JSON(http.StatusOK, "pong")
 }
