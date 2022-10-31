@@ -33,6 +33,8 @@ func (h *handler) JoinRoom(c echo.Context) error {
 		c.Logger().Error(fmt.Errorf("failed to notify of new member: %w", err))
 	}
 
+	c.Logger().Info(fmt.Sprintf("%s(userId:%s) joined the room", req.Username, uid.UUID().String()))
+
 	return c.JSON(http.StatusOK, oapi.RefillRoom(room, uid))
 }
 
@@ -53,6 +55,8 @@ func (h *handler) CreateRoom(c echo.Context) error {
 	if err != nil {
 		return newEchoHTTPError(err, c)
 	}
+
+	c.Logger().Info(fmt.Sprintf("%s(userId:%s) created the room", req.Username, room.HostId.UUID().String()))
 
 	return c.JSON(http.StatusCreated, oapi.RefillRoom(room, room.HostId))
 }
