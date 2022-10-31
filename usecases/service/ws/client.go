@@ -118,7 +118,7 @@ func (c *Client) writePump() {
 // reads from this goroutine.
 func (c *Client) readPump() {
 	defer func() {
-		c.hub.Unregister(c)
+		c.hub.unregister(c)
 		c.conn.Close()
 	}()
 	c.conn.SetReadLimit(maxMessageSize)
