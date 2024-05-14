@@ -487,6 +487,9 @@ func (s *Server) sendChangeHostEvent() error {
 func (s *Server) sendBreakRoomEvent() error {
 	for _, v := range s.room.Members {
 		if c, ok := s.hub.userIdToClient[v.Id]; ok {
+			s.sendMsgTo(c, &oapi.WsSendMessage{
+				Type: oapi.WsEventBREAKROOM,
+			})
 			s.hub.unregister(c)
 		}
 	}
