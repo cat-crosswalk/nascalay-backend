@@ -17,8 +17,7 @@ func injectServer(logger echo.Logger) oapi.ServerInterface {
 	wire.Build(
 		handler.NewHandler,
 		repository.NewRepository,
-		ws.NewStreamer,
-		ws.NewHub,
+		ws.InitHub,
 	)
 
 	return nil

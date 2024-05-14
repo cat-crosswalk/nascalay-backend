@@ -16,7 +16,7 @@ func (h *handler) Ws(c echo.Context, params oapi.WsParams) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	err = h.stream.ServeWS(c.Response().Writer, c.Request(), uid)
+	err = h.ws.ServeWS(c.Response().Writer, c.Request(), uid)
 	if err != nil && !errors.Is(err, repository.ErrNotFound) {
 		return newEchoHTTPError(err, c)
 	}

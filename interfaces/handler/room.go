@@ -29,7 +29,7 @@ func (h *handler) JoinRoom(c echo.Context) error {
 	}
 
 	// Notify Other Clients of the new user with WebSocket
-	if err := h.stream.NotifyOfNewRoomMember(room); err != nil {
+	if err := h.ws.NotifyOfNewRoomMember(room); err != nil {
 		c.Logger().Error(fmt.Errorf("failed to notify of new member: %w", err))
 	}
 

@@ -18,8 +18,7 @@ import (
 
 func injectServer(logger echo.Logger) oapi.ServerInterface {
 	repositoryRepository := repository.NewRepository()
-	hub := ws.NewHub(repositoryRepository)
-	streamer := ws.NewStreamer(hub, logger)
-	serverInterface := handler.NewHandler(repositoryRepository, streamer)
+	hub := ws.InitHub(repositoryRepository, logger)
+	serverInterface := handler.NewHandler(repositoryRepository, hub)
 	return serverInterface
 }
