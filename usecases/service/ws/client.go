@@ -53,6 +53,7 @@ func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn) (*Client, er
 		hub.mux.Lock()
 		hub.roomIdToServer[room.Id] = server
 		hub.mux.Unlock()
+		server.resetBreakTimer()
 	}
 
 	return &Client{

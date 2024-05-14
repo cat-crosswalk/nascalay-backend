@@ -127,7 +127,7 @@ func InitGame() *Game {
 			BoardName: BoardName4x4,
 			AllArea:   boardNameToAllArea[BoardName4x4],
 		},
-		BreakTimer: time.NewTimer(time.Minute * 15),
+		BreakTimer: time.NewTimer(0),
 	}
 }
 
