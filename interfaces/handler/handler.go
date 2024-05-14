@@ -7,10 +7,10 @@ import (
 )
 
 type handler struct {
-	r      repository.Repository
-	stream ws.Streamer
+	r  repository.Repository
+	ws *ws.Hub
 }
 
-func NewHandler(r repository.Repository, stream ws.Streamer) oapi.ServerInterface {
-	return &handler{r, stream}
+func NewHandler(r repository.Repository, ws *ws.Hub) oapi.ServerInterface {
+	return &handler{r, ws}
 }
