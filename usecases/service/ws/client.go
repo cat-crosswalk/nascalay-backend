@@ -240,10 +240,6 @@ func (c *Client) sendRequestGameStartEvent(_ interface{}) error {
 		return errNotEnoughMember
 	}
 
-	if stopped := c.server.room.Game.BreakTimer.Stop(); !stopped {
-		go c.server.waitAndBreakRoom()
-	}
-
 	if c.userId != c.server.room.HostId {
 		return errUnAuthorized
 	}
@@ -265,11 +261,6 @@ func (c *Client) sendOdaiReadyEvent(_ interface{}) error {
 	c.server.room.Game.AddReady(c.userId)
 
 	if c.server.allMembersAreReady() {
-		if c.server.room.Game.Timer.Stop() {
-			c.server.room.Game.TimerStopChan <- struct{}{}
-		} else {
-			<-c.server.room.Game.Timer.C
-		}
 		if err := c.server.sendOdaiFinishEvent(); err != nil {
 			return c.server.sendEventErr(err, oapi.WsEventODAIFINISH)
 		}
@@ -350,20 +341,6 @@ func (c *Client) sendOdaiSendEvent(body interface{}) error {
 		if err := c.server.sendDrawStartEvent(); err != nil {
 			return c.server.sendEventErr(err, oapi.WsEventDRAWSTART)
 		}
-
-		// DRAWのカウントダウン開始
-		game.Timer.Reset(time.Second * time.Duration(c.server.room.Game.TimeLimit))
-		game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.server.room.Game.TimeLimit)))
-
-		go func() {
-			select {
-			case <-game.Timer.C:
-				if err := c.server.sendDrawFinishEvent(); err != nil {
-					logger.Echo.Error(c.server.sendEventErr(err, oapi.WsEventDRAWFINISH).Error())
-				}
-			case <-game.TimerStopChan:
-			}
-		}()
 	}
 
 	return nil
@@ -379,11 +356,6 @@ func (c *Client) sendDrawReadyEvent(_ interface{}) error {
 	c.server.room.Game.AddReady(c.userId)
 
 	if c.server.allMembersAreReady() {
-		if c.server.room.Game.Timer.Stop() {
-			c.server.room.Game.TimerStopChan <- struct{}{}
-		} else {
-			<-c.server.room.Game.Timer.C
-		}
 		if err := c.server.sendDrawFinishEvent(); err != nil {
 			return c.server.sendEventErr(err, oapi.WsEventDRAWFINISH)
 		}
@@ -472,20 +444,6 @@ func (c *Client) sendDrawSendEvent(body interface{}) error {
 			if err := c.server.sendDrawStartEvent(); err != nil {
 				return c.server.sendEventErr(err, oapi.WsEventDRAWSTART)
 			}
-
-			// DRAWのカウントダウン開始
-			c.server.room.Game.Timer.Reset(time.Second * time.Duration(c.server.room.Game.TimeLimit))
-			c.server.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.server.room.Game.TimeLimit)))
-
-			go func() {
-				select {
-				case <-c.server.room.Game.Timer.C:
-					if err := c.server.sendDrawFinishEvent(); err != nil {
-						logger.Echo.Error(c.server.sendEventErr(err, oapi.WsEventDRAWFINISH).Error())
-					}
-				case <-c.server.room.Game.TimerStopChan:
-				}
-			}()
 		} else {
 			game.Status = model.GameStatusAnswer
 
@@ -508,11 +466,6 @@ func (c *Client) sendAnswerReadyEvent(_ interface{}) error {
 	c.server.room.Game.AddReady(c.userId)
 
 	if c.server.allMembersAreReady() {
-		if c.server.room.Game.Timer.Stop() {
-			c.server.room.Game.TimerStopChan <- struct{}{}
-		} else {
-			<-c.server.room.Game.Timer.C
-		}
 		if err := c.server.sendAnswerFinishEvent(); err != nil {
 			return c.server.sendEventErr(err, oapi.WsEventANSWERFINISH)
 		}
@@ -636,7 +589,6 @@ func (c *Client) sendShowNextEvent(_ interface{}) error {
 
 // RETURN_ROOM
 // ルーム(新規加入待機状態) に戻る (ホスト -> サーバー)
-// このタイミングでサーバーは保持しているゲームデータを削除
 func (c *Client) sendReturnRoomEvent(_ interface{}) error {
 	if !c.server.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
@@ -645,9 +597,6 @@ func (c *Client) sendReturnRoomEvent(_ interface{}) error {
 	if c.userId != c.server.room.HostId {
 		return errUnAuthorized
 	}
-
-	c.server.room.ResetGame()
-	c.server.resetBreakTimer()
 
 	if err := c.server.sendNextRoomEvent(); err != nil {
 		logger.Echo.Error(c.server.sendEventErr(err, oapi.WsEventNEXTROOM))

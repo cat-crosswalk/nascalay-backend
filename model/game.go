@@ -12,7 +12,6 @@ type Game struct {
 	TimeLimit     TimeLimit // seconds
 	Timeout       Timeout   // minute
 	Timer         *time.Timer
-	TimerStopChan chan struct{}
 	DrawCount     DrawCount
 	ShowCount     ShowCount
 	NextShowPhase GameNextShowPhase
@@ -121,7 +120,6 @@ func InitGame() *Game {
 		TimeLimit:     DefaultTimeLimit,
 		Timeout:       Timeout(time.Now()),
 		Timer:         time.NewTimer(0),
-		TimerStopChan: make(chan struct{}),
 		DrawCount:     0,
 		ShowCount:     0,
 		NextShowPhase: 0,
