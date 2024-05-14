@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/21hack02win/nascalay-backend/infrastructure"
+	"github.com/21hack02win/nascalay-backend/util/logger"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 )
@@ -28,6 +29,8 @@ func main() {
 	} else {
 		e.Logger.SetLevel(log.ERROR)
 	}
+
+	logger.Echo = e.Logger
 
 	infrastructure.Setup(e, baseEndpoint)
 
