@@ -10,9 +10,9 @@ import (
 	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/oapi"
 	"github.com/21hack02win/nascalay-backend/util/canvas"
+	"github.com/21hack02win/nascalay-backend/util/logger"
 	"github.com/21hack02win/nascalay-backend/util/random"
 	"github.com/gorilla/websocket"
-	"github.com/labstack/echo/v4"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -36,10 +36,9 @@ type Client struct {
 	server *RoomServer
 	conn   *websocket.Conn
 	send   chan *oapi.WsSendMessage
-	logger echo.Logger
 }
 
-func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn, logger echo.Logger) (*Client, error) {
+func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn) (*Client, error) {
 	room, err := hub.repo.GetRoomFromUserId(userId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get room from userId: %w", err)
@@ -49,13 +48,11 @@ func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn, logger echo.
 		hub:    hub,
 		userId: userId,
 		server: &RoomServer{
-			hub:    hub,
-			room:   room,
-			logger: logger,
+			hub:  hub,
+			room: room,
 		},
-		conn:   conn,
-		send:   make(chan *oapi.WsSendMessage, 256),
-		logger: logger,
+		conn: conn,
+		send: make(chan *oapi.WsSendMessage, 256),
 	}, nil
 }
 
@@ -82,13 +79,13 @@ func (c *Client) writePump() {
 
 			w, err := c.conn.NextWriter(websocket.TextMessage)
 			if err != nil {
-				c.logger.Error("failed to create next writer:", err.Error())
+				logger.Echo.Error("failed to create next writer:", err.Error())
 				return
 			}
 
 			buf, err := json.Marshal(message)
 			if err != nil {
-				c.logger.Error("failed to encode as JSON:", err.Error())
+				logger.Echo.Error("failed to encode as JSON:", err.Error())
 				return
 			}
 
@@ -98,7 +95,7 @@ func (c *Client) writePump() {
 			for i := 0; i < len(c.send); i++ {
 				buf, err = json.Marshal(<-c.send)
 				if err != nil {
-					c.logger.Error("failed to encode as JSON:", err.Error())
+					logger.Echo.Error("failed to encode as JSON:", err.Error())
 					return
 				}
 
@@ -106,13 +103,13 @@ func (c *Client) writePump() {
 			}
 
 			if err := w.Close(); err != nil {
-				c.logger.Error("failed to close writer:", err.Error())
+				logger.Echo.Error("failed to close writer:", err.Error())
 				return
 			}
 		case <-ticker.C:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				c.logger.Error("failed to write message:", err.Error())
+				logger.Echo.Error("failed to write message:", err.Error())
 				return
 			}
 		}
@@ -136,13 +133,13 @@ func (c *Client) readPump() {
 		req := new(oapi.WsJSONRequestBody)
 		if err := c.conn.ReadJSON(req); err != nil {
 			if !websocket.IsCloseError(err) && !websocket.IsUnexpectedCloseError(err) {
-				c.logger.Error("websocket error occured:", err.Error())
+				logger.Echo.Error("websocket error occured:", err.Error())
 			}
 			break
 		}
 
 		if err := c.callEventHandler(req); err != nil {
-			c.logger.Error("websocket error occured:", err.Error())
+			logger.Echo.Error("websocket error occured:", err.Error())
 			c.send <- &oapi.WsSendMessage{
 				Type: oapi.WsEventERROR,
 				Body: &oapi.WsErrorBody{
@@ -354,7 +351,7 @@ func (c *Client) sendOdaiSendEvent(body interface{}) error {
 			select {
 			case <-game.Timer.C:
 				if err := c.server.sendDrawFinishEvent(); err != nil {
-					c.logger.Error(c.server.sendEventErr(err, oapi.WsEventDRAWFINISH).Error())
+					logger.Echo.Error(c.server.sendEventErr(err, oapi.WsEventDRAWFINISH).Error())
 				}
 			case <-game.TimerStopChan:
 			}
@@ -476,7 +473,7 @@ func (c *Client) sendDrawSendEvent(body interface{}) error {
 				select {
 				case <-c.server.room.Game.Timer.C:
 					if err := c.server.sendDrawFinishEvent(); err != nil {
-						c.logger.Error(c.server.sendEventErr(err, oapi.WsEventDRAWFINISH).Error())
+						logger.Echo.Error(c.server.sendEventErr(err, oapi.WsEventDRAWFINISH).Error())
 					}
 				case <-c.server.room.Game.TimerStopChan:
 				}
@@ -603,17 +600,17 @@ func (c *Client) sendShowNextEvent(_ interface{}) error {
 	switch game.NextShowPhase {
 	case model.GameShowPhaseOdai:
 		if err := c.server.sendShowOdaiEvent(); err != nil {
-			c.logger.Error(c.server.sendEventErr(err, oapi.WsEventSHOWODAI))
+			logger.Echo.Error(c.server.sendEventErr(err, oapi.WsEventSHOWODAI))
 		}
 		game.NextShowPhase = model.GameShowPhaseCanvas
 	case model.GameShowPhaseCanvas:
 		if err := c.server.sendShowCanvasEvent(); err != nil {
-			c.logger.Error(c.server.sendEventErr(err, oapi.WsEventSHOWCANVAS))
+			logger.Echo.Error(c.server.sendEventErr(err, oapi.WsEventSHOWCANVAS))
 		}
 		game.NextShowPhase = model.GameShowPhaseAnswer
 	case model.GameShowPhaseAnswer:
 		if err := c.server.sendShowAnswerEvent(); err != nil {
-			c.logger.Error(c.server.sendEventErr(err, oapi.WsEventSHOWANSWER))
+			logger.Echo.Error(c.server.sendEventErr(err, oapi.WsEventSHOWANSWER))
 		}
 		if game.ShowCount.Int()+1 < len(game.Odais) {
 			game.NextShowPhase = model.GameShowPhaseOdai
@@ -645,7 +642,7 @@ func (c *Client) sendReturnRoomEvent(_ interface{}) error {
 	c.server.resetBreakTimer()
 
 	if err := c.server.sendNextRoomEvent(); err != nil {
-		c.logger.Error(c.server.sendEventErr(err, oapi.WsEventNEXTROOM))
+		logger.Echo.Error(c.server.sendEventErr(err, oapi.WsEventNEXTROOM))
 	}
 
 	return nil

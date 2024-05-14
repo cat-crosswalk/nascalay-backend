@@ -8,13 +8,12 @@ import (
 	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/oapi"
 	"github.com/21hack02win/nascalay-backend/usecases/repository"
+	"github.com/21hack02win/nascalay-backend/util/logger"
 	"github.com/gorilla/websocket"
-	"github.com/labstack/echo/v4"
 )
 
 type Hub struct {
 	upgrader       websocket.Upgrader
-	logger         echo.Logger
 	repo           repository.Repository
 	userIdToClient map[model.UserId]*Client
 	registerCh     chan *Client
@@ -22,7 +21,7 @@ type Hub struct {
 	mux            sync.RWMutex
 }
 
-func InitHub(repo repository.Repository, logger echo.Logger) *Hub {
+func InitHub(repo repository.Repository) *Hub {
 	hub := &Hub{
 		upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
@@ -100,7 +99,7 @@ func (h *Hub) register(cli *Client) {
 	h.mux.Lock()
 	defer h.mux.Unlock()
 
-	cli.logger.Infof("new client(userId:%s) has registered", cli.userId.UUID().String())
+	logger.Echo.Infof("new client(userId:%s) has registered", cli.userId.UUID().String())
 
 	h.userIdToClient[cli.userId] = cli
 }
@@ -109,14 +108,14 @@ func (h *Hub) unregister(cli *Client) {
 	h.mux.Lock()
 	defer h.mux.Unlock()
 
-	cli.logger.Infof("client(userId:%s) has unregistered", cli.userId.UUID().String())
+	logger.Echo.Infof("client(userId:%s) has unregistered", cli.userId.UUID().String())
 
 	close(cli.send)
 	delete(h.userIdToClient, cli.userId)
 }
 
 func (h *Hub) addNewClient(userId model.UserId, conn *websocket.Conn) (*Client, error) {
-	cli, err := NewClient(h, userId, conn, h.logger)
+	cli, err := NewClient(h, userId, conn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new client: %w", err)
 	}
