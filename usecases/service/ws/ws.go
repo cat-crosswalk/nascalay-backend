@@ -16,6 +16,7 @@ type Hub struct {
 	upgrader       websocket.Upgrader
 	repo           repository.Repository
 	userIdToClient map[model.UserId]*Client
+	roomIdToServer map[model.RoomId]*Server
 	registerCh     chan *Client
 	unregisterCh   chan *Client
 	mux            sync.RWMutex
@@ -30,6 +31,7 @@ func InitHub(repo repository.Repository) *Hub {
 		},
 		repo:           repo,
 		userIdToClient: make(map[model.UserId]*Client),
+		roomIdToServer: make(map[model.RoomId]*Server),
 		registerCh:     make(chan *Client),
 		unregisterCh:   make(chan *Client),
 		mux:            sync.RWMutex{},
