@@ -257,7 +257,7 @@ func (c *Client) sendOdaiReadyEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
-	c.AddReady(c.userId)
+	c.addReady(c.userId)
 
 	if c.server.allMembersAreReady() {
 		if c.server.room.Game.Timer.Stop() {
@@ -284,7 +284,7 @@ func (c *Client) sendOdaiCancelEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
-	c.CancelReady(c.userId)
+	c.cancelReady(c.userId)
 
 	if err := c.server.sendOdaiInputEvent(len(c.server.room.Game.Ready)); err != nil {
 		return c.server.sendEventErr(err, oapi.WsEventODAIINPUT)
@@ -371,7 +371,7 @@ func (c *Client) sendDrawReadyEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
-	c.AddReady(c.userId)
+	c.addReady(c.userId)
 
 	if c.server.allMembersAreReady() {
 		if c.server.room.Game.Timer.Stop() {
@@ -398,7 +398,7 @@ func (c *Client) sendDrawCancelEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
-	c.CancelReady(c.userId)
+	c.cancelReady(c.userId)
 
 	if err := c.server.sendDrawInputEvent(len(c.server.room.Game.Ready)); err != nil {
 		return c.server.sendEventErr(err, oapi.WsEventDRAWINPUT)
@@ -500,7 +500,7 @@ func (c *Client) sendAnswerReadyEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
-	c.AddReady(c.userId)
+	c.addReady(c.userId)
 
 	if c.server.allMembersAreReady() {
 		if c.server.room.Game.Timer.Stop() {
@@ -527,7 +527,7 @@ func (c *Client) sendAnswerCancelEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
-	c.CancelReady(c.userId)
+	c.cancelReady(c.userId)
 
 	if err := c.server.sendAnswerInputEvent(len(c.server.room.Game.Ready)); err != nil {
 		return c.server.sendEventErr(err, oapi.WsEventANSWERINPUT)
@@ -649,4 +649,22 @@ func (c *Client) sendReturnRoomEvent(_ interface{}) error {
 	}
 
 	return nil
+}
+
+// Utils
+
+// Make the client ready for waiting
+func (c *Client) addReady(uid model.UserId) {
+	c.hub.mux.Lock()
+	defer c.hub.mux.Unlock()
+
+	c.server.room.Game.Ready[uid] = struct{}{}
+}
+
+// Cancel the client's ready state
+func (c *Client) cancelReady(uid model.UserId) {
+	c.hub.mux.Lock()
+	defer c.hub.mux.Unlock()
+
+	delete(c.server.room.Game.Ready, uid)
 }
