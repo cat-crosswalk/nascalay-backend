@@ -24,29 +24,29 @@ func (c *Client) callEventHandler(req *oapi.WsJSONRequestBody) error {
 type eventHandler func(c *Client, body interface{}) error
 
 var receivedEventMap = map[oapi.WsEvent]eventHandler{
-	oapi.WsEventROOMSETOPTION:    (*Client).receiveRoomSetOptionEvent,
-	oapi.WsEventREQUESTGAMESTART: (*Client).receiveRequestGameStartEvent,
-	oapi.WsEventODAIREADY:        (*Client).receiveOdaiReadyEvent,
-	oapi.WsEventODAICANCEL:       (*Client).receiveOdaiCancelEvent,
-	oapi.WsEventODAISEND:         (*Client).receiveOdaiSendEvent,
-	oapi.WsEventDRAWREADY:        (*Client).receiveDrawReadyEvent,
-	oapi.WsEventDRAWCANCEL:       (*Client).receiveDrawCancelEvent,
-	oapi.WsEventDRAWSEND:         (*Client).receiveDrawSendEvent,
-	oapi.WsEventANSWERREADY:      (*Client).receiveAnswerReadyEvent,
-	oapi.WsEventANSWERCANCEL:     (*Client).receiveAnswerCancelEvent,
-	oapi.WsEventANSWERSEND:       (*Client).receiveAnswerSendEvent,
-	oapi.WsEventSHOWNEXT:         (*Client).receiveShowNextEvent,
-	oapi.WsEventRETURNROOM:       (*Client).receiveReturnRoomEvent,
+	oapi.WsEventROOMSETOPTION:    (*Client).sendRoomSetOptionEvent,
+	oapi.WsEventREQUESTGAMESTART: (*Client).sendRequestGameStartEvent,
+	oapi.WsEventODAIREADY:        (*Client).sendOdaiReadyEvent,
+	oapi.WsEventODAICANCEL:       (*Client).sendOdaiCancelEvent,
+	oapi.WsEventODAISEND:         (*Client).sendOdaiSendEvent,
+	oapi.WsEventDRAWREADY:        (*Client).sendDrawReadyEvent,
+	oapi.WsEventDRAWCANCEL:       (*Client).sendDrawCancelEvent,
+	oapi.WsEventDRAWSEND:         (*Client).sendDrawSendEvent,
+	oapi.WsEventANSWERREADY:      (*Client).sendAnswerReadyEvent,
+	oapi.WsEventANSWERCANCEL:     (*Client).sendAnswerCancelEvent,
+	oapi.WsEventANSWERSEND:       (*Client).sendAnswerSendEvent,
+	oapi.WsEventSHOWNEXT:         (*Client).sendShowNextEvent,
+	oapi.WsEventRETURNROOM:       (*Client).sendReturnRoomEvent,
 }
 
 // ROOM_NEW_MEMBER
 // 部屋に追加のメンバーが来たことを通知する (サーバー -> ルーム全員)
-func (c *Client) sendRoomNewMemberEvent(room *model.Room) error {
-	if !c.room.GameStatusIs(model.GameStatusRoom) {
+func (s *RoomServer) sendRoomNewMemberEvent(room *model.Room) error {
+	if !s.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
 	}
 
-	c.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
+	s.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
 		Type: oapi.WsEventROOMNEWMEMBER,
 		Body: oapi.WsRoomNewMemberEventBody{
 			Capacity: room.Capacity.Int(),
@@ -60,9 +60,13 @@ func (c *Client) sendRoomNewMemberEvent(room *model.Room) error {
 
 // ROOM_SET_OPTION
 // ゲームのオプションを設定する (ホスト -> サーバー)
-func (c *Client) receiveRoomSetOptionEvent(body interface{}) error {
-	if !c.room.GameStatusIs(model.GameStatusRoom) {
+func (c *Client) sendRoomSetOptionEvent(body interface{}) error {
+	if !c.server.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
+	}
+
+	if c.userId != c.server.room.HostId {
+		return errUnAuthorized
 	}
 
 	if body == nil {
@@ -75,7 +79,7 @@ func (c *Client) receiveRoomSetOptionEvent(body interface{}) error {
 	}
 
 	updateBody := new(oapi.WsRoomUpdateOptionEventBody)
-	game := c.room.Game
+	game := c.server.room.Game
 
 	// Set options
 	if e.TimeLimit != nil {
@@ -83,8 +87,8 @@ func (c *Client) receiveRoomSetOptionEvent(body interface{}) error {
 		updateBody.TimeLimit = e.TimeLimit
 	}
 
-	if err := c.sendRoomUpdateOptionEvent(updateBody); err != nil {
-		return c.sendEventErr(err, oapi.WsEventROOMUPDATEOPTION)
+	if err := c.server.sendRoomUpdateOptionEvent(updateBody); err != nil {
+		return c.server.sendEventErr(err, oapi.WsEventROOMUPDATEOPTION)
 	}
 
 	return nil
@@ -92,12 +96,12 @@ func (c *Client) receiveRoomSetOptionEvent(body interface{}) error {
 
 // ROOM_UPDATE_OPTION
 // ゲームの設定を更新する (サーバー -> ルーム全員)
-func (c *Client) sendRoomUpdateOptionEvent(body *oapi.WsRoomUpdateOptionEventBody) error {
-	if !c.room.GameStatusIs(model.GameStatusRoom) {
+func (s *RoomServer) sendRoomUpdateOptionEvent(body *oapi.WsRoomUpdateOptionEventBody) error {
+	if !s.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
 	}
 
-	c.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
+	s.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
 		Type: oapi.WsEventROOMUPDATEOPTION,
 		Body: body,
 	})
@@ -107,24 +111,24 @@ func (c *Client) sendRoomUpdateOptionEvent(body *oapi.WsRoomUpdateOptionEventBod
 
 // REQUEST_GAME_START
 // ゲームを開始する (ホスト -> サーバー)
-func (c *Client) receiveRequestGameStartEvent(_ interface{}) error {
-	if !c.room.GameStatusIs(model.GameStatusRoom) {
+func (c *Client) sendRequestGameStartEvent(_ interface{}) error {
+	if !c.server.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
 	}
-	if len(c.room.Members) < 2 {
+	if len(c.server.room.Members) < 2 {
 		return errNotEnoughMember
 	}
 
-	if stopped := c.room.Game.BreakTimer.Stop(); !stopped {
-		go c.waitAndBreakRoom()
+	if stopped := c.server.room.Game.BreakTimer.Stop(); !stopped {
+		go c.server.waitAndBreakRoom()
 	}
 
-	if c.userId != c.room.HostId {
+	if c.userId != c.server.room.HostId {
 		return errUnAuthorized
 	}
 
-	if err := c.sendGameStartEvent(); err != nil {
-		return c.sendEventErr(err, oapi.WsEventGAMESTART)
+	if err := c.server.sendGameStartEvent(); err != nil {
+		return c.server.sendEventErr(err, oapi.WsEventGAMESTART)
 	}
 
 	return nil
@@ -133,43 +137,43 @@ func (c *Client) receiveRequestGameStartEvent(_ interface{}) error {
 // GAME_START
 // ゲームの開始を通知する (サーバー -> ルーム全員)
 // ODAIフェーズを開始する
-func (c *Client) sendGameStartEvent() error {
-	if !c.room.GameStatusIs(model.GameStatusRoom) {
+func (s *RoomServer) sendGameStartEvent() error {
+	if !s.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
 	}
 
-	for _, m := range c.room.Members {
-		cc, ok := c.hub.userIdToClient[m.Id]
+	for _, m := range s.room.Members {
+		c, ok := s.hub.userIdToClient[m.Id]
 		if !ok {
 			c.logger.Infof("client(userId:%s) not found", m.Id.UUID().String())
 			continue
 		}
 
-		cc.sendMsg(&oapi.WsSendMessage{
+		s.sendMsgTo(c, &oapi.WsSendMessage{
 			Type: oapi.WsEventGAMESTART,
 			Body: &oapi.WsGameStartEventBody{
 				OdaiExample: random.OdaiExample(),
-				TimeLimit:   int(c.room.Game.TimeLimit),
+				TimeLimit:   int(s.room.Game.TimeLimit),
 			},
 		})
 	}
 
 	// ODAIフェーズに移行
-	c.room.Game.Status = model.GameStatusOdai
+	s.room.Game.Status = model.GameStatusOdai
 	// ODAIのカウントダウン開始
-	if !c.room.Game.Timer.Stop() {
-		<-c.room.Game.Timer.C
+	if !s.room.Game.Timer.Stop() {
+		<-s.room.Game.Timer.C
 	}
-	c.room.Game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
-	c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
+	s.room.Game.Timer.Reset(time.Second * time.Duration(s.room.Game.TimeLimit))
+	s.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(s.room.Game.TimeLimit)))
 
 	go func() {
 		select {
-		case <-c.room.Game.Timer.C:
-			if err := c.sendOdaiFinishEvent(); err != nil {
-				c.logger.Error(c.sendEventErr(err, oapi.WsEventODAIFINISH).Error())
+		case <-s.room.Game.Timer.C:
+			if err := s.sendOdaiFinishEvent(); err != nil {
+				s.logger.Error(s.sendEventErr(err, oapi.WsEventODAIFINISH).Error())
 			}
-		case <-c.room.Game.TimerStopChan:
+		case <-s.room.Game.TimerStopChan:
 		}
 	}()
 
@@ -178,25 +182,25 @@ func (c *Client) sendGameStartEvent() error {
 
 // ODAI_READY
 // お題の入力が完了していることを通知する (ルームの各員 -> サーバー)
-func (c *Client) receiveOdaiReadyEvent(_ interface{}) error {
-	if !c.room.GameStatusIs(model.GameStatusOdai) {
+func (c *Client) sendOdaiReadyEvent(_ interface{}) error {
+	if !c.server.room.GameStatusIs(model.GameStatusOdai) {
 		return errWrongPhase
 	}
 
 	c.AddReady(c.userId)
 
-	if c.allMembersAreReady() {
-		if c.room.Game.Timer.Stop() {
-			c.room.Game.TimerStopChan <- struct{}{}
+	if c.server.allMembersAreReady() {
+		if c.server.room.Game.Timer.Stop() {
+			c.server.room.Game.TimerStopChan <- struct{}{}
 		} else {
-			<-c.room.Game.Timer.C
+			<-c.server.room.Game.Timer.C
 		}
-		if err := c.sendOdaiFinishEvent(); err != nil {
-			return c.sendEventErr(err, oapi.WsEventODAIFINISH)
+		if err := c.server.sendOdaiFinishEvent(); err != nil {
+			return c.server.sendEventErr(err, oapi.WsEventODAIFINISH)
 		}
 	} else {
-		if err := c.sendOdaiInputEvent(len(c.room.Game.Ready)); err != nil {
-			return c.sendEventErr(err, oapi.WsEventODAIINPUT)
+		if err := c.server.sendOdaiInputEvent(len(c.server.room.Game.Ready)); err != nil {
+			return c.server.sendEventErr(err, oapi.WsEventODAIINPUT)
 		}
 	}
 
@@ -205,15 +209,15 @@ func (c *Client) receiveOdaiReadyEvent(_ interface{}) error {
 
 // ODAI_CANCEL
 // お題の入力の完了を解除する (ルームの各員 -> サーバー)
-func (c *Client) receiveOdaiCancelEvent(_ interface{}) error {
-	if !c.room.GameStatusIs(model.GameStatusOdai) {
+func (c *Client) sendOdaiCancelEvent(_ interface{}) error {
+	if !c.server.room.GameStatusIs(model.GameStatusOdai) {
 		return errWrongPhase
 	}
 
 	c.CancelReady(c.userId)
 
-	if err := c.sendOdaiInputEvent(len(c.room.Game.Ready)); err != nil {
-		return c.sendEventErr(err, oapi.WsEventODAIINPUT)
+	if err := c.server.sendOdaiInputEvent(len(c.server.room.Game.Ready)); err != nil {
+		return c.server.sendEventErr(err, oapi.WsEventODAIINPUT)
 	}
 
 	return nil
@@ -221,12 +225,12 @@ func (c *Client) receiveOdaiCancelEvent(_ interface{}) error {
 
 // ODAI_INPUT
 // お題入力が完了した人数を送信する (サーバー -> ルームの各員)
-func (c *Client) sendOdaiInputEvent(readyNum int) error {
-	if !c.room.GameStatusIs(model.GameStatusOdai) {
+func (s *RoomServer) sendOdaiInputEvent(readyNum int) error {
+	if !s.room.GameStatusIs(model.GameStatusOdai) {
 		return errWrongPhase
 	}
 
-	c.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
+	s.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
 		Type: oapi.WsEventODAIINPUT,
 		Body: &oapi.WsOdaiInputEventBody{
 			Ready: readyNum,
@@ -239,12 +243,12 @@ func (c *Client) sendOdaiInputEvent(readyNum int) error {
 // ODAI_FINISH
 // 全員がお題の入力を完了したことor制限時間が来たことを通知する (サーバー -> ルーム全員)
 // クライアントはお題を送信する
-func (c *Client) sendOdaiFinishEvent() error {
-	if !c.room.GameStatusIs(model.GameStatusOdai) {
+func (s *RoomServer) sendOdaiFinishEvent() error {
+	if !s.room.GameStatusIs(model.GameStatusOdai) {
 		return errWrongPhase
 	}
 
-	c.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
+	s.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
 		Type: oapi.WsEventODAIFINISH,
 	})
 
@@ -254,8 +258,8 @@ func (c *Client) sendOdaiFinishEvent() error {
 // ODAI_SEND
 // お題を送信する (ルームの各員 -> サーバー)
 // DRAWフェーズを開始する
-func (c *Client) receiveOdaiSendEvent(body interface{}) error {
-	if !c.room.GameStatusIs(model.GameStatusOdai) {
+func (c *Client) sendOdaiSendEvent(body interface{}) error {
+	if !c.server.room.GameStatusIs(model.GameStatusOdai) {
 		return errWrongPhase
 	}
 
@@ -268,7 +272,7 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 		return fmt.Errorf("failed to decode body: %w", err)
 	}
 
-	game := c.room.Game
+	game := c.server.room.Game
 
 	// 存在チェック
 	for _, v := range game.Odais {
@@ -280,14 +284,14 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 	game.AddOdai(c.userId, model.OdaiTitle(e.Odai))
 
 	// 全員のお題送信が完了したらDRAWフェーズに移行
-	odaisByUnregisteredClients := make([]model.UserId, 0, len(c.room.Members)) // ハブから登録解除したクライアントの配列
-	for _, v := range c.room.Members {
+	odaisByUnregisteredClients := make([]model.UserId, 0, len(c.server.room.Members)) // ハブから登録解除したクライアントの配列
+	for _, v := range c.server.room.Members {
 		if _, ok := c.hub.userIdToClient[v.Id]; !ok {
 			odaisByUnregisteredClients = append(odaisByUnregisteredClients, v.Id)
 		}
 	}
 
-	if len(game.Odais)+len(odaisByUnregisteredClients) == len(c.room.Members) {
+	if len(game.Odais)+len(odaisByUnregisteredClients) == len(c.server.room.Members) {
 		for _, Id := range odaisByUnregisteredClients {
 			game.Odais = append(game.Odais, &model.Odai{
 				Title:     model.OdaiTitle(random.OdaiExample()),
@@ -298,21 +302,21 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 		game.ResetReady()
 		game.Status = model.GameStatusDraw
 		game.DrawCount = 0
-		random.SetupMemberRoles(game, c.room.Members)
+		random.SetupMemberRoles(game, c.server.room.Members)
 
-		if err := c.sendDrawStartEvent(); err != nil {
-			return c.sendEventErr(err, oapi.WsEventDRAWSTART)
+		if err := c.server.sendDrawStartEvent(); err != nil {
+			return c.server.sendEventErr(err, oapi.WsEventDRAWSTART)
 		}
 
 		// DRAWのカウントダウン開始
-		game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
-		game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
+		game.Timer.Reset(time.Second * time.Duration(c.server.room.Game.TimeLimit))
+		game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.server.room.Game.TimeLimit)))
 
 		go func() {
 			select {
 			case <-game.Timer.C:
-				if err := c.sendDrawFinishEvent(); err != nil {
-					c.logger.Error(c.sendEventErr(err, oapi.WsEventDRAWFINISH).Error())
+				if err := c.server.sendDrawFinishEvent(); err != nil {
+					c.logger.Error(c.server.sendEventErr(err, oapi.WsEventDRAWFINISH).Error())
 				}
 			case <-game.TimerStopChan:
 			}
@@ -324,14 +328,14 @@ func (c *Client) receiveOdaiSendEvent(body interface{}) error {
 
 // DRAW_START
 // キャンバス情報とお題を送信する (サーバー -> ルーム各員)
-func (c *Client) sendDrawStartEvent() error {
+func (s *RoomServer) sendDrawStartEvent() error {
 	// NOTE: 最後にお題を送信したユーザー(2回目以降は最後に絵を送信したユーザー)のクライアントから実行される
-	if !c.room.GameStatusIs(model.GameStatusDraw) {
+	if !s.room.GameStatusIs(model.GameStatusDraw) {
 		return errWrongPhase
 	}
 
 	var (
-		game      = c.room.Game
+		game      = s.room.Game
 		drawCount = game.DrawCount
 	)
 
@@ -341,9 +345,9 @@ func (c *Client) sendDrawStartEvent() error {
 		}
 
 		drawer := o.DrawerSeq[drawCount.Int()]
-		cc, ok := c.hub.userIdToClient[drawer.UserId] // `drawCount`番目に描くユーザーのクライアント
+		c, ok := s.hub.userIdToClient[drawer.UserId] // `drawCount`番目に描くユーザーのクライアント
 		if !ok {
-			c.logger.Infof("client(userId:%s) not found", drawer.UserId.UUID().String())
+			s.logger.Infof("client(userId:%s) not found", drawer.UserId.UUID().String())
 			continue
 		}
 
@@ -352,10 +356,10 @@ func (c *Client) sendDrawStartEvent() error {
 			drawnArea[i] = o.DrawerSeq[i].AreaId.Int()
 		}
 
-		cc.sendMsg(&oapi.WsSendMessage{
+		s.sendMsgTo(c, &oapi.WsSendMessage{
 			Type: oapi.WsEventDRAWSTART,
 			Body: oapi.WsDrawStartEventBody{
-				AllDrawPhaseNum: c.room.AllDrawPhase(),
+				AllDrawPhaseNum: s.room.AllDrawPhase(),
 				Canvas: oapi.Canvas{
 					AreaId:    drawer.AreaId.Int(),
 					BoardName: game.Canvas.BoardName,
@@ -374,25 +378,25 @@ func (c *Client) sendDrawStartEvent() error {
 
 // DRAW_READY
 // 絵が書き終わっていることを通知する (ルームの各員 -> サーバー)
-func (c *Client) receiveDrawReadyEvent(_ interface{}) error {
-	if !c.room.GameStatusIs(model.GameStatusDraw) {
+func (c *Client) sendDrawReadyEvent(_ interface{}) error {
+	if !c.server.room.GameStatusIs(model.GameStatusDraw) {
 		return errWrongPhase
 	}
 
 	c.AddReady(c.userId)
 
-	if c.allMembersAreReady() {
-		if c.room.Game.Timer.Stop() {
-			c.room.Game.TimerStopChan <- struct{}{}
+	if c.server.allMembersAreReady() {
+		if c.server.room.Game.Timer.Stop() {
+			c.server.room.Game.TimerStopChan <- struct{}{}
 		} else {
-			<-c.room.Game.Timer.C
+			<-c.server.room.Game.Timer.C
 		}
-		if err := c.sendDrawFinishEvent(); err != nil {
-			return c.sendEventErr(err, oapi.WsEventDRAWFINISH)
+		if err := c.server.sendDrawFinishEvent(); err != nil {
+			return c.server.sendEventErr(err, oapi.WsEventDRAWFINISH)
 		}
 	} else {
-		if err := c.sendDrawInputEvent(len(c.room.Game.Ready)); err != nil {
-			return c.sendEventErr(err, oapi.WsEventDRAWINPUT)
+		if err := c.server.sendDrawInputEvent(len(c.server.room.Game.Ready)); err != nil {
+			return c.server.sendEventErr(err, oapi.WsEventDRAWINPUT)
 		}
 	}
 
@@ -401,15 +405,15 @@ func (c *Client) receiveDrawReadyEvent(_ interface{}) error {
 
 // DRAW_CANCEL
 // 絵が書き終わっている通知を解除する (ルームの各員 -> サーバー)
-func (c *Client) receiveDrawCancelEvent(_ interface{}) error {
-	if !c.room.GameStatusIs(model.GameStatusDraw) {
+func (c *Client) sendDrawCancelEvent(_ interface{}) error {
+	if !c.server.room.GameStatusIs(model.GameStatusDraw) {
 		return errWrongPhase
 	}
 
 	c.CancelReady(c.userId)
 
-	if err := c.sendDrawInputEvent(len(c.room.Game.Ready)); err != nil {
-		return c.sendEventErr(err, oapi.WsEventDRAWINPUT)
+	if err := c.server.sendDrawInputEvent(len(c.server.room.Game.Ready)); err != nil {
+		return c.server.sendEventErr(err, oapi.WsEventDRAWINPUT)
 	}
 
 	return nil
@@ -417,12 +421,12 @@ func (c *Client) receiveDrawCancelEvent(_ interface{}) error {
 
 // DRAW_INPUT
 // 絵を描き終えた人数を送信する (サーバー -> ルームの各員)
-func (c *Client) sendDrawInputEvent(readyNum int) error {
-	if !c.room.GameStatusIs(model.GameStatusDraw) {
+func (s *RoomServer) sendDrawInputEvent(readyNum int) error {
+	if !s.room.GameStatusIs(model.GameStatusDraw) {
 		return errWrongPhase
 	}
 
-	c.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
+	s.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
 		Type: oapi.WsEventDRAWINPUT,
 		Body: &oapi.WsDrawInputEventBody{
 			Ready: readyNum,
@@ -435,12 +439,12 @@ func (c *Client) sendDrawInputEvent(readyNum int) error {
 // DRAW_FINISH
 // 全員が絵を完了したことor制限時間が来たことを通知する (サーバー -> ルーム全員)
 // クライアントは絵を送信する
-func (c *Client) sendDrawFinishEvent() error {
-	if !c.room.GameStatusIs(model.GameStatusDraw) {
+func (s *RoomServer) sendDrawFinishEvent() error {
+	if !s.room.GameStatusIs(model.GameStatusDraw) {
 		return errWrongPhase
 	}
 
-	c.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
+	s.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
 		Type: oapi.WsEventDRAWFINISH,
 	})
 
@@ -451,8 +455,8 @@ func (c *Client) sendDrawFinishEvent() error {
 // 絵を送信する (ルームの各員 -> サーバー)
 // お題が残っていたら再度DRAW_START が送信される
 // お題がすべて終わったらANSWERフェーズを開始する
-func (c *Client) receiveDrawSendEvent(body interface{}) error {
-	if !c.room.GameStatusIs(model.GameStatusDraw) {
+func (c *Client) sendDrawSendEvent(body interface{}) error {
+	if !c.server.room.GameStatusIs(model.GameStatusDraw) {
 		return errWrongPhase
 	}
 
@@ -465,8 +469,8 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 		return fmt.Errorf("failed to decode body: %w", err)
 	}
 
-	for _, v := range c.room.Game.Odais {
-		if v.DrawerSeq[c.room.Game.DrawCount].UserId == c.userId {
+	for _, v := range c.server.room.Game.Odais {
+		if v.DrawerSeq[c.server.room.Game.DrawCount].UserId == c.userId {
 			sendImg := e.Img[strings.IndexByte(e.Img, ',')+1:]
 			if len(v.Img) > 0 {
 				newImg, err := canvas.MergeImage(string(v.Img), sendImg)
@@ -485,8 +489,8 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 
 	// 全員の絵の送信が完了したら再度DRAW_STARTを送信する or ANSWERフェーズに移行
 	allImgUpdated := true
-	for _, v := range c.room.Game.Odais {
-		if _, ok := c.hub.userIdToClient[v.DrawerSeq[c.room.Game.DrawCount.Int()].UserId]; !ok {
+	for _, v := range c.server.room.Game.Odais {
+		if _, ok := c.hub.userIdToClient[v.DrawerSeq[c.server.room.Game.DrawCount.Int()].UserId]; !ok {
 			continue
 		}
 
@@ -496,36 +500,36 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 		}
 	}
 
-	game := c.room.Game
+	game := c.server.room.Game
 	if allImgUpdated {
 		game.ResetReady()
-		if game.DrawCount.Int()+1 < c.room.AllDrawPhase() {
+		if game.DrawCount.Int()+1 < c.server.room.AllDrawPhase() {
 			game.DrawCount++
 
 			game.ResetImgUpdated()
 
-			if err := c.sendDrawStartEvent(); err != nil {
-				return c.sendEventErr(err, oapi.WsEventDRAWSTART)
+			if err := c.server.sendDrawStartEvent(); err != nil {
+				return c.server.sendEventErr(err, oapi.WsEventDRAWSTART)
 			}
 
 			// DRAWのカウントダウン開始
-			c.room.Game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
-			c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
+			c.server.room.Game.Timer.Reset(time.Second * time.Duration(c.server.room.Game.TimeLimit))
+			c.server.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.server.room.Game.TimeLimit)))
 
 			go func() {
 				select {
-				case <-c.room.Game.Timer.C:
-					if err := c.sendDrawFinishEvent(); err != nil {
-						c.logger.Error(c.sendEventErr(err, oapi.WsEventDRAWFINISH).Error())
+				case <-c.server.room.Game.Timer.C:
+					if err := c.server.sendDrawFinishEvent(); err != nil {
+						c.logger.Error(c.server.sendEventErr(err, oapi.WsEventDRAWFINISH).Error())
 					}
-				case <-c.room.Game.TimerStopChan:
+				case <-c.server.room.Game.TimerStopChan:
 				}
 			}()
 		} else {
 			game.Status = model.GameStatusAnswer
 
-			if err := c.sendAnswerStartEvent(); err != nil {
-				return c.sendEventErr(err, oapi.WsEventANSWERSTART)
+			if err := c.server.sendAnswerStartEvent(); err != nil {
+				return c.server.sendEventErr(err, oapi.WsEventANSWERSTART)
 			}
 		}
 	}
@@ -535,42 +539,42 @@ func (c *Client) receiveDrawSendEvent(body interface{}) error {
 
 // ANSWER_START
 // 絵が飛んできて，回答する (サーバー -> ルーム各員)
-func (c *Client) sendAnswerStartEvent() error {
+func (s *RoomServer) sendAnswerStartEvent() error {
 	// NOTE: 最後にお題を送信した人のクライアントで行う
-	if !c.room.GameStatusIs(model.GameStatusAnswer) {
+	if !s.room.GameStatusIs(model.GameStatusAnswer) {
 		return errWrongPhase
 	}
 
-	c.hub.mux.Lock()
-	defer c.hub.mux.Unlock()
+	s.hub.mux.Lock()
+	defer s.hub.mux.Unlock()
 
-	for _, v := range c.room.Game.Odais {
-		ac, ok := c.hub.userIdToClient[v.AnswererId]
+	for _, v := range s.room.Game.Odais {
+		ac, ok := s.hub.userIdToClient[v.AnswererId]
 		if !ok {
-			c.logger.Infof("client(userId:%s) not found", v.AnswererId.UUID().String())
+			s.logger.Infof("client(userId:%s) not found", v.AnswererId.UUID().String())
 			continue
 		}
 
-		ac.sendMsg(&oapi.WsSendMessage{
+		s.sendMsgTo(ac, &oapi.WsSendMessage{
 			Type: oapi.WsEventANSWERSTART,
 			Body: oapi.WsAnswerStartEventBody{
 				Img:       v.Img.AddPrefix(),
-				TimeLimit: int(c.room.Game.TimeLimit),
+				TimeLimit: int(s.room.Game.TimeLimit),
 			},
 		})
 	}
 
 	// ANSWERのカウントダウン開始
-	c.room.Game.Timer.Reset(time.Second * time.Duration(c.room.Game.TimeLimit))
-	c.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(c.room.Game.TimeLimit)))
+	s.room.Game.Timer.Reset(time.Second * time.Duration(s.room.Game.TimeLimit))
+	s.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(s.room.Game.TimeLimit)))
 
 	go func() {
 		select {
-		case <-c.room.Game.Timer.C:
-			if err := c.sendAnswerFinishEvent(); err != nil {
-				c.logger.Error(c.sendEventErr(err, oapi.WsEventANSWERFINISH).Error())
+		case <-s.room.Game.Timer.C:
+			if err := s.sendAnswerFinishEvent(); err != nil {
+				s.logger.Error(s.sendEventErr(err, oapi.WsEventANSWERFINISH).Error())
 			}
-		case <-c.room.Game.TimerStopChan:
+		case <-s.room.Game.TimerStopChan:
 		}
 	}()
 
@@ -579,25 +583,25 @@ func (c *Client) sendAnswerStartEvent() error {
 
 // ANSWER_READY
 // 回答の入力が完了していることを通知する (ルームの各員 -> サーバー)
-func (c *Client) receiveAnswerReadyEvent(_ interface{}) error {
-	if !c.room.GameStatusIs(model.GameStatusAnswer) {
+func (c *Client) sendAnswerReadyEvent(_ interface{}) error {
+	if !c.server.room.GameStatusIs(model.GameStatusAnswer) {
 		return errWrongPhase
 	}
 
 	c.AddReady(c.userId)
 
-	if c.allMembersAreReady() {
-		if c.room.Game.Timer.Stop() {
-			c.room.Game.TimerStopChan <- struct{}{}
+	if c.server.allMembersAreReady() {
+		if c.server.room.Game.Timer.Stop() {
+			c.server.room.Game.TimerStopChan <- struct{}{}
 		} else {
-			<-c.room.Game.Timer.C
+			<-c.server.room.Game.Timer.C
 		}
-		if err := c.sendAnswerFinishEvent(); err != nil {
-			return c.sendEventErr(err, oapi.WsEventANSWERFINISH)
+		if err := c.server.sendAnswerFinishEvent(); err != nil {
+			return c.server.sendEventErr(err, oapi.WsEventANSWERFINISH)
 		}
 	} else {
-		if err := c.sendAnswerInputEvent(len(c.room.Game.Ready)); err != nil {
-			return c.sendEventErr(err, oapi.WsEventANSWERINPUT)
+		if err := c.server.sendAnswerInputEvent(len(c.server.room.Game.Ready)); err != nil {
+			return c.server.sendEventErr(err, oapi.WsEventANSWERINPUT)
 		}
 	}
 
@@ -606,15 +610,15 @@ func (c *Client) receiveAnswerReadyEvent(_ interface{}) error {
 
 // ANSWER_CANCEL
 // 回答の入力の完了を解除する (ルームの各員 -> サーバー)
-func (c *Client) receiveAnswerCancelEvent(_ interface{}) error {
-	if !c.room.GameStatusIs(model.GameStatusAnswer) {
+func (c *Client) sendAnswerCancelEvent(_ interface{}) error {
+	if !c.server.room.GameStatusIs(model.GameStatusAnswer) {
 		return errWrongPhase
 	}
 
 	c.CancelReady(c.userId)
 
-	if err := c.sendAnswerInputEvent(len(c.room.Game.Ready)); err != nil {
-		return c.sendEventErr(err, oapi.WsEventANSWERINPUT)
+	if err := c.server.sendAnswerInputEvent(len(c.server.room.Game.Ready)); err != nil {
+		return c.server.sendEventErr(err, oapi.WsEventANSWERINPUT)
 	}
 
 	return nil
@@ -622,12 +626,12 @@ func (c *Client) receiveAnswerCancelEvent(_ interface{}) error {
 
 // ANSWER_INPUT
 // 回答の入力が完了した人数を送信する (サーバー -> ルームの各員)
-func (c *Client) sendAnswerInputEvent(readyNum int) error {
-	if !c.room.GameStatusIs(model.GameStatusAnswer) {
+func (s *RoomServer) sendAnswerInputEvent(readyNum int) error {
+	if !s.room.GameStatusIs(model.GameStatusAnswer) {
 		return errWrongPhase
 	}
 
-	c.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
+	s.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
 		Type: oapi.WsEventANSWERINPUT,
 		Body: &oapi.WsAnswerInputEventBody{
 			Ready: readyNum,
@@ -640,12 +644,12 @@ func (c *Client) sendAnswerInputEvent(readyNum int) error {
 // ANSWER_FINISH
 // 全員が回答の入力を完了したことor制限時間が来たことを通知する (サーバー -> ルーム全員)
 // クライアントは回答を送信する
-func (c *Client) sendAnswerFinishEvent() error {
-	if !c.room.GameStatusIs(model.GameStatusAnswer) {
+func (s *RoomServer) sendAnswerFinishEvent() error {
+	if !s.room.GameStatusIs(model.GameStatusAnswer) {
 		return errWrongPhase
 	}
 
-	c.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
+	s.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
 		Type: oapi.WsEventANSWERFINISH,
 	})
 
@@ -655,8 +659,8 @@ func (c *Client) sendAnswerFinishEvent() error {
 // ANSWER_SEND
 // 回答を送信する (ルームの各員 -> サーバー)
 // SHOWフェーズを開始する
-func (c *Client) receiveAnswerSendEvent(body interface{}) error {
-	if !c.room.GameStatusIs(model.GameStatusAnswer) {
+func (c *Client) sendAnswerSendEvent(body interface{}) error {
+	if !c.server.room.GameStatusIs(model.GameStatusAnswer) {
 		return errWrongPhase
 	}
 
@@ -669,7 +673,7 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 		return fmt.Errorf("failed to decode body: %w", err)
 	}
 
-	game := c.room.Game
+	game := c.server.room.Game
 
 	for _, v := range game.Odais {
 		if v.AnswererId == c.userId {
@@ -680,23 +684,23 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 	}
 
 	// 全員の回答が送信されたらSHOWフェーズに移行
-	allAnswerReceived := true
+	allAnswersendd := true
 	for _, v := range game.Odais {
 		if _, ok := c.hub.userIdToClient[v.AnswererId]; !ok {
 			continue
 		}
 
 		if v.Answer == nil {
-			allAnswerReceived = false
+			allAnswersendd = false
 			break
 		}
 	}
 
-	if allAnswerReceived {
+	if allAnswersendd {
 		game.Status = model.GameStatusShow
 
-		if err := c.sendShowStartEvent(); err != nil {
-			return c.sendEventErr(err, oapi.WsEventSHOWSTART)
+		if err := c.server.sendShowStartEvent(); err != nil {
+			return c.server.sendEventErr(err, oapi.WsEventSHOWSTART)
 		}
 	}
 
@@ -705,15 +709,15 @@ func (c *Client) receiveAnswerSendEvent(body interface{}) error {
 
 // SHOW_START
 // 結果表示フェーズが始まったことを通知する (サーバー -> ルーム全員)
-func (c *Client) sendShowStartEvent() error {
+func (s *RoomServer) sendShowStartEvent() error {
 	// NOTE: 最後に回答したユーザーのクライアントで行う
-	if !c.room.GameStatusIs(model.GameStatusShow) {
+	if !s.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
 
-	c.resetBreakTimer()
+	s.resetBreakTimer()
 
-	c.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
+	s.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
 		Type: oapi.WsEventSHOWSTART,
 	})
 
@@ -722,38 +726,32 @@ func (c *Client) sendShowStartEvent() error {
 
 // SHOW_NEXT
 // つぎの結果表示を要求する (ホスト -> サーバー)
-func (c *Client) receiveShowNextEvent(_ interface{}) error {
-	if !c.room.GameStatusIs(model.GameStatusShow) {
+func (c *Client) sendShowNextEvent(_ interface{}) error {
+	if !c.server.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
 
-	if c.userId != c.room.HostId {
+	if c.userId != c.server.room.HostId {
 		return errUnAuthorized
 	}
 
-	game := c.room.Game
+	game := c.server.room.Game
 
 	switch game.NextShowPhase {
 	case model.GameShowPhaseOdai:
-		c.broadcast(func(cc *Client) {
-			if err := cc.sendShowOdaiEvent(); err != nil {
-				c.logger.Error(cc.sendEventErr(err, oapi.WsEventSHOWODAI))
-			}
-		})
+		if err := c.server.sendShowOdaiEvent(); err != nil {
+			c.logger.Error(c.server.sendEventErr(err, oapi.WsEventSHOWODAI))
+		}
 		game.NextShowPhase = model.GameShowPhaseCanvas
 	case model.GameShowPhaseCanvas:
-		c.broadcast(func(cc *Client) {
-			if err := cc.sendShowCanvasEvent(); err != nil {
-				c.logger.Error(cc.sendEventErr(err, oapi.WsEventSHOWCANVAS))
-			}
-		})
+		if err := c.server.sendShowCanvasEvent(); err != nil {
+			c.logger.Error(c.server.sendEventErr(err, oapi.WsEventSHOWCANVAS))
+		}
 		game.NextShowPhase = model.GameShowPhaseAnswer
 	case model.GameShowPhaseAnswer:
-		c.broadcast(func(cc *Client) {
-			if err := cc.sendShowAnswerEvent(); err != nil {
-				c.logger.Error(cc.sendEventErr(err, oapi.WsEventSHOWANSWER))
-			}
-		})
+		if err := c.server.sendShowAnswerEvent(); err != nil {
+			c.logger.Error(c.server.sendEventErr(err, oapi.WsEventSHOWANSWER))
+		}
 		if game.ShowCount.Int()+1 < len(game.Odais) {
 			game.NextShowPhase = model.GameShowPhaseOdai
 		} else {
@@ -770,12 +768,12 @@ func (c *Client) receiveShowNextEvent(_ interface{}) error {
 
 // SHOW_ODAI
 // 最初のお題を受信する (サーバー -> ルーム全員)
-func (c *Client) sendShowOdaiEvent() error {
-	if !c.room.GameStatusIs(model.GameStatusShow) {
+func (s *RoomServer) sendShowOdaiEvent() error {
+	if !s.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
 	var (
-		game = c.room.Game
+		game = s.room.Game
 		sc   = game.ShowCount.Int()
 	)
 	if len(game.Odais) < sc+1 {
@@ -783,14 +781,14 @@ func (c *Client) sendShowOdaiEvent() error {
 	}
 
 	sender := oapi.User{}
-	for _, m := range c.room.Members {
+	for _, m := range s.room.Members {
 		if m.Id == game.Odais[sc].SenderId {
 			sender = oapi.RefillUser(&m)
 			break
 		}
 	}
 
-	c.sendMsg(&oapi.WsSendMessage{
+	s.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
 		Type: oapi.WsEventSHOWODAI,
 		Body: &oapi.WsShowOdaiEventBody{
 			Sender: sender,
@@ -804,13 +802,13 @@ func (c *Client) sendShowOdaiEvent() error {
 
 // SHOW_CANVAS
 // 次のキャンバスを受信する (サーバー -> ルーム全員)
-func (c *Client) sendShowCanvasEvent() error {
-	if !c.room.GameStatusIs(model.GameStatusShow) {
+func (s *RoomServer) sendShowCanvasEvent() error {
+	if !s.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
 
 	var (
-		game = c.room.Game
+		game = s.room.Game
 		sc   = game.ShowCount.Int()
 	)
 
@@ -818,7 +816,7 @@ func (c *Client) sendShowCanvasEvent() error {
 		return errNotFound
 	}
 
-	c.sendMsg(&oapi.WsSendMessage{
+	s.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
 		Type: oapi.WsEventSHOWCANVAS,
 		Body: &oapi.WsShowCanvasEventBody{
 			Next: oapi.WsNextShowStatus("answer"),
@@ -831,13 +829,13 @@ func (c *Client) sendShowCanvasEvent() error {
 
 // SHOW_ANSWER
 // 最後の回答を受信する (サーバー -> ルーム全員)
-func (c *Client) sendShowAnswerEvent() error {
-	if !c.room.GameStatusIs(model.GameStatusShow) {
+func (s *RoomServer) sendShowAnswerEvent() error {
+	if !s.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
 
 	var (
-		game = c.room.Game
+		game = s.room.Game
 		sc   = game.ShowCount.Int()
 	)
 
@@ -853,7 +851,7 @@ func (c *Client) sendShowAnswerEvent() error {
 	}
 
 	answerer := oapi.User{}
-	for _, m := range c.room.Members {
+	for _, m := range s.room.Members {
 		if m.Id == game.Odais[sc].AnswererId {
 			answerer = oapi.RefillUser(&m)
 			break
@@ -865,7 +863,7 @@ func (c *Client) sendShowAnswerEvent() error {
 		answer = a.String()
 	}
 
-	c.sendMsg(&oapi.WsSendMessage{
+	s.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
 		Type: oapi.WsEventSHOWANSWER,
 		Body: &oapi.WsShowAnswerEventBody{
 			Answerer: answerer,
@@ -880,31 +878,33 @@ func (c *Client) sendShowAnswerEvent() error {
 // RETURN_ROOM
 // ルーム(新規加入待機状態) に戻る (ホスト -> サーバー)
 // このタイミングでサーバーは保持しているゲームデータを削除
-func (c *Client) receiveReturnRoomEvent(_ interface{}) error {
-	if !c.room.GameStatusIs(model.GameStatusShow) {
+func (c *Client) sendReturnRoomEvent(_ interface{}) error {
+	if !c.server.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
 
-	c.room.ResetGame()
-	c.resetBreakTimer()
+	if c.userId != c.server.room.HostId {
+		return errUnAuthorized
+	}
 
-	c.broadcast(func(cc *Client) {
-		if err := cc.sendNextRoomEvent(); err != nil {
-			c.logger.Error(cc.sendEventErr(err, oapi.WsEventNEXTROOM))
-		}
-	})
+	c.server.room.ResetGame()
+	c.server.resetBreakTimer()
+
+	if err := c.server.sendNextRoomEvent(); err != nil {
+		c.logger.Error(c.server.sendEventErr(err, oapi.WsEventNEXTROOM))
+	}
 
 	return nil
 }
 
 // NEXT_ROOM
 // ルームの表示に遷移する (サーバー -> ルーム全員)
-func (c *Client) sendNextRoomEvent() error {
-	if !c.room.GameStatusIs(model.GameStatusRoom) {
+func (s *RoomServer) sendNextRoomEvent() error {
+	if !s.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
 	}
 
-	c.sendMsg(&oapi.WsSendMessage{
+	s.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
 		Type: oapi.WsEventNEXTROOM,
 	})
 
@@ -913,14 +913,14 @@ func (c *Client) sendNextRoomEvent() error {
 
 // CHANGE_HOST
 // ホストが落ちた時に飛んできて，ホスト役を変更する (サーバー -> ルーム全員)
-func (c *Client) sendChangeHostEvent() error {
-	room := c.room
+func (s *RoomServer) sendChangeHostEvent() error {
+	room := s.room
 	found := false
-	c.hub.mux.Lock()
-	defer c.hub.mux.Unlock()
+	s.hub.mux.Lock()
+	defer s.hub.mux.Unlock()
 
 	for _, v := range room.Members {
-		if _, ok := c.hub.userIdToClient[v.Id]; ok && v.Id != room.HostId {
+		if _, ok := s.hub.userIdToClient[v.Id]; ok && v.Id != room.HostId {
 			found = true
 			room.HostId = v.Id
 			break
@@ -938,25 +938,19 @@ func (c *Client) sendChangeHostEvent() error {
 // 部屋が破壊されたときに通知する (サーバー -> ルーム全員)
 // 部屋が立ってからゲーム開始まで15分以上経過している場合，部屋を閉じる
 // このタイミングでサーバーは保持しているルームに関わる全データを削除
-func (c *Client) sendBreakRoomEvent() error {
-	c.hub.mux.Lock()
-	defer c.hub.mux.Unlock()
+func (s *RoomServer) sendBreakRoomEvent() error {
+	s.hub.mux.Lock()
+	defer s.hub.mux.Unlock()
 
-	for _, v := range c.room.Members {
-		if v.Id == c.userId {
-			continue
-		}
-
-		if cc, ok := c.hub.userIdToClient[v.Id]; ok {
-			c.hub.unregister(cc)
+	for _, v := range s.room.Members {
+		if c, ok := s.hub.userIdToClient[v.Id]; ok {
+			s.hub.unregister(c)
 		}
 	}
 
-	if err := c.hub.repo.DeleteRoom(c.room.Id); err != nil {
+	if err := s.hub.repo.DeleteRoom(s.room.Id); err != nil {
 		return fmt.Errorf("failed to delete room: %w", err)
 	}
-
-	c.hub.unregister(c)
 
 	return nil
 }

@@ -9,33 +9,18 @@ import (
 	"github.com/21hack02win/nascalay-backend/oapi"
 )
 
-// Exec `next` func for all clients in the room
-func (c *Client) broadcast(next func(c *Client)) {
-	var wg sync.WaitGroup
-	for _, m := range c.room.Members {
-		cc, ok := c.hub.userIdToClient[m.Id]
-		if !ok {
-			continue
-		}
-
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			next(cc)
-		}()
-	}
-	wg.Wait()
-}
-
 // Send message to a client
-func (c *Client) sendMsg(msg *oapi.WsSendMessage) {
+func (s *RoomServer) sendMsgTo(c *Client, msg *oapi.WsSendMessage) {
+	// If the client is not connected, remove the client from the room
+	// If the client is the host, change the host
 	if c.send == nil {
-		if c.userId == c.room.HostId {
-			if err := c.sendChangeHostEvent(); err != nil {
-				c.logger.Error(c.sendEventErr(err, oapi.WsEventCHANGEHOST))
+		if c.userId == s.room.HostId {
+			if err := s.sendChangeHostEvent(); err != nil {
+				c.logger.Error(s.sendEventErr(err, oapi.WsEventCHANGEHOST))
 			}
 		}
-		c.hub.unregister(c)
+
+		s.hub.unregister(c)
 
 		return
 	}
@@ -44,20 +29,31 @@ func (c *Client) sendMsg(msg *oapi.WsSendMessage) {
 }
 
 // Send message to all clients in the room
-func (c *Client) sendMsgToEachClientInRoom(msg *oapi.WsSendMessage) {
-	c.broadcast(func(cc *Client) {
-		cc.sendMsg(msg)
-	})
+func (s *RoomServer) sendMsgToEachClientInRoom(msg *oapi.WsSendMessage) {
+	var wg sync.WaitGroup
+	for _, m := range s.room.Members {
+		c, ok := s.hub.userIdToClient[m.Id]
+		if !ok {
+			continue
+		}
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			s.sendMsgTo(c, msg)
+		}()
+	}
+	wg.Wait()
 }
 
 // Check if all members are ready
-func (c *Client) allMembersAreReady() bool {
-	c.hub.mux.Lock()
-	defer c.hub.mux.Unlock()
+func (s *RoomServer) allMembersAreReady() bool {
+	s.hub.mux.Lock()
+	defer s.hub.mux.Unlock()
 
-	r := c.room
+	r := s.room
 	for _, m := range r.Members {
-		if _, ok := c.hub.userIdToClient[m.Id]; !ok {
+		if _, ok := s.hub.userIdToClient[m.Id]; !ok {
 			continue
 		}
 
@@ -70,25 +66,25 @@ func (c *Client) allMembersAreReady() bool {
 }
 
 // Reset break timer
-func (c *Client) resetBreakTimer() {
+func (s *RoomServer) resetBreakTimer() {
 	// タイマーをリセットする
 	// 15(分)後に次のゲームが始まらなければルームを削除する
-	game := c.room.Game
+	game := s.room.Game
 	bt := game.BreakTimer
 
 	if stopped := bt.Stop(); !stopped {
-		go c.waitAndBreakRoom()
+		go s.waitAndBreakRoom()
 	}
 
 	bt.Reset(time.Minute * 15)
-	go c.waitAndBreakRoom()
+	go s.waitAndBreakRoom()
 }
 
 // Wait for 15 minutes and break the room
-func (c *Client) waitAndBreakRoom() {
-	<-c.room.Game.BreakTimer.C
-	if err := c.sendBreakRoomEvent(); err != nil {
-		c.logger.Error(c.sendEventErr(err, oapi.WsEventBREAKROOM))
+func (s *RoomServer) waitAndBreakRoom() {
+	<-s.room.Game.BreakTimer.C
+	if err := s.sendBreakRoomEvent(); err != nil {
+		s.logger.Error(s.sendEventErr(err, oapi.WsEventBREAKROOM))
 	}
 }
 
@@ -97,7 +93,7 @@ func (c *Client) AddReady(uid model.UserId) {
 	c.hub.mux.Lock()
 	defer c.hub.mux.Unlock()
 
-	c.room.Game.Ready[uid] = struct{}{}
+	c.server.room.Game.Ready[uid] = struct{}{}
 }
 
 // Cancel the client's ready state
@@ -105,15 +101,14 @@ func (c *Client) CancelReady(uid model.UserId) {
 	c.hub.mux.Lock()
 	defer c.hub.mux.Unlock()
 
-	delete(c.room.Game.Ready, uid)
+	delete(c.server.room.Game.Ready, uid)
 }
 
-func (c *Client) sendEventErr(err error, eventName oapi.WsEvent) error {
+func (s *RoomServer) sendEventErr(err error, eventName oapi.WsEvent) error {
 	return fmt.Errorf(
-		"[ERROR] failed to send %s event (userId:%s, roomId:%s): %w",
+		"[ERROR] failed to send %s event (roomId:%s): %w",
 		eventName,
-		c.userId.UUID().String(),
-		c.room.Id.String(),
+		s.room.Id.String(),
 		err,
 	)
 }
