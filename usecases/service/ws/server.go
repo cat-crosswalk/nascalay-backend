@@ -9,18 +9,16 @@ import (
 	"github.com/21hack02win/nascalay-backend/oapi"
 	"github.com/21hack02win/nascalay-backend/util/logger"
 	"github.com/21hack02win/nascalay-backend/util/random"
-	"github.com/labstack/echo/v4"
 )
 
-type RoomServer struct {
-	hub    *Hub
-	room   *model.Room
-	logger echo.Logger
+type Server struct {
+	hub  *Hub
+	room *model.Room
 }
 
 // ROOM_NEW_MEMBER
 // 部屋に追加のメンバーが来たことを通知する (サーバー -> ルーム全員)
-func (s *RoomServer) sendRoomNewMemberEvent(room *model.Room) error {
+func (s *Server) sendRoomNewMemberEvent(room *model.Room) error {
 	if !s.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
 	}
@@ -39,7 +37,7 @@ func (s *RoomServer) sendRoomNewMemberEvent(room *model.Room) error {
 
 // ROOM_UPDATE_OPTION
 // ゲームの設定を更新する (サーバー -> ルーム全員)
-func (s *RoomServer) sendRoomUpdateOptionEvent(body *oapi.WsRoomUpdateOptionEventBody) error {
+func (s *Server) sendRoomUpdateOptionEvent(body *oapi.WsRoomUpdateOptionEventBody) error {
 	if !s.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
 	}
@@ -55,7 +53,7 @@ func (s *RoomServer) sendRoomUpdateOptionEvent(body *oapi.WsRoomUpdateOptionEven
 // GAME_START
 // ゲームの開始を通知する (サーバー -> ルーム全員)
 // ODAIフェーズを開始する
-func (s *RoomServer) sendGameStartEvent() error {
+func (s *Server) sendGameStartEvent() error {
 	if !s.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
 	}
@@ -100,7 +98,7 @@ func (s *RoomServer) sendGameStartEvent() error {
 
 // ODAI_INPUT
 // お題入力が完了した人数を送信する (サーバー -> ルームの各員)
-func (s *RoomServer) sendOdaiInputEvent(readyNum int) error {
+func (s *Server) sendOdaiInputEvent(readyNum int) error {
 	if !s.room.GameStatusIs(model.GameStatusOdai) {
 		return errWrongPhase
 	}
@@ -118,7 +116,7 @@ func (s *RoomServer) sendOdaiInputEvent(readyNum int) error {
 // ODAI_FINISH
 // 全員がお題の入力を完了したことor制限時間が来たことを通知する (サーバー -> ルーム全員)
 // クライアントはお題を送信する
-func (s *RoomServer) sendOdaiFinishEvent() error {
+func (s *Server) sendOdaiFinishEvent() error {
 	if !s.room.GameStatusIs(model.GameStatusOdai) {
 		return errWrongPhase
 	}
@@ -132,7 +130,7 @@ func (s *RoomServer) sendOdaiFinishEvent() error {
 
 // DRAW_START
 // キャンバス情報とお題を送信する (サーバー -> ルーム各員)
-func (s *RoomServer) sendDrawStartEvent() error {
+func (s *Server) sendDrawStartEvent() error {
 	// NOTE: 最後にお題を送信したユーザー(2回目以降は最後に絵を送信したユーザー)のクライアントから実行される
 	if !s.room.GameStatusIs(model.GameStatusDraw) {
 		return errWrongPhase
@@ -182,7 +180,7 @@ func (s *RoomServer) sendDrawStartEvent() error {
 
 // DRAW_INPUT
 // 絵を描き終えた人数を送信する (サーバー -> ルームの各員)
-func (s *RoomServer) sendDrawInputEvent(readyNum int) error {
+func (s *Server) sendDrawInputEvent(readyNum int) error {
 	if !s.room.GameStatusIs(model.GameStatusDraw) {
 		return errWrongPhase
 	}
@@ -200,7 +198,7 @@ func (s *RoomServer) sendDrawInputEvent(readyNum int) error {
 // DRAW_FINISH
 // 全員が絵を完了したことor制限時間が来たことを通知する (サーバー -> ルーム全員)
 // クライアントは絵を送信する
-func (s *RoomServer) sendDrawFinishEvent() error {
+func (s *Server) sendDrawFinishEvent() error {
 	if !s.room.GameStatusIs(model.GameStatusDraw) {
 		return errWrongPhase
 	}
@@ -214,7 +212,7 @@ func (s *RoomServer) sendDrawFinishEvent() error {
 
 // ANSWER_START
 // 絵が飛んできて，回答する (サーバー -> ルーム各員)
-func (s *RoomServer) sendAnswerStartEvent() error {
+func (s *Server) sendAnswerStartEvent() error {
 	// NOTE: 最後にお題を送信した人のクライアントで行う
 	if !s.room.GameStatusIs(model.GameStatusAnswer) {
 		return errWrongPhase
@@ -258,7 +256,7 @@ func (s *RoomServer) sendAnswerStartEvent() error {
 
 // ANSWER_INPUT
 // 回答の入力が完了した人数を送信する (サーバー -> ルームの各員)
-func (s *RoomServer) sendAnswerInputEvent(readyNum int) error {
+func (s *Server) sendAnswerInputEvent(readyNum int) error {
 	if !s.room.GameStatusIs(model.GameStatusAnswer) {
 		return errWrongPhase
 	}
@@ -276,7 +274,7 @@ func (s *RoomServer) sendAnswerInputEvent(readyNum int) error {
 // ANSWER_FINISH
 // 全員が回答の入力を完了したことor制限時間が来たことを通知する (サーバー -> ルーム全員)
 // クライアントは回答を送信する
-func (s *RoomServer) sendAnswerFinishEvent() error {
+func (s *Server) sendAnswerFinishEvent() error {
 	if !s.room.GameStatusIs(model.GameStatusAnswer) {
 		return errWrongPhase
 	}
@@ -290,7 +288,7 @@ func (s *RoomServer) sendAnswerFinishEvent() error {
 
 // SHOW_START
 // 結果表示フェーズが始まったことを通知する (サーバー -> ルーム全員)
-func (s *RoomServer) sendShowStartEvent() error {
+func (s *Server) sendShowStartEvent() error {
 	// NOTE: 最後に回答したユーザーのクライアントで行う
 	if !s.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
@@ -307,7 +305,7 @@ func (s *RoomServer) sendShowStartEvent() error {
 
 // SHOW_ODAI
 // 最初のお題を受信する (サーバー -> ルーム全員)
-func (s *RoomServer) sendShowOdaiEvent() error {
+func (s *Server) sendShowOdaiEvent() error {
 	if !s.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
@@ -341,7 +339,7 @@ func (s *RoomServer) sendShowOdaiEvent() error {
 
 // SHOW_CANVAS
 // 次のキャンバスを受信する (サーバー -> ルーム全員)
-func (s *RoomServer) sendShowCanvasEvent() error {
+func (s *Server) sendShowCanvasEvent() error {
 	if !s.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
@@ -368,7 +366,7 @@ func (s *RoomServer) sendShowCanvasEvent() error {
 
 // SHOW_ANSWER
 // 最後の回答を受信する (サーバー -> ルーム全員)
-func (s *RoomServer) sendShowAnswerEvent() error {
+func (s *Server) sendShowAnswerEvent() error {
 	if !s.room.GameStatusIs(model.GameStatusShow) {
 		return errWrongPhase
 	}
@@ -416,7 +414,7 @@ func (s *RoomServer) sendShowAnswerEvent() error {
 
 // NEXT_ROOM
 // ルームの表示に遷移する (サーバー -> ルーム全員)
-func (s *RoomServer) sendNextRoomEvent() error {
+func (s *Server) sendNextRoomEvent() error {
 	if !s.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
 	}
@@ -430,7 +428,7 @@ func (s *RoomServer) sendNextRoomEvent() error {
 
 // CHANGE_HOST
 // ホストが落ちた時に飛んできて，ホスト役を変更する (サーバー -> ルーム全員)
-func (s *RoomServer) sendChangeHostEvent() error {
+func (s *Server) sendChangeHostEvent() error {
 	room := s.room
 	found := false
 	s.hub.mux.Lock()
@@ -455,7 +453,7 @@ func (s *RoomServer) sendChangeHostEvent() error {
 // 部屋が破壊されたときに通知する (サーバー -> ルーム全員)
 // 部屋が立ってからゲーム開始まで15分以上経過している場合，部屋を閉じる
 // このタイミングでサーバーは保持しているルームに関わる全データを削除
-func (s *RoomServer) sendBreakRoomEvent() error {
+func (s *Server) sendBreakRoomEvent() error {
 	s.hub.mux.Lock()
 	defer s.hub.mux.Unlock()
 
@@ -475,7 +473,7 @@ func (s *RoomServer) sendBreakRoomEvent() error {
 // Utils
 
 // Send message to a client
-func (s *RoomServer) sendMsgTo(c *Client, msg *oapi.WsSendMessage) {
+func (s *Server) sendMsgTo(c *Client, msg *oapi.WsSendMessage) {
 	// If the client is not connected, remove the client from the room
 	// If the client is the host, change the host
 	if c.send == nil {
@@ -494,7 +492,7 @@ func (s *RoomServer) sendMsgTo(c *Client, msg *oapi.WsSendMessage) {
 }
 
 // Send message to all clients in the room
-func (s *RoomServer) sendMsgToEachClientInRoom(msg *oapi.WsSendMessage) {
+func (s *Server) sendMsgToEachClientInRoom(msg *oapi.WsSendMessage) {
 	var wg sync.WaitGroup
 	for _, m := range s.room.Members {
 		c, ok := s.hub.userIdToClient[m.Id]
@@ -512,7 +510,7 @@ func (s *RoomServer) sendMsgToEachClientInRoom(msg *oapi.WsSendMessage) {
 }
 
 // Check if all members are ready
-func (s *RoomServer) allMembersAreReady() bool {
+func (s *Server) allMembersAreReady() bool {
 	s.hub.mux.Lock()
 	defer s.hub.mux.Unlock()
 
@@ -531,7 +529,7 @@ func (s *RoomServer) allMembersAreReady() bool {
 }
 
 // Reset break timer
-func (s *RoomServer) resetBreakTimer() {
+func (s *Server) resetBreakTimer() {
 	// タイマーをリセットする
 	// 15(分)後に次のゲームが始まらなければルームを削除する
 	game := s.room.Game
@@ -546,14 +544,14 @@ func (s *RoomServer) resetBreakTimer() {
 }
 
 // Wait for 15 minutes and break the room
-func (s *RoomServer) waitAndBreakRoom() {
+func (s *Server) waitAndBreakRoom() {
 	<-s.room.Game.BreakTimer.C
 	if err := s.sendBreakRoomEvent(); err != nil {
 		logger.Echo.Error(s.sendEventErr(err, oapi.WsEventBREAKROOM))
 	}
 }
 
-func (s *RoomServer) sendEventErr(err error, eventName oapi.WsEvent) error {
+func (s *Server) sendEventErr(err error, eventName oapi.WsEvent) error {
 	return fmt.Errorf(
 		"[ERROR] failed to send %s event (roomId:%s): %w",
 		eventName,

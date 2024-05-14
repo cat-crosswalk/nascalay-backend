@@ -33,7 +33,7 @@ const (
 type Client struct {
 	hub    *Hub
 	userId model.UserId
-	server *RoomServer
+	server *Server
 	conn   *websocket.Conn
 	send   chan *oapi.WsSendMessage
 }
@@ -44,15 +44,21 @@ func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn) (*Client, er
 		return nil, fmt.Errorf("failed to get room from userId: %w", err)
 	}
 
+	server, ok := hub.roomIdToServer[room.Id]
+	if !ok {
+		server = &Server{
+			hub:  hub,
+			room: room,
+		}
+		hub.roomIdToServer[room.Id] = server
+	}
+
 	return &Client{
 		hub:    hub,
 		userId: userId,
-		server: &RoomServer{
-			hub:  hub,
-			room: room,
-		},
-		conn: conn,
-		send: make(chan *oapi.WsSendMessage, 256),
+		server: server,
+		conn:   conn,
+		send:   make(chan *oapi.WsSendMessage, 256),
 	}, nil
 }
 
