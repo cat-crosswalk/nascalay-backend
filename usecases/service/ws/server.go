@@ -7,14 +7,13 @@ import (
 
 	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/oapi"
+	"github.com/21hack02win/nascalay-backend/util/logger"
 	"github.com/21hack02win/nascalay-backend/util/random"
-	"github.com/labstack/echo/v4"
 )
 
 type RoomServer struct {
-	hub    *Hub
-	room   *model.Room
-	logger echo.Logger
+	hub  *Hub
+	room *model.Room
 }
 
 // ROOM_NEW_MEMBER
@@ -62,7 +61,7 @@ func (s *RoomServer) sendGameStartEvent() error {
 	for _, m := range s.room.Members {
 		c, ok := s.hub.userIdToClient[m.Id]
 		if !ok {
-			c.logger.Infof("client(userId:%s) not found", m.Id.UUID().String())
+			logger.Echo.Infof("client(userId:%s) not found", m.Id.UUID().String())
 			continue
 		}
 
@@ -88,7 +87,7 @@ func (s *RoomServer) sendGameStartEvent() error {
 		select {
 		case <-s.room.Game.Timer.C:
 			if err := s.sendOdaiFinishEvent(); err != nil {
-				s.logger.Error(s.sendEventErr(err, oapi.WsEventODAIFINISH).Error())
+				logger.Echo.Error(s.sendEventErr(err, oapi.WsEventODAIFINISH).Error())
 			}
 		case <-s.room.Game.TimerStopChan:
 		}
@@ -150,7 +149,7 @@ func (s *RoomServer) sendDrawStartEvent() error {
 		drawer := o.DrawerSeq[drawCount.Int()]
 		c, ok := s.hub.userIdToClient[drawer.UserId] // `drawCount`番目に描くユーザーのクライアント
 		if !ok {
-			s.logger.Infof("client(userId:%s) not found", drawer.UserId.UUID().String())
+			logger.Echo.Infof("client(userId:%s) not found", drawer.UserId.UUID().String())
 			continue
 		}
 
@@ -225,7 +224,7 @@ func (s *RoomServer) sendAnswerStartEvent() error {
 	for _, v := range s.room.Game.Odais {
 		ac, ok := s.hub.userIdToClient[v.AnswererId]
 		if !ok {
-			s.logger.Infof("client(userId:%s) not found", v.AnswererId.UUID().String())
+			logger.Echo.Infof("client(userId:%s) not found", v.AnswererId.UUID().String())
 			continue
 		}
 
@@ -246,7 +245,7 @@ func (s *RoomServer) sendAnswerStartEvent() error {
 		select {
 		case <-s.room.Game.Timer.C:
 			if err := s.sendAnswerFinishEvent(); err != nil {
-				s.logger.Error(s.sendEventErr(err, oapi.WsEventANSWERFINISH).Error())
+				logger.Echo.Error(s.sendEventErr(err, oapi.WsEventANSWERFINISH).Error())
 			}
 		case <-s.room.Game.TimerStopChan:
 		}
@@ -480,7 +479,7 @@ func (s *RoomServer) sendMsgTo(c *Client, msg *oapi.WsSendMessage) {
 	if c.send == nil {
 		if c.userId == s.room.HostId {
 			if err := s.sendChangeHostEvent(); err != nil {
-				c.logger.Error(s.sendEventErr(err, oapi.WsEventCHANGEHOST))
+				logger.Echo.Error(s.sendEventErr(err, oapi.WsEventCHANGEHOST))
 			}
 		}
 
@@ -548,7 +547,7 @@ func (s *RoomServer) resetBreakTimer() {
 func (s *RoomServer) waitAndBreakRoom() {
 	<-s.room.Game.BreakTimer.C
 	if err := s.sendBreakRoomEvent(); err != nil {
-		s.logger.Error(s.sendEventErr(err, oapi.WsEventBREAKROOM))
+		logger.Echo.Error(s.sendEventErr(err, oapi.WsEventBREAKROOM))
 	}
 }
 
