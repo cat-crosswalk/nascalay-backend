@@ -124,6 +124,7 @@ func (s *Server) sendOdaiFinishEvent() error {
 		return errWrongPhase
 	}
 
+	// ODAIのカウントダウン停止
 	if !s.room.Game.Timer.Stop() {
 		<-s.room.Game.Timer.C
 	}
@@ -224,6 +225,7 @@ func (s *Server) sendDrawFinishEvent() error {
 		return errWrongPhase
 	}
 
+	// DRAWのカウントダウン停止
 	if !s.room.Game.Timer.Stop() {
 		<-s.room.Game.Timer.C
 	}
@@ -301,6 +303,7 @@ func (s *Server) sendAnswerFinishEvent() error {
 		return errWrongPhase
 	}
 
+	// ANSWERのカウントダウン停止
 	if !s.room.Game.Timer.Stop() {
 		<-s.room.Game.Timer.C
 	}
