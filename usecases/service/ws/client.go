@@ -29,7 +29,7 @@ const (
 type Client struct {
 	hub    *Hub
 	userId model.UserId
-	room   *model.Room
+	server *RoomServer
 	conn   *websocket.Conn
 	send   chan *oapi.WsSendMessage
 	logger echo.Logger
@@ -44,7 +44,11 @@ func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn, logger echo.
 	return &Client{
 		hub:    hub,
 		userId: userId,
-		room:   room,
+		server: &RoomServer{
+			hub:    hub,
+			room:   room,
+			logger: logger,
+		},
 		conn:   conn,
 		send:   make(chan *oapi.WsSendMessage, 256),
 		logger: logger,

@@ -70,13 +70,13 @@ func (s *streamer) NotifyOfNewRoomMember(room *model.Room) error {
 	s.hub.mux.Lock()
 	defer s.hub.mux.Unlock()
 
-	cli, ok := s.hub.userIdToClient[room.HostId]
+	c, ok := s.hub.userIdToClient[room.HostId]
 	if !ok {
 		return errNotFound
 	}
 
-	if err := cli.sendRoomNewMemberEvent(room); err != nil {
-		return cli.sendEventErr(err, oapi.WsEventROOMNEWMEMBER)
+	if err := c.server.sendRoomNewMemberEvent(room); err != nil {
+		return c.server.sendEventErr(err, oapi.WsEventROOMNEWMEMBER)
 	}
 
 	return nil
