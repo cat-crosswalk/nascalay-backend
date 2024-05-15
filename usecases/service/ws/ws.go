@@ -19,7 +19,7 @@ type Hub struct {
 	roomIdToServer map[model.RoomId]*Server
 	registerCh     chan *Client
 	unregisterCh   chan *Client
-	mux            sync.RWMutex
+	mux            sync.Mutex
 }
 
 func InitHub(repo repository.Repository) *Hub {
@@ -34,7 +34,7 @@ func InitHub(repo repository.Repository) *Hub {
 		roomIdToServer: make(map[model.RoomId]*Server),
 		registerCh:     make(chan *Client),
 		unregisterCh:   make(chan *Client),
-		mux:            sync.RWMutex{},
+		mux:            sync.Mutex{},
 	}
 
 	go hub.run()
@@ -82,9 +82,6 @@ func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request, userId model.UserI
 }
 
 func (h *Hub) NotifyOfNewRoomMember(room *model.Room) error {
-	h.mux.Lock()
-	defer h.mux.Unlock()
-
 	c, ok := h.userIdToClient[room.HostId]
 	if !ok {
 		return errNotFound
@@ -98,22 +95,22 @@ func (h *Hub) NotifyOfNewRoomMember(room *model.Room) error {
 }
 
 func (h *Hub) register(cli *Client) {
-	h.mux.Lock()
-	defer h.mux.Unlock()
 
 	logger.Echo.Infof("new client(userId:%s) has registered", cli.userId.UUID().String())
 
+	h.mux.Lock()
 	h.userIdToClient[cli.userId] = cli
+	h.mux.Unlock()
 }
 
 func (h *Hub) unregister(cli *Client) {
-	h.mux.Lock()
-	defer h.mux.Unlock()
 
 	logger.Echo.Infof("client(userId:%s) has unregistered", cli.userId.UUID().String())
 
+	h.mux.Lock()
 	close(cli.send)
 	delete(h.userIdToClient, cli.userId)
+	h.mux.Unlock()
 }
 
 func (h *Hub) addNewClient(userId model.UserId, conn *websocket.Conn) (*Client, error) {
@@ -124,12 +121,11 @@ func (h *Hub) addNewClient(userId model.UserId, conn *websocket.Conn) (*Client, 
 
 	h.registerCh <- cli
 
-	h.mux.Lock()
-	defer h.mux.Unlock()
-
 	c, ok := h.userIdToClient[userId]
 	if !ok {
+		h.mux.Lock()
 		h.userIdToClient[userId] = c
+		h.mux.Unlock()
 	}
 
 	return cli, nil

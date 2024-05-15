@@ -50,7 +50,9 @@ func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn) (*Client, er
 			hub:  hub,
 			room: room,
 		}
+		hub.mux.Lock()
 		hub.roomIdToServer[room.Id] = server
+		hub.mux.Unlock()
 	}
 
 	return &Client{
@@ -260,7 +262,7 @@ func (c *Client) sendOdaiReadyEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
-	c.addReady(c.userId)
+	c.server.room.Game.AddReady(c.userId)
 
 	if c.server.allMembersAreReady() {
 		if c.server.room.Game.Timer.Stop() {
@@ -272,7 +274,7 @@ func (c *Client) sendOdaiReadyEvent(_ interface{}) error {
 			return c.server.sendEventErr(err, oapi.WsEventODAIFINISH)
 		}
 	} else {
-		if err := c.server.sendOdaiInputEvent(len(c.server.room.Game.Ready)); err != nil {
+		if err := c.server.sendOdaiInputEvent(c.server.room.Game.ReadyCount()); err != nil {
 			return c.server.sendEventErr(err, oapi.WsEventODAIINPUT)
 		}
 	}
@@ -287,9 +289,9 @@ func (c *Client) sendOdaiCancelEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
-	c.cancelReady(c.userId)
+	c.server.room.Game.CancelReady(c.userId)
 
-	if err := c.server.sendOdaiInputEvent(len(c.server.room.Game.Ready)); err != nil {
+	if err := c.server.sendOdaiInputEvent(c.server.room.Game.ReadyCount()); err != nil {
 		return c.server.sendEventErr(err, oapi.WsEventODAIINPUT)
 	}
 
@@ -374,7 +376,7 @@ func (c *Client) sendDrawReadyEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
-	c.addReady(c.userId)
+	c.server.room.Game.AddReady(c.userId)
 
 	if c.server.allMembersAreReady() {
 		if c.server.room.Game.Timer.Stop() {
@@ -386,7 +388,7 @@ func (c *Client) sendDrawReadyEvent(_ interface{}) error {
 			return c.server.sendEventErr(err, oapi.WsEventDRAWFINISH)
 		}
 	} else {
-		if err := c.server.sendDrawInputEvent(len(c.server.room.Game.Ready)); err != nil {
+		if err := c.server.sendDrawInputEvent(c.server.room.Game.ReadyCount()); err != nil {
 			return c.server.sendEventErr(err, oapi.WsEventDRAWINPUT)
 		}
 	}
@@ -401,9 +403,9 @@ func (c *Client) sendDrawCancelEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
-	c.cancelReady(c.userId)
+	c.server.room.Game.CancelReady(c.userId)
 
-	if err := c.server.sendDrawInputEvent(len(c.server.room.Game.Ready)); err != nil {
+	if err := c.server.sendDrawInputEvent(c.server.room.Game.ReadyCount()); err != nil {
 		return c.server.sendEventErr(err, oapi.WsEventDRAWINPUT)
 	}
 
@@ -503,7 +505,7 @@ func (c *Client) sendAnswerReadyEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
-	c.addReady(c.userId)
+	c.server.room.Game.AddReady(c.userId)
 
 	if c.server.allMembersAreReady() {
 		if c.server.room.Game.Timer.Stop() {
@@ -515,7 +517,7 @@ func (c *Client) sendAnswerReadyEvent(_ interface{}) error {
 			return c.server.sendEventErr(err, oapi.WsEventANSWERFINISH)
 		}
 	} else {
-		if err := c.server.sendAnswerInputEvent(len(c.server.room.Game.Ready)); err != nil {
+		if err := c.server.sendAnswerInputEvent(c.server.room.Game.ReadyCount()); err != nil {
 			return c.server.sendEventErr(err, oapi.WsEventANSWERINPUT)
 		}
 	}
@@ -530,9 +532,9 @@ func (c *Client) sendAnswerCancelEvent(_ interface{}) error {
 		return errWrongPhase
 	}
 
-	c.cancelReady(c.userId)
+	c.server.room.Game.CancelReady(c.userId)
 
-	if err := c.server.sendAnswerInputEvent(len(c.server.room.Game.Ready)); err != nil {
+	if err := c.server.sendAnswerInputEvent(c.server.room.Game.ReadyCount()); err != nil {
 		return c.server.sendEventErr(err, oapi.WsEventANSWERINPUT)
 	}
 
@@ -652,22 +654,4 @@ func (c *Client) sendReturnRoomEvent(_ interface{}) error {
 	}
 
 	return nil
-}
-
-// Utils
-
-// Make the client ready for waiting
-func (c *Client) addReady(uid model.UserId) {
-	c.hub.mux.Lock()
-	defer c.hub.mux.Unlock()
-
-	c.server.room.Game.Ready[uid] = struct{}{}
-}
-
-// Cancel the client's ready state
-func (c *Client) cancelReady(uid model.UserId) {
-	c.hub.mux.Lock()
-	defer c.hub.mux.Unlock()
-
-	delete(c.server.room.Game.Ready, uid)
 }
