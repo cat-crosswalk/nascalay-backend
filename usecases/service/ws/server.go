@@ -59,7 +59,7 @@ func (s *Server) sendGameStartEvent() error {
 	}
 
 	for _, m := range s.room.Members {
-		c, ok := s.hub.userIdToClient[m.Id]
+		c, ok := s.hub.userIdToClient.Load(m.Id)
 		if !ok {
 			logger.Echo.Infof("client(userId:%s) not found", m.Id.UUID().String())
 			continue
@@ -147,7 +147,7 @@ func (s *Server) sendDrawStartEvent() error {
 		}
 
 		drawer := o.DrawerSeq[drawCount.Int()]
-		c, ok := s.hub.userIdToClient[drawer.UserId] // `drawCount`番目に描くユーザーのクライアント
+		c, ok := s.hub.userIdToClient.Load(drawer.UserId) // `drawCount`番目に描くユーザーのクライアント
 		if !ok {
 			logger.Echo.Infof("client(userId:%s) not found", drawer.UserId.UUID().String())
 			continue
@@ -219,7 +219,7 @@ func (s *Server) sendAnswerStartEvent() error {
 	}
 
 	for _, v := range s.room.Game.Odais {
-		ac, ok := s.hub.userIdToClient[v.AnswererId]
+		ac, ok := s.hub.userIdToClient.Load(v.AnswererId)
 		if !ok {
 			logger.Echo.Infof("client(userId:%s) not found", v.AnswererId.UUID().String())
 			continue
@@ -430,7 +430,7 @@ func (s *Server) sendChangeHostEvent() error {
 	found := false
 
 	for _, v := range room.Members {
-		if _, ok := s.hub.userIdToClient[v.Id]; ok && v.Id != room.HostId {
+		if _, ok := s.hub.userIdToClient.Load(v.Id); ok && v.Id != room.HostId {
 			found = true
 			room.HostId = v.Id
 			break
@@ -450,7 +450,7 @@ func (s *Server) sendChangeHostEvent() error {
 // このタイミングでサーバーは保持しているルームに関わる全データを削除
 func (s *Server) sendBreakRoomEvent() error {
 	for _, v := range s.room.Members {
-		if c, ok := s.hub.userIdToClient[v.Id]; ok {
+		if c, ok := s.hub.userIdToClient.Load(v.Id); ok {
 			s.hub.unregister(c)
 		}
 	}
@@ -487,7 +487,7 @@ func (s *Server) sendMsgTo(c *Client, msg *oapi.WsSendMessage) {
 func (s *Server) sendMsgToEachClientInRoom(msg *oapi.WsSendMessage) {
 	var wg sync.WaitGroup
 	for _, m := range s.room.Members {
-		c, ok := s.hub.userIdToClient[m.Id]
+		c, ok := s.hub.userIdToClient.Load(m.Id)
 		if !ok {
 			continue
 		}
@@ -505,7 +505,7 @@ func (s *Server) sendMsgToEachClientInRoom(msg *oapi.WsSendMessage) {
 func (s *Server) allMembersAreReady() bool {
 	r := s.room
 	for _, m := range r.Members {
-		if _, ok := s.hub.userIdToClient[m.Id]; !ok {
+		if _, ok := s.hub.userIdToClient.Load(m.Id); !ok {
 			continue
 		}
 
