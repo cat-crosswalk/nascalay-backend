@@ -218,9 +218,6 @@ func (s *Server) sendAnswerStartEvent() error {
 		return errWrongPhase
 	}
 
-	s.hub.mux.Lock()
-	defer s.hub.mux.Unlock()
-
 	for _, v := range s.room.Game.Odais {
 		ac, ok := s.hub.userIdToClient[v.AnswererId]
 		if !ok {
@@ -431,8 +428,6 @@ func (s *Server) sendNextRoomEvent() error {
 func (s *Server) sendChangeHostEvent() error {
 	room := s.room
 	found := false
-	s.hub.mux.Lock()
-	defer s.hub.mux.Unlock()
 
 	for _, v := range room.Members {
 		if _, ok := s.hub.userIdToClient[v.Id]; ok && v.Id != room.HostId {
@@ -454,9 +449,6 @@ func (s *Server) sendChangeHostEvent() error {
 // 部屋が立ってからゲーム開始まで15分以上経過している場合，部屋を閉じる
 // このタイミングでサーバーは保持しているルームに関わる全データを削除
 func (s *Server) sendBreakRoomEvent() error {
-	s.hub.mux.Lock()
-	defer s.hub.mux.Unlock()
-
 	for _, v := range s.room.Members {
 		if c, ok := s.hub.userIdToClient[v.Id]; ok {
 			s.hub.unregister(c)
@@ -511,16 +503,13 @@ func (s *Server) sendMsgToEachClientInRoom(msg *oapi.WsSendMessage) {
 
 // Check if all members are ready
 func (s *Server) allMembersAreReady() bool {
-	s.hub.mux.Lock()
-	defer s.hub.mux.Unlock()
-
 	r := s.room
 	for _, m := range r.Members {
 		if _, ok := s.hub.userIdToClient[m.Id]; !ok {
 			continue
 		}
 
-		if _, ok := r.Game.Ready[m.Id]; !ok {
+		if _, ok := r.Game.Ready.Load(m.Id); !ok {
 			return false
 		}
 	}

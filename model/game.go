@@ -1,12 +1,13 @@
 package model
 
 import (
+	"sync"
 	"time"
 )
 
 type Game struct {
 	Status        GameStatus
-	Ready         map[UserId]struct{}
+	Ready         sync.Map
 	Odais         []*Odai
 	TimeLimit     TimeLimit // seconds
 	Timeout       Timeout   // minute
@@ -115,7 +116,7 @@ var boardNameToAllArea = map[string]int{
 func InitGame() *Game {
 	return &Game{
 		Status:        GameStatusRoom,
-		Ready:         make(map[UserId]struct{}),
+		Ready:         sync.Map{},
 		Odais:         make([]*Odai, 0, 100),
 		TimeLimit:     DefaultTimeLimit,
 		Timeout:       Timeout(time.Now()),
@@ -140,8 +141,25 @@ func (g *Game) AddOdai(uid UserId, title OdaiTitle) {
 	})
 }
 
+func (g *Game) ReadyCount() int {
+	count := 0
+	g.Ready.Range(func(_, _ interface{}) bool {
+		count++
+		return true
+	})
+	return count
+}
+
+func (g *Game) AddReady(userId UserId) {
+	g.Ready.Store(userId, struct{}{})
+}
+
+func (g *Game) CancelReady(userId UserId) {
+	g.Ready.Delete(userId)
+}
+
 func (g *Game) ResetReady() {
-	g.Ready = make(map[UserId]struct{})
+	g.Ready = sync.Map{}
 }
 
 func (g *Game) ResetImgUpdated() {
