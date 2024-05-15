@@ -485,6 +485,8 @@ func (s *Server) sendChangeHostEvent() error {
 // 部屋が立ってからゲーム開始まで15分以上経過している場合，部屋を閉じる
 // このタイミングでサーバーは保持しているルームに関わる全データを削除
 func (s *Server) sendBreakRoomEvent() error {
+	logger.Echo.Infof("break room: %s", s.room.Id.String())
+
 	for _, v := range s.room.Members {
 		if c, ok := s.hub.userIdToClient[v.Id]; ok {
 			s.sendMsgTo(c, &oapi.WsSendMessage{
@@ -566,7 +568,7 @@ func (s *Server) resetBreakTimer() {
 	if !bt.Stop() {
 		<-s.room.Game.BreakTimer.C
 	}
-	bt.Reset(time.Minute * 15)
+	bt.Reset(time.Minute * 1)
 
 	go func() {
 		<-s.room.Game.BreakTimer.C
