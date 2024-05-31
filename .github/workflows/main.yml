@@ -7,65 +7,17 @@ on:
   pull_request:
 
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    env:
-      GOCACHE: "/tmp/go/cache"
-    steps:
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.17
-      - uses: actions/checkout@v2
-      - name: Mod
-        run: go mod download
-      - name: Cache mod
-        uses: actions/cache@v2.1.6
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-gomod-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-gomod-
-      - name: Cache build
-        uses: actions/cache@v2.1.6
-        with:
-          path: /tmp/go/cache
-          key: ${{ runner.os }}-go-build-${{ github.ref }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-go-build-${{ github.ref }}-
-            ${{ runner.os }}-go-build-
   build:
-    needs: setup
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Go
-        uses: actions/setup-go@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: 1.17
-      - uses: actions/checkout@v2
-      - name: Build
-        run: go build -o gcg
-
-  # test:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Set up Go
-  #       uses: actions/setup-go@v2
-  #       with:
-  #         go-version: 1.17
-  #     - uses: actions/checkout@v2
-  #     - name: Test
-  #       run: go test -v ./...
+          go-version-file: go.mod
+      - run: go build -v ./...
 
   lint:
-    needs: setup
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.17
-      - uses: actions/checkout@v2
-      - name: Lint
-        uses: reviewdog/action-golangci-lint@v2
+      - uses: actions/checkout@v4
+      - uses: reviewdog/action-golangci-lint@v2

@@ -1,6 +1,6 @@
 module github.com/21hack02win/nascalay-backend
 
-go 1.17
+go 1.22
 
 require (
 	github.com/deepmap/oapi-codegen v1.9.0

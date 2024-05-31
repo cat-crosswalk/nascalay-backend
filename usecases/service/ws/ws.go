@@ -3,23 +3,22 @@ package ws
 import (
 	"fmt"
 	"net/http"
-	"sync"
 
 	"github.com/21hack02win/nascalay-backend/model"
 	"github.com/21hack02win/nascalay-backend/oapi"
 	"github.com/21hack02win/nascalay-backend/usecases/repository"
 	"github.com/21hack02win/nascalay-backend/util/logger"
+	"github.com/21hack02win/nascalay-backend/util/safe"
 	"github.com/gorilla/websocket"
 )
 
 type Hub struct {
 	upgrader       websocket.Upgrader
 	repo           repository.Repository
-	userIdToClient map[model.UserId]*Client
-	roomIdToServer map[model.RoomId]*Server
+	userIdToClient *safe.Map[model.UserId, *Client]
+	roomIdToServer *safe.Map[model.RoomId, *Server]
 	registerCh     chan *Client
 	unregisterCh   chan *Client
-	mux            sync.Mutex
 }
 
 func InitHub(repo repository.Repository) *Hub {
@@ -30,11 +29,10 @@ func InitHub(repo repository.Repository) *Hub {
 			},
 		},
 		repo:           repo,
-		userIdToClient: make(map[model.UserId]*Client),
-		roomIdToServer: make(map[model.RoomId]*Server),
+		userIdToClient: safe.NewMap[model.UserId, *Client](),
+		roomIdToServer: safe.NewMap[model.RoomId, *Server](),
 		registerCh:     make(chan *Client),
 		unregisterCh:   make(chan *Client),
-		mux:            sync.Mutex{},
 	}
 
 	go hub.run()
@@ -48,7 +46,7 @@ func (h *Hub) run() {
 		case cli := <-h.registerCh:
 			h.register(cli)
 		case cli := <-h.unregisterCh:
-			if _, ok := h.userIdToClient[cli.userId]; ok {
+			if _, ok := h.userIdToClient.Load(cli.userId); ok {
 				h.unregister(cli)
 			}
 		}
@@ -82,7 +80,7 @@ func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request, userId model.UserI
 }
 
 func (h *Hub) NotifyOfNewRoomMember(room *model.Room) error {
-	c, ok := h.userIdToClient[room.HostId]
+	c, ok := h.userIdToClient.Load(room.HostId)
 	if !ok {
 		return errNotFound
 	}
@@ -95,22 +93,15 @@ func (h *Hub) NotifyOfNewRoomMember(room *model.Room) error {
 }
 
 func (h *Hub) register(cli *Client) {
-
 	logger.Echo.Infof("new client(userId:%s) has registered", cli.userId.UUID().String())
-
-	h.mux.Lock()
-	h.userIdToClient[cli.userId] = cli
-	h.mux.Unlock()
+	h.userIdToClient.Store(cli.userId, cli)
 }
 
 func (h *Hub) unregister(cli *Client) {
-
 	logger.Echo.Infof("client(userId:%s) has unregistered", cli.userId.UUID().String())
 
-	h.mux.Lock()
 	close(cli.send)
-	delete(h.userIdToClient, cli.userId)
-	h.mux.Unlock()
+	h.userIdToClient.Delete(cli.userId)
 }
 
 func (h *Hub) addNewClient(userId model.UserId, conn *websocket.Conn) (*Client, error) {
@@ -120,13 +111,6 @@ func (h *Hub) addNewClient(userId model.UserId, conn *websocket.Conn) (*Client, 
 	}
 
 	h.registerCh <- cli
-
-	c, ok := h.userIdToClient[userId]
-	if !ok {
-		h.mux.Lock()
-		h.userIdToClient[userId] = c
-		h.mux.Unlock()
-	}
 
 	return cli, nil
 }

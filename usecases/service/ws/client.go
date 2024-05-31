@@ -44,16 +44,15 @@ func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn) (*Client, er
 		return nil, fmt.Errorf("failed to get room from userId: %w", err)
 	}
 
-	server, ok := hub.roomIdToServer[room.Id]
+	server, ok := hub.roomIdToServer.Load(room.Id)
 	if !ok {
 		server = &Server{
 			hub:  hub,
 			room: room,
 		}
-		hub.mux.Lock()
-		hub.roomIdToServer[room.Id] = server
-		hub.mux.Unlock()
-		server.resetBreakTimer()
+		hub.roomIdToServer.Store(room.Id, server)
+				server.resetBreakTimer()
+
 	}
 
 	return &Client{
@@ -321,7 +320,7 @@ func (c *Client) sendOdaiSendEvent(body interface{}) error {
 	// 全員のお題送信が完了したらDRAWフェーズに移行
 	odaisByUnregisteredClients := make([]model.UserId, 0, len(c.server.room.Members)) // ハブから登録解除したクライアントの配列
 	for _, v := range c.server.room.Members {
-		if _, ok := c.hub.userIdToClient[v.Id]; !ok {
+		if _, ok := c.hub.userIdToClient.Load(v.Id); !ok {
 			odaisByUnregisteredClients = append(odaisByUnregisteredClients, v.Id)
 		}
 	}
@@ -424,7 +423,7 @@ func (c *Client) sendDrawSendEvent(body interface{}) error {
 	// 全員の絵の送信が完了したら再度DRAW_STARTを送信する or ANSWERフェーズに移行
 	allImgUpdated := true
 	for _, v := range c.server.room.Game.Odais {
-		if _, ok := c.hub.userIdToClient[v.DrawerSeq[c.server.room.Game.DrawCount.Int()].UserId]; !ok {
+		if _, ok := c.hub.userIdToClient.Load(v.DrawerSeq[c.server.room.Game.DrawCount.Int()].UserId); !ok {
 			continue
 		}
 
@@ -525,7 +524,7 @@ func (c *Client) sendAnswerSendEvent(body interface{}) error {
 	// 全員の回答が送信されたらSHOWフェーズに移行
 	allAnswersendd := true
 	for _, v := range game.Odais {
-		if _, ok := c.hub.userIdToClient[v.AnswererId]; !ok {
+		if _, ok := c.hub.userIdToClient.Load(v.AnswererId); !ok {
 			continue
 		}
 
