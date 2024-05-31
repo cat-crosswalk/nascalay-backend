@@ -51,8 +51,7 @@ func NewClient(hub *Hub, userId model.UserId, conn *websocket.Conn) (*Client, er
 			room: room,
 		}
 		hub.roomIdToServer.Store(room.Id, server)
-				server.resetBreakTimer()
-
+		server.resetBreakTimer()
 	}
 
 	return &Client{
