@@ -76,6 +76,12 @@ func (s *Server) sendGameStartEvent() error {
 
 	// ODAIフェーズに移行
 	s.room.Game.Status = model.GameStatusOdai
+
+	// BREAK_ROOMのカウントダウン停止
+	if !s.room.Game.BreakTimer.Stop() {
+		<-s.room.Game.BreakTimer.C
+	}
+
 	// ODAIのカウントダウン開始
 	if !s.room.Game.Timer.Stop() {
 		<-s.room.Game.Timer.C
@@ -84,12 +90,9 @@ func (s *Server) sendGameStartEvent() error {
 	s.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(s.room.Game.TimeLimit)))
 
 	go func() {
-		select {
-		case <-s.room.Game.Timer.C:
-			if err := s.sendOdaiFinishEvent(); err != nil {
-				logger.Echo.Error(s.sendEventErr(err, oapi.WsEventODAIFINISH).Error())
-			}
-		case <-s.room.Game.TimerStopChan:
+		<-s.room.Game.Timer.C
+		if err := s.sendOdaiFinishEvent(); err != nil {
+			logger.Echo.Error(s.sendEventErr(err, oapi.WsEventODAIFINISH).Error())
 		}
 	}()
 
@@ -119,6 +122,11 @@ func (s *Server) sendOdaiInputEvent(readyNum int) error {
 func (s *Server) sendOdaiFinishEvent() error {
 	if !s.room.GameStatusIs(model.GameStatusOdai) {
 		return errWrongPhase
+	}
+
+	// ODAIのカウントダウン停止
+	if !s.room.Game.Timer.Stop() {
+		<-s.room.Game.Timer.C
 	}
 
 	s.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
@@ -175,6 +183,20 @@ func (s *Server) sendDrawStartEvent() error {
 		})
 	}
 
+	// DRAWのカウントダウン開始
+	if !game.Timer.Stop() {
+		<-game.Timer.C
+	}
+	game.Timer.Reset(time.Second * time.Duration(s.room.Game.TimeLimit))
+	game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(s.room.Game.TimeLimit)))
+
+	go func() {
+		<-game.Timer.C
+		if err := s.sendDrawFinishEvent(); err != nil {
+			logger.Echo.Error(s.sendEventErr(err, oapi.WsEventDRAWFINISH).Error())
+		}
+	}()
+
 	return nil
 }
 
@@ -201,6 +223,11 @@ func (s *Server) sendDrawInputEvent(readyNum int) error {
 func (s *Server) sendDrawFinishEvent() error {
 	if !s.room.GameStatusIs(model.GameStatusDraw) {
 		return errWrongPhase
+	}
+
+	// DRAWのカウントダウン停止
+	if !s.room.Game.Timer.Stop() {
+		<-s.room.Game.Timer.C
 	}
 
 	s.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
@@ -235,16 +262,16 @@ func (s *Server) sendAnswerStartEvent() error {
 	}
 
 	// ANSWERのカウントダウン開始
+	if !s.room.Game.Timer.Stop() {
+		<-s.room.Game.Timer.C
+	}
 	s.room.Game.Timer.Reset(time.Second * time.Duration(s.room.Game.TimeLimit))
 	s.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(s.room.Game.TimeLimit)))
 
 	go func() {
-		select {
-		case <-s.room.Game.Timer.C:
-			if err := s.sendAnswerFinishEvent(); err != nil {
-				logger.Echo.Error(s.sendEventErr(err, oapi.WsEventANSWERFINISH).Error())
-			}
-		case <-s.room.Game.TimerStopChan:
+		<-s.room.Game.Timer.C
+		if err := s.sendAnswerFinishEvent(); err != nil {
+			logger.Echo.Error(s.sendEventErr(err, oapi.WsEventANSWERFINISH).Error())
 		}
 	}()
 
@@ -274,6 +301,11 @@ func (s *Server) sendAnswerInputEvent(readyNum int) error {
 func (s *Server) sendAnswerFinishEvent() error {
 	if !s.room.GameStatusIs(model.GameStatusAnswer) {
 		return errWrongPhase
+	}
+
+	// ANSWERのカウントダウン停止
+	if !s.room.Game.Timer.Stop() {
+		<-s.room.Game.Timer.C
 	}
 
 	s.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
@@ -411,10 +443,14 @@ func (s *Server) sendShowAnswerEvent() error {
 
 // NEXT_ROOM
 // ルームの表示に遷移する (サーバー -> ルーム全員)
+// このタイミングでサーバーは保持しているゲームデータを削除
 func (s *Server) sendNextRoomEvent() error {
 	if !s.room.GameStatusIs(model.GameStatusRoom) {
 		return errWrongPhase
 	}
+
+	s.room.ResetGame()
+	s.resetBreakTimer()
 
 	s.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
 		Type: oapi.WsEventNEXTROOM,
@@ -449,8 +485,13 @@ func (s *Server) sendChangeHostEvent() error {
 // 部屋が立ってからゲーム開始まで15分以上経過している場合，部屋を閉じる
 // このタイミングでサーバーは保持しているルームに関わる全データを削除
 func (s *Server) sendBreakRoomEvent() error {
+	logger.Echo.Infof("break room: %s", s.room.Id.String())
+
 	for _, v := range s.room.Members {
 		if c, ok := s.hub.userIdToClient.Load(v.Id); ok {
+			s.sendMsgTo(c, &oapi.WsSendMessage{
+				Type: oapi.WsEventBREAKROOM,
+			})
 			s.hub.unregister(c)
 		}
 	}
@@ -519,25 +560,22 @@ func (s *Server) allMembersAreReady() bool {
 
 // Reset break timer
 func (s *Server) resetBreakTimer() {
-	// タイマーをリセットする
+	// BREAK_ROOMのカウントダウン開始
 	// 15(分)後に次のゲームが始まらなければルームを削除する
 	game := s.room.Game
 	bt := game.BreakTimer
 
-	if stopped := bt.Stop(); !stopped {
-		go s.waitAndBreakRoom()
+	if !bt.Stop() {
+		<-s.room.Game.BreakTimer.C
 	}
+	bt.Reset(time.Minute * 1)
 
-	bt.Reset(time.Minute * 15)
-	go s.waitAndBreakRoom()
-}
-
-// Wait for 15 minutes and break the room
-func (s *Server) waitAndBreakRoom() {
-	<-s.room.Game.BreakTimer.C
-	if err := s.sendBreakRoomEvent(); err != nil {
-		logger.Echo.Error(s.sendEventErr(err, oapi.WsEventBREAKROOM))
-	}
+	go func() {
+		<-s.room.Game.BreakTimer.C
+		if err := s.sendBreakRoomEvent(); err != nil {
+			logger.Echo.Error(s.sendEventErr(err, oapi.WsEventBREAKROOM))
+		}
+	}()
 }
 
 func (s *Server) sendEventErr(err error, eventName oapi.WsEvent) error {
