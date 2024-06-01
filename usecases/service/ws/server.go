@@ -84,7 +84,10 @@ func (s *Server) sendGameStartEvent() error {
 
 	// ODAIのカウントダウン開始
 	if !s.room.Game.Timer.Stop() {
-		<-s.room.Game.Timer.C
+		select {
+		case <-s.room.Game.Timer.C:
+		default:
+		}
 	}
 	s.room.Game.Timer.Reset(time.Second * time.Duration(s.room.Game.TimeLimit))
 	s.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(s.room.Game.TimeLimit)))
@@ -126,7 +129,10 @@ func (s *Server) sendOdaiFinishEvent() error {
 
 	// ODAIのカウントダウン停止
 	if !s.room.Game.Timer.Stop() {
-		<-s.room.Game.Timer.C
+		select {
+		case <-s.room.Game.Timer.C:
+		default:
+		}
 	}
 
 	s.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
@@ -184,10 +190,12 @@ func (s *Server) sendDrawStartEvent() error {
 	}
 
 	// DRAWのカウントダウン開始
-	if !game.Timer.Stop() {
-		<-game.Timer.C
+	if !s.room.Game.Timer.Stop() {
+		select {
+		case <-s.room.Game.Timer.C:
+		default:
+		}
 	}
-	game.Timer.Reset(time.Second * time.Duration(s.room.Game.TimeLimit))
 	game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(s.room.Game.TimeLimit)))
 
 	go func() {
@@ -227,7 +235,10 @@ func (s *Server) sendDrawFinishEvent() error {
 
 	// DRAWのカウントダウン停止
 	if !s.room.Game.Timer.Stop() {
-		<-s.room.Game.Timer.C
+		select {
+		case <-s.room.Game.Timer.C:
+		default:
+		}
 	}
 
 	s.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
@@ -263,7 +274,10 @@ func (s *Server) sendAnswerStartEvent() error {
 
 	// ANSWERのカウントダウン開始
 	if !s.room.Game.Timer.Stop() {
-		<-s.room.Game.Timer.C
+		select {
+		case <-s.room.Game.Timer.C:
+		default:
+		}
 	}
 	s.room.Game.Timer.Reset(time.Second * time.Duration(s.room.Game.TimeLimit))
 	s.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(s.room.Game.TimeLimit)))
@@ -305,7 +319,10 @@ func (s *Server) sendAnswerFinishEvent() error {
 
 	// ANSWERのカウントダウン停止
 	if !s.room.Game.Timer.Stop() {
-		<-s.room.Game.Timer.C
+		select {
+		case <-s.room.Game.Timer.C:
+		default:
+		}
 	}
 
 	s.sendMsgToEachClientInRoom(&oapi.WsSendMessage{
@@ -562,13 +579,13 @@ func (s *Server) allMembersAreReady() bool {
 func (s *Server) resetBreakTimer() {
 	// BREAK_ROOMのカウントダウン開始
 	// 60(分)後に次のゲームが始まらなければルームを削除する
-	game := s.room.Game
-	bt := game.BreakTimer
-
-	if !bt.Stop() {
-		<-s.room.Game.BreakTimer.C
+	if !s.room.Game.BreakTimer.Stop() {
+		select {
+		case <-s.room.Game.BreakTimer.C:
+		default:
+		}
 	}
-	bt.Reset(time.Minute * 60)
+	s.room.Game.BreakTimer.Reset(time.Minute * 60)
 
 	go func() {
 		<-s.room.Game.BreakTimer.C
