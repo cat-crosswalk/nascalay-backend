@@ -89,15 +89,12 @@ func (s *Server) sendGameStartEvent() error {
 		default:
 		}
 	}
-	s.room.Game.Timer.Reset(time.Second * time.Duration(s.room.Game.TimeLimit))
 	s.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(s.room.Game.TimeLimit)))
-
-	go func() {
-		<-s.room.Game.Timer.C
+	s.room.Game.Timer = time.AfterFunc(time.Second*time.Duration(s.room.Game.TimeLimit), func() {
 		if err := s.sendOdaiFinishEvent(); err != nil {
 			logger.Echo.Error(s.sendEventErr(err, oapi.WsEventODAIFINISH).Error())
 		}
-	}()
+	})
 
 	return nil
 }
@@ -197,13 +194,11 @@ func (s *Server) sendDrawStartEvent() error {
 		}
 	}
 	game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(s.room.Game.TimeLimit)))
-
-	go func() {
-		<-game.Timer.C
+	game.Timer = time.AfterFunc(time.Second*time.Duration(s.room.Game.TimeLimit), func() {
 		if err := s.sendDrawFinishEvent(); err != nil {
 			logger.Echo.Error(s.sendEventErr(err, oapi.WsEventDRAWFINISH).Error())
 		}
-	}()
+	})
 
 	return nil
 }
@@ -279,15 +274,12 @@ func (s *Server) sendAnswerStartEvent() error {
 		default:
 		}
 	}
-	s.room.Game.Timer.Reset(time.Second * time.Duration(s.room.Game.TimeLimit))
 	s.room.Game.Timeout = model.Timeout(time.Now().Add(time.Second * time.Duration(s.room.Game.TimeLimit)))
-
-	go func() {
-		<-s.room.Game.Timer.C
+	s.room.Game.Timer = time.AfterFunc(time.Second*time.Duration(s.room.Game.TimeLimit), func() {
 		if err := s.sendAnswerFinishEvent(); err != nil {
 			logger.Echo.Error(s.sendEventErr(err, oapi.WsEventANSWERFINISH).Error())
 		}
-	}()
+	})
 
 	return nil
 }
@@ -462,10 +454,6 @@ func (s *Server) sendShowAnswerEvent() error {
 // ルームの表示に遷移する (サーバー -> ルーム全員)
 // このタイミングでサーバーは保持しているゲームデータを削除
 func (s *Server) sendNextRoomEvent() error {
-	if !s.room.GameStatusIs(model.GameStatusRoom) {
-		return errWrongPhase
-	}
-
 	s.room.ResetGame()
 	s.resetBreakTimer()
 
