@@ -482,7 +482,7 @@ func (s *Server) sendChangeHostEvent() error {
 
 // BREAK_ROOM
 // 部屋が破壊されたときに通知する (サーバー -> ルーム全員)
-// 部屋が立ってからゲーム開始まで15分以上経過している場合，部屋を閉じる
+// 部屋が立ってからゲーム開始まで60分以上経過している場合，部屋を閉じる
 // このタイミングでサーバーは保持しているルームに関わる全データを削除
 func (s *Server) sendBreakRoomEvent() error {
 	logger.Echo.Infof("break room: %s", s.room.Id.String())
@@ -561,14 +561,14 @@ func (s *Server) allMembersAreReady() bool {
 // Reset break timer
 func (s *Server) resetBreakTimer() {
 	// BREAK_ROOMのカウントダウン開始
-	// 15(分)後に次のゲームが始まらなければルームを削除する
+	// 60(分)後に次のゲームが始まらなければルームを削除する
 	game := s.room.Game
 	bt := game.BreakTimer
 
 	if !bt.Stop() {
 		<-s.room.Game.BreakTimer.C
 	}
-	bt.Reset(time.Minute * 1)
+	bt.Reset(time.Minute * 60)
 
 	go func() {
 		<-s.room.Game.BreakTimer.C
